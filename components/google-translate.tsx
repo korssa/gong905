@@ -230,8 +230,8 @@ export function GoogleTranslate() {
         }
         
         // Google Translate API 복원
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (typeof window.google !== 'undefined' && (window.google as any).translate) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (window.google as any).translate.TranslateElement;
