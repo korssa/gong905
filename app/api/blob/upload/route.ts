@@ -34,7 +34,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       onUploadCompleted: async ({ blob, tokenPayload }) => {
         console.log('✅ Blob 업로드 완료:', { 
           url: blob.url, 
-          size: blob.size,
           pathname: blob.pathname 
         });
 
@@ -42,7 +41,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         // await saveToDatabase({
         //   url: blob.url,
         //   filename: blob.pathname,
-        //   size: blob.size,
         //   uploadedAt: new Date()
         // });
       },
