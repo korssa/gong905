@@ -14,6 +14,11 @@ interface GoogleTranslateElement {
   // Google Translate Element의 기본 구조
   translate?: () => void;
   restore?: () => void;
+  getDisplayLanguage?: () => string;
+  getOriginalLanguage?: () => string;
+  isVisible?: () => boolean;
+  showBanner?: () => void;
+  hideBanner?: () => void;
   [key: string]: unknown; // 인덱스 시그니처로 모든 속성 허용
 }
 
