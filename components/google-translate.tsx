@@ -22,23 +22,21 @@ interface GoogleTranslateElement {
   [key: string]: unknown; // 인덱스 시그니처로 모든 속성 허용
 }
 
-interface GoogleTranslateWindow extends Window {
-  googleTranslateElementInit?: () => void;
-  google?: {
-    translate?: {
-      TranslateElement?: {
-        new (options: GoogleTranslateOptions, element: string): GoogleTranslateElement;
-        InlineLayout?: {
-          HORIZONTAL?: string;
+declare global {
+  interface Window {
+    googleTranslateElementInit?: () => void;
+    google?: {
+      translate?: {
+        TranslateElement?: {
+          new (options: GoogleTranslateOptions, element: string): GoogleTranslateElement;
+          InlineLayout?: {
+            HORIZONTAL?: string;
+          };
         };
       };
     };
-  };
-  adminModeChange?: (enabled: boolean) => void;
-}
-
-declare global {
-  interface Window extends GoogleTranslateWindow {}
+    adminModeChange?: (enabled: boolean) => void;
+  }
 }
 
 export function GoogleTranslate() {
