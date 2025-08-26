@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // SMTP 설정 함수
 const createTransporter = async () => {
   const nodemailer = await import('nodemailer');
-  return nodemailer.default.createTransporter({
+  return nodemailer.default.createTransport({
     service: 'gmail', // Gmail 사용 (다른 서비스로 변경 가능)
     auth: {
       user: process.env.SMTP_USER, // Gmail 주소
