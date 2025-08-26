@@ -215,7 +215,7 @@ export function ContentManager({
                       .replace(/\n/g, "<br>"),
                   }} />
                 </div>
-                {content.tags?.length > 0 && (
+                {content.tags && content.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {content.tags.map((tag, idx) => (
                       <span key={idx} className="text-xs px-2 py-0 rounded" style={{ backgroundColor: '#fff', color: '#000' }}>
