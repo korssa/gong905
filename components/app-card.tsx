@@ -8,6 +8,7 @@ import { useState } from "react";
 import { AppItem } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
+import Image from "next/image";
 
 interface AppCardProps {
   app: AppItem;
@@ -155,11 +156,12 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
       >
         {/* App Icon */}
         <div className="w-24 h-24 flex-shrink-0 p-3">
-          <img
+          <Image
             src={app.iconUrl}
             alt={app.name}
+            width={96}
+            height={96}
             className="w-full h-full object-cover object-center rounded-xl"
-            style={{ maxWidth: '100%', maxHeight: '100%' }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik0xMiA2QzEwLjM0IDYgOSA3LjM0IDkgOUM5IDEwLjY2IDEwLjM0IDEyIDEyIDEyQzEzLjY2IDEyIDE1IDEwLjY2IDE1IDlDMTUgNy4zNCAxMy42NiA2IDEyIDZaTTEyIDRDMTQuNzYgNCAxNyA2LjI0IDE3IDlDMTcgMTEuNzYgMTQuNzYgMTQgMTIgMTRDOS4yNCAxNCA3IDExLjc2IDcgOUM3IDYuMjQgOS4yNCA0IDEyIDRaTTEyIDE2QzEwLjM0IDE2IDkgMTcuMzQgOSAxOUg3QzcgMTYuMjQgOS4yNCAxNCAxMiAxNEMxNC43NiAxNCAxNyAxNi4yNCAxNyAxOUgxNUMxNSAxNy4zNCAxMy42NiAxNiAxMiAxNloiIGZpbGw9IiM5Y2EzYWYiLz4KPC9zdmc+";
@@ -174,7 +176,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
                 <h3 className="font-semibold text-lg notranslate app-name-fixed" translate="no">{app.name}</h3>
                 {/* 상태/스토어 배지 */}
                 <Badge className={`text-xs ${getStatusColor(app.status)} text-white`}>
-                  {t(app.status as any)}
+                  {app.status}
                 </Badge>
               </div>
 
@@ -268,9 +270,11 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
 
             {/* 하단 1줄 - 스토어 배지 */}
             <div className="h-7">
-              <img
+              <Image
                 src={app.store === "google-play" ? "/google-play-badge.png" : "/app-store-badge.png"}
                 alt="스토어 배지"
+                width={120}
+                height={28}
                 className="h-7 object-contain"
               />
             </div>
@@ -290,17 +294,11 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
         {/* Screenshot/App Preview */}
         <div className="aspect-square overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 relative">
           {app.screenshotUrls && app.screenshotUrls.length > 0 ? (
-            <img
+            <Image
               src={app.screenshotUrls[0]}
               alt={app.name}
-              className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                minWidth: '0',
-                minHeight: '0',
-                flexShrink: '0'
-              }}
+              fill
+              className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
             <div className="absolute inset-0 w-full h-full flex items-center justify-center text-6xl">
@@ -312,7 +310,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
         {/* Store Badge */}
         <div className="absolute bottom-2 left-2">
           <Badge className={`${getStatusColor(app.status)} text-white text-xs`}>
-            {t(app.status as any)}
+            {app.status}
           </Badge>
         </div>
 
@@ -360,11 +358,12 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
       <CardContent className="px-2 py-0" style={{ backgroundColor: '#D1E2EA' }}>
         {/* App Icon and Basic Info */}
         <div className="flex items-start space-x-3 mb-2">
-          <img
+          <Image
             src={app.iconUrl}
             alt={app.name}
+            width={48}
+            height={48}
             className="w-12 h-12 rounded-xl object-cover object-center flex-shrink-0"
-            style={{ maxWidth: '100%', maxHeight: '100%' }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik0xMiA2QzEwLjM0IDYgOSA3LjM0IDkgOUM5IDEwLjY2IDEwLjM0IDEyIDEyIDEyQzEzLjY2IDEyIDE1IDEwLjY2IDE1IDlDMTUgNy4zNCAxMy42NiA2IDEyIDZaTTEyIDRDMTQuNzYgNCAxNyA2LjI0IDE3IDlDMTcgMTEuNzYgMTQuNzYgMTQgMTIgMTRDOS4yNCAxNCA3IDExLjc2IDcgOUM3IDYuMjQgOS4yNCA0IDEyIDRaTTEyIDE2QzEwLjM0IDE2IDkgMTcuMzQgOSAxOUg3QzcgMTYuMjQgOS4yNCAxNCAxMiAxNEMxNC43NiAxNCAxNyAxNi4yNCAxNyAxOUgxNUMxNSAxNy4zNCAxMy42NiAxNiAxMiAxNloiIGZpbGw9IiM5Y2EzYWYiLz4KPC9zdmc+";
@@ -432,9 +431,11 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
 
           {/* 하단 1줄 - 스토어 배지 */}
           <div className="h-6">
-            <img
+            <Image
               src={app.store === "google-play" ? "/google-play-badge.png" : "/app-store-badge.png"}
               alt="스토어 배지"
+              width={100}
+              height={24}
               className="h-6 object-contain"
             />
           </div>

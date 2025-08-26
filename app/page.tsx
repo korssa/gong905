@@ -18,6 +18,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
 import { saveFileToLocal, generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
+import Image from "next/image";
 
 // 샘플 앱 데이터
 const sampleApps: AppItem[] = [
@@ -672,17 +673,11 @@ export default function Home() {
                                                {/* Screenshot/App Preview */}
                         <div className="aspect-[9/16] sm:aspect-square overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 relative">
                           {latestApp.screenshotUrls && latestApp.screenshotUrls.length > 0 ? (
-                                                         <img
+                                                         <Image
                                src={latestApp.screenshotUrls[0]}
                                alt={latestApp.name}
-                               className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                               style={{ 
-                                 maxWidth: '100%', 
-                                 maxHeight: '100%',
-                                 minWidth: '0',
-                                 minHeight: '0',
-                                 flexShrink: '0'
-                               }}
+                               fill
+                               className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
                              />
                           ) : (
                             <div className="absolute inset-0 w-full h-full flex items-center justify-center text-6xl">
@@ -702,11 +697,12 @@ export default function Home() {
                      <div className="p-3" style={{ backgroundColor: '#D1E2EA' }}>
                        {/* App Icon and Basic Info */}
                        <div className="flex items-start space-x-3 mb-2">
-                                                   <img
+                                                   <Image
                             src={latestApp.iconUrl}
                             alt={latestApp.name}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 rounded-xl object-cover object-center flex-shrink-0"
-                            style={{ maxWidth: '100%', maxHeight: '100%' }}
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik0xMiA2QzEwLjM0IDYgOSA3LjM0IDkgOUM5IDEwLjY2IDEwLjM0IDEyIDEyIDEyQzEzLjY2IDEyIDE1IDEwLjY2IDE1IDlDMTUgNy4zNCAxMy42NiA2IDEyIDZaTTEyIDRDMTQuNzYgNCAxNyA2LjI0IDE3IDlDMTcgMTEuNzYgMTQuNzYgMTQgMTIgMTRDOS4yNCAxNCA3IDExLjc2IDcgOUM3IDYuMjQgOS4yNCA0IDEyIDRaTTEyIDE2QzEwLjM0IDE2IDkgMTcuMzQgOSAxOUg3QzcgMTYuMjQgOS4yNCAxNCAxMiAxNEMxNC43NiAxNCAxNyAxNi4yNCAxNyAxOUgxNUMxNSAxNy4zNCAxMy42NiAxNiAxMiAxNloiIGZpbGw9IiM5Y2EzYWYiLz4KPC9zdmc+";
@@ -765,15 +761,19 @@ export default function Home() {
                            {/* 스토어 배지 이미지 */}
                            <div className="h-7 flex items-center">
                              {latestApp.store === "google-play" ? (
-                               <img 
+                               <Image 
                                  src="/google-play-badge.png" 
                                  alt="Google Play에서 다운로드"
+                                 width={120}
+                                 height={28}
                                  className="h-7 object-contain"
                                />
                              ) : (
-                               <img 
+                               <Image 
                                  src="/app-store-badge.png" 
                                  alt="App Store에서 다운로드"
+                                 width={120}
+                                 height={28}
                                  className="h-7 object-contain"
                                />
                              )}
@@ -859,7 +859,7 @@ export default function Home() {
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors">All Apps</div>
-                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors">See everything we've made</div>
+                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors">See everything we&apos;ve made</div>
                        </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleNewReleasesClick, e)} 
@@ -925,9 +925,11 @@ export default function Home() {
            
                        {/* 중앙 이미지 */}
             <div className="flex items-center justify-center py-8">
-              <img 
+              <Image 
                 src="/monk_cr.png" 
                 alt="Monk Character"
+                width={256}
+                height={256}
                 className="h-64 w-auto object-contain"
               />
             </div>
