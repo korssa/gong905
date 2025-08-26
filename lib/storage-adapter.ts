@@ -20,7 +20,6 @@ export const uploadToVercelBlob = async (file: File, prefix: string = ""): Promi
     // Vercel Blob에 업로드
     const blob = await put(fileName, file, {
       access: 'public',
-      handleUploadUrl: '/api/blob/upload', // 업로드 처리 API 엔드포인트
     });
 
     console.log('✅ Vercel Blob 업로드 완료:', { url: blob.url, fileName });
