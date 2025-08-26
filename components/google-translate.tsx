@@ -3,12 +3,24 @@
 import { useEffect } from 'react';
 
 // Google Translate 타입 정의
+interface GoogleTranslateOptions {
+  pageLanguage: string;
+  layout: string;
+  multilanguagePage: boolean;
+  autoDisplay: boolean;
+}
+
+interface GoogleTranslateElement {
+  // Google Translate Element의 기본 구조
+  [key: string]: unknown; // 인덱스 시그니처로 모든 속성 허용
+}
+
 interface GoogleTranslateWindow extends Window {
   googleTranslateElementInit?: () => void;
   google?: {
     translate?: {
       TranslateElement?: {
-        new (options: any, element: string): any;
+        new (options: GoogleTranslateOptions, element: string): GoogleTranslateElement;
         InlineLayout?: {
           HORIZONTAL?: string;
         };
