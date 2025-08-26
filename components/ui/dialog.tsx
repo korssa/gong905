@@ -85,7 +85,7 @@ function DialogContent({
           e.preventDefault()
           // 안전한 닫기 처리
           try {
-            const closeButton = e.currentTarget.querySelector('[data-radix-dialog-close]') as HTMLButtonElement
+            const closeButton = e.currentTarget?.querySelector('[data-radix-dialog-close]') as HTMLButtonElement
             if (closeButton) {
               closeButton.click()
             }
