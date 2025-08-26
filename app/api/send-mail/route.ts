@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         
         <div style="margin-top: 30px; padding: 15px; background: #f3f4f6; border-radius: 8px; font-size: 14px; color: #6b7280;">
           <p><strong>전송 시간:</strong> ${new Date().toLocaleString('ko-KR')}</p>
-          <p><strong>IP 주소:</strong> ${request.headers.get('x-forwarded-for') || request.ip || '알 수 없음'}</p>
+                     <p><strong>IP 주소:</strong> ${request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '알 수 없음'}</p>
         </div>
       </div>
     `;
