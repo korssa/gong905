@@ -128,7 +128,7 @@ export function ContentManager({
           </article>
 
           {/* 태그 */}
-          {selectedContent.tags?.length > 0 && (
+          {selectedContent.tags && selectedContent.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2 mt-6">
               {selectedContent.tags.map((tag, idx) => (
                 <span key={idx} className="text-xs px-2 py-0 rounded" style={{ backgroundColor: '#fff', color: '#000' }}>
