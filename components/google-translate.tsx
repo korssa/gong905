@@ -163,6 +163,7 @@ export function GoogleTranslate() {
         // 3단계: Google Translate API 완전 무력화
         try {
           if (typeof window.google !== 'undefined') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (window.google as any).translate = {
               TranslateElement: function() {
                 console.log('🚫 번역 엔진 차단됨 (관리자 모드)');
@@ -231,8 +232,11 @@ export function GoogleTranslate() {
         // Google Translate API 복원
         if (typeof window.google !== 'undefined' && (window.google as any).translate) {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (window.google as any).translate.TranslateElement;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (window.google as any).translate.translate;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (window.google as any).translate.translatePage;
             console.log('🔄 Google Translate API 복원됨');
           } catch (apiError) {
