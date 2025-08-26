@@ -478,7 +478,7 @@ export default function Home() {
         // 먼저 localStorage에서 로드
         const savedApps = localStorage.getItem('gallery-apps');
         if (savedApps) {
-          const parsedApps = JSON.parse(savedApps);
+          const parsedApps = JSON.parse(savedApps) as AppItem[];
           console.log('📱 localStorage에서 앱 로드됨:', parsedApps.length, '개');
           
           // 이미지 URL 검증 및 수정
