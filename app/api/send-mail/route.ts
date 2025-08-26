@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
 
     await transporter.sendMail(mailOptions);
 
-    console.log('✅ Mail sent successfully:', { type, name, email, subject });
+          // Mail sent successfully
 
     return NextResponse.json({ 
       success: true, 
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Mail sending failed:', error);
+    // Mail sending failed
     
     // 더 자세한 오류 정보 제공
     let errorMessage = 'Failed to send message. Please try again.';
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
       errorMessage = error.message;
     }
     
-    console.error('❌ Detailed error info:', {
+          // Detailed error info
       message: errorMessage,
       stack: error instanceof Error ? error.stack : 'No stack trace',
       env: {

@@ -404,9 +404,9 @@ export default function Home() {
       // localStorage에 저장
       localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
       
-      console.log("✅ 앱 업로드 및 저장 완료:", newApp.name);
+      // 앱 업로드 및 저장 완료
     } catch (error) {
-      console.error("Failed to upload app:", error);
+      // Failed to upload app
       alert("Failed to upload app. Please try again.");
     }
   };
@@ -416,11 +416,11 @@ export default function Home() {
       // 1. 삭제할 앱 정보 찾기
       const appToDelete = apps.find(app => app.id === id);
       if (!appToDelete) {
-        console.warn('삭제할 앱을 찾을 수 없습니다:', id);
+        // 삭제할 앱을 찾을 수 없습니다
         return;
       }
 
-      console.log('🗑️ 앱 삭제 시작:', appToDelete.name);
+      // 앱 삭제 시작
 
       // 2. 로컬 상태에서 즉시 제거 (UI 반응성)
       setApps(prev => prev.filter(app => app.id !== id));
@@ -448,13 +448,13 @@ export default function Home() {
         const parsedApps = JSON.parse(savedApps);
         const updatedApps = parsedApps.filter((app: AppItem) => app.id !== id);
         localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
-        console.log('💾 localStorage에서 앱 삭제됨:', id);
+        // localStorage에서 앱 삭제됨
       }
 
-      console.log('✅ 앱 완전 삭제 완료:', appToDelete.name);
+      // 앱 완전 삭제 완료
       
     } catch (error) {
-      console.error('❌ 앱 삭제 실패:', error);
+      // 앱 삭제 실패
       
       // 실패시 UI 상태 복원
       const savedApps = localStorage.getItem('gallery-apps');
@@ -479,25 +479,25 @@ export default function Home() {
         const savedApps = localStorage.getItem('gallery-apps');
         if (savedApps) {
           const parsedApps = JSON.parse(savedApps) as AppItem[];
-          console.log('📱 localStorage에서 앱 로드됨:', parsedApps.length, '개');
+          // localStorage에서 앱 로드됨
           
           // 이미지 URL 검증 및 수정
-          console.log('🔍 이미지 URL 검증 시작...');
+          // 이미지 URL 검증 시작
           const validatedApps = await validateAppsImages(parsedApps);
           
           // 검증된 앱들이 원본과 다르면 localStorage 업데이트
           if (JSON.stringify(validatedApps) !== JSON.stringify(parsedApps)) {
             localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
-            console.log('💾 무효한 이미지 URL 수정됨 - localStorage 업데이트');
+            // 무효한 이미지 URL 수정됨 - localStorage 업데이트
           }
           
           setApps(validatedApps);
-          console.log('✅ 앱 로드 및 이미지 검증 완료');
+          // 앱 로드 및 이미지 검증 완료
         } else {
           // localStorage가 비어있으면 샘플 데이터로 초기화
           setApps(sampleApps);
           localStorage.setItem('gallery-apps', JSON.stringify(sampleApps));
-          console.log('📱 샘플 데이터로 초기화됨:', sampleApps.length, '개');
+          // 샘플 데이터로 초기화됨
         }
 
                  // Featured Apps 로드
@@ -505,7 +505,7 @@ export default function Home() {
          if (savedFeaturedApps) {
            const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
            setFeaturedApps(parsedFeaturedApps);
-           console.log('⭐ Featured Apps 로드됨:', parsedFeaturedApps.length, '개');
+           // Featured Apps 로드됨
          }
 
          // Event Apps 로드
@@ -513,10 +513,10 @@ export default function Home() {
          if (savedEventApps) {
            const parsedEventApps = JSON.parse(savedEventApps);
            setEventApps(parsedEventApps);
-           console.log('🎉 Event Apps 로드됨:', parsedEventApps.length, '개');
+           // Event Apps 로드됨
          }
       } catch (error) {
-        console.error('❌ 앱 로드 실패:', error);
+        // 앱 로드 실패
         // 실패시 샘플 데이터 사용
         setApps(sampleApps);
       }
@@ -568,9 +568,9 @@ export default function Home() {
       localStorage.setItem('gallery-apps', JSON.stringify(newApps));
 
       setEditingApp(null);
-      console.log("✅ 앱 업데이트 및 저장 완료:", updatedApp.name);
+      // 앱 업데이트 및 저장 완료
     } catch (error) {
-      console.error("Failed to update app:", error);
+      // Failed to update app
       alert("Failed to update app. Please try again.");
     }
   };

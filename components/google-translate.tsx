@@ -49,23 +49,23 @@ export function GoogleTranslate() {
 
     // Google Translate 초기화 함수 정의
     window.googleTranslateElementInit = function() {
-      console.log('🌍 구글 번역 위젯 초기화 시작...');
+      // 구글 번역 위젯 초기화 시작
       
       try {
         const targetElement = document.getElementById('google_translate_element');
         if (!targetElement) {
-          console.error('❌ google_translate_element를 찾을 수 없습니다!');
+          // google_translate_element를 찾을 수 없습니다
           return;
         }
         
-        console.log('✅ 타겟 요소 찾음:', targetElement);
+        // 타겟 요소 찾음
         
         if (typeof window.google === 'undefined' || !window.google?.translate) {
-          console.error('❌ Google Translate API가 로드되지 않았습니다!');
+          // Google Translate API가 로드되지 않았습니다
           return;
         }
         
-        console.log('✅ Google Translate API 확인됨');
+        // Google Translate API 확인됨
         
         new window.google!.translate!.TranslateElement!({
           pageLanguage: 'ko',
@@ -74,9 +74,9 @@ export function GoogleTranslate() {
           autoDisplay: false
         }, 'google_translate_element');
         
-        console.log('🎉 구글 번역 위젯 생성 요청 완료!');
+        // 구글 번역 위젯 생성 요청 완료
       } catch (error) {
-        console.error('❌ 번역 위젯 생성 실패:', error);
+        // 번역 위젯 생성 실패
       }
     };
 
@@ -97,7 +97,7 @@ export function GoogleTranslate() {
     // 번역기 완전 비활성화 함수
     function disableTranslateWidget() {
       try {
-        console.log('🚫 번역기 완전 비활성화 시작...');
+        // 번역기 완전 비활성화 시작
         
         // body에 admin-mode 클래스 추가
         document.body.classList.add('admin-mode');
@@ -106,16 +106,16 @@ export function GoogleTranslate() {
         const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
         if (combo) {
           try {
-            console.log('🔄 현재 번역 상태:', combo.value);
+            // 현재 번역 상태
             combo.value = '';
             combo.selectedIndex = 0;
             
             const event = new Event('change', { bubbles: true });
             combo.dispatchEvent(event);
             
-            console.log('✅ 번역 상태 리셋 완료');
+            // 번역 상태 리셋 완료
           } catch (resetError) {
-            console.warn('번역 리셋 에러:', resetError);
+            // 번역 리셋 에러
           }
         }
         
@@ -135,7 +135,7 @@ export function GoogleTranslate() {
             'iframe[src*="translate.googleapis.com"]'
           ].join(','));
           
-          console.log('🗑️ 즉시 제거할 번역 요소 개수:', allTranslateElements.length);
+          // 즉시 제거할 번역 요소 개수
           
           allTranslateElements.forEach(function(el) {
             if (el && el.parentNode) {
@@ -155,9 +155,9 @@ export function GoogleTranslate() {
             }
           });
           
-          console.log('🚫 번역기 즉시 숨김 완료');
+          // 번역기 즉시 숨김 완료
         } catch (cleanupError) {
-          console.warn('번역기 정리 에러:', cleanupError);
+          // 번역기 정리 에러
         }
         
         // 3단계: Google Translate API 완전 무력화
@@ -166,7 +166,7 @@ export function GoogleTranslate() {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (window.google as any).translate = {
               TranslateElement: function() {
-                console.log('🚫 번역 엔진 차단됨 (관리자 모드)');
+                // 번역 엔진 차단됨 (관리자 모드)
                 return null;
               },
               translate: function() { return null; },
@@ -175,20 +175,20 @@ export function GoogleTranslate() {
           }
           
           window.googleTranslateElementInit = function() {
-            console.log('🚫 번역 초기화 차단됨 (관리자 모드)');
+            // 번역 초기화 차단됨 (관리자 모드)
           };
           
           document.documentElement.lang = 'ko';
           document.documentElement.setAttribute('translate', 'no');
           document.body.setAttribute('translate', 'no');
           
-          console.log('🚫 Google Translate API 완전 무력화 완료');
+          // Google Translate API 완전 무력화 완료
         } catch (apiError) {
-          console.warn('Google Translate API 무력화 에러:', apiError);
+          // Google Translate API 무력화 에러
         }
         
       } catch (error) {
-        console.error('번역기 비활성화 전체 에러:', error);
+        // 번역기 비활성화 전체 에러
       }
     }
 

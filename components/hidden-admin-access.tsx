@@ -78,7 +78,7 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
         alert("잘못된 관리자 비밀번호입니다.");
       }
     } catch (error) {
-      console.error("Login error:", error);
+      // Login error
       alert("로그인 중 오류가 발생했습니다.");
     }
   }, [login, password, onClose, isMounted]);
@@ -95,7 +95,7 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
         }
       }, 200);
     } catch (error) {
-      console.error("Logout error:", error);
+      // Logout error
     }
   }, [logout, onClose, isMounted]);
 

@@ -43,7 +43,7 @@ export function ContentManager({
         setContents(data.filter((c: ContentItem) => c.isPublished));
       }
     } catch (error) {
-      console.error("콘텐츠 로드 실패:", error);
+      // 콘텐츠 로드 실패
     }
   };
 

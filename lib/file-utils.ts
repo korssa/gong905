@@ -2,18 +2,13 @@ export const saveFileToLocal = async (file: File, prefix: string = ""): Promise<
   try {
     const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'local';
     
-    console.log('📤 파일 업로드 시작:', { 
-      name: file.name, 
-      size: file.size, 
-      prefix,
-      storageType 
-    });
+    // 파일 업로드 시작
 
     if (storageType === 'vercel-blob') {
       // Vercel Blob Storage 사용
       const { uploadFile } = await import('./storage-adapter');
       const url = await uploadFile(file, prefix);
-      console.log('✅ Vercel Blob 업로드 완료:', url);
+      // Vercel Blob 업로드 완료
       return url;
     } else {
       // 로컬 저장소 사용 (기본값)
@@ -36,22 +31,22 @@ export const saveFileToLocal = async (file: File, prefix: string = ""): Promise<
         throw new Error(result.error || 'Upload failed');
       }
       
-      console.log('✅ 로컬 업로드 완료:', result.url);
+      // 로컬 업로드 완료
       return result.url; // /uploads/filename 형태의 상대 경로 반환
     }
     
   } catch (error) {
-    console.error('❌ 파일 업로드 실패:', error);
+    // 파일 업로드 실패
     
     // 실패시 임시 Object URL로 폴백 (미리보기용)
-    console.log('⚠️ Object URL로 폴백');
+    // Object URL로 폴백
     const objectUrl = URL.createObjectURL(file);
     
     // 메모리 누수 방지를 위해 1분 후 해제
     setTimeout(() => {
       try {
         URL.revokeObjectURL(objectUrl);
-        console.log('🗑️ Object URL 자동 해제:', objectUrl);
+        // Object URL 자동 해제
       } catch (e) {
         // 해제 실패 무시
       }
@@ -63,18 +58,18 @@ export const saveFileToLocal = async (file: File, prefix: string = ""): Promise<
 
 export const deleteLocalFile = async (url: string): Promise<boolean> => {
   try {
-    console.log('🗑️ 파일 삭제 시작:', url);
+    // 파일 삭제 시작
 
     // Vercel Blob URL인 경우
     if (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com')) {
-      console.log('🗑️ Vercel Blob 파일 삭제:', url);
+      // Vercel Blob 파일 삭제
       const { deleteFile } = await import('./storage-adapter');
       return await deleteFile(url);
     }
     
     // /uploads/ 경로로 시작하는 로컬 서버 파일인 경우
     if (url.startsWith('/uploads/')) {
-      console.log('🗑️ 로컬 서버 파일 삭제:', url);
+      // 로컬 서버 파일 삭제
       
       const response = await fetch('/api/delete-file', {
         method: 'DELETE',
@@ -83,23 +78,23 @@ export const deleteLocalFile = async (url: string): Promise<boolean> => {
       });
       
       const result = response.ok;
-      console.log(result ? '✅ 로컬 파일 삭제 완료' : '❌ 로컬 파일 삭제 실패', url);
+      // 로컬 파일 삭제 완료/실패
       return result;
     }
     
     // Object URL인 경우 (blob: 로 시작)
     if (url.startsWith('blob:')) {
-      console.log('🗑️ Object URL 해제:', url);
+      // Object URL 해제
       URL.revokeObjectURL(url);
       return true;
     }
     
     // 외부 URL인 경우 (삭제 불가)
-    console.log('⚠️ 외부 URL은 삭제할 수 없음:', url);
+    // 외부 URL은 삭제할 수 없음
     return true; // 성공으로 처리 (실제로는 삭제할 필요 없음)
     
   } catch (error) {
-    console.error('❌ 파일 삭제 실패:', error);
+    // 파일 삭제 실패
     return false;
   }
 };

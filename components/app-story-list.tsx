@@ -95,7 +95,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         const data = await res.json();
         setContents(data.filter((c: ContentItem) => c.isPublished));
       } catch (err) {
-        console.error("불러오기 실패:", err);
+        // 불러오기 실패
       } finally {
         setLoading(false);
       }

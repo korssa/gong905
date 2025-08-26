@@ -40,7 +40,7 @@ export const validateImageUrl = async (url: string, fallbackUrl?: string): Promi
     return url;
   }
   
-  console.warn('⚠️ 유효하지 않은 이미지 URL:', url);
+          // 유효하지 않은 이미지 URL
   
   // 폴백 URL이 있으면 사용
   if (fallbackUrl) {
@@ -76,12 +76,12 @@ export const validateAppImages = async <T extends { iconUrl: string; screenshotU
 export const validateAppsImages = async <T extends { iconUrl: string; screenshotUrls: string[] }>(
   apps: T[]
 ): Promise<T[]> => {
-  console.log('🔍 앱 이미지 URL 검증 시작:', apps.length, '개');
+  // 앱 이미지 URL 검증 시작
   
   const validatedApps = await Promise.all(
     apps.map(app => validateAppImages(app))
   );
   
-  console.log('✅ 앱 이미지 URL 검증 완료');
+  // 앱 이미지 URL 검증 완료
   return validatedApps;
 };

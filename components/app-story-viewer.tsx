@@ -25,7 +25,7 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
         setStories(data.filter((story: ContentItem) => story.isPublished));
       }
     } catch (error) {
-      console.error('스토리 로드 오류:', error);
+      // 스토리 로드 오류
     }
   };
 

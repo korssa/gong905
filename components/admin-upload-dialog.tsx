@@ -329,7 +329,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                           window.adminModeChange(true);
                         }
                      } catch (error) {
-                       console.error('Store change error:', error);
+                       // Store change error
                      }
                    }}
                 >
@@ -363,7 +363,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                           }
                         }
                      } catch (error) {
-                       console.error('Status change error:', error);
+                       // Status change error
                      }
                    }}
                 >

@@ -5,13 +5,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
 
   try {
-    console.log('📤 Vercel Blob 업로드 핸들러 시작:', body.payload);
+    // Vercel Blob 업로드 핸들러 시작
 
     const jsonResponse = await handleUpload({
       body,
       request,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        console.log('🔐 Blob 토큰 생성:', { pathname, clientPayload });
+        // Blob 토큰 생성
         
         // 여기서 권한 검사를 할 수 있습니다
         // 예: 관리자 권한 확인
@@ -32,10 +32,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         };
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {
-        console.log('✅ Blob 업로드 완료:', { 
-          url: blob.url, 
-          pathname: blob.pathname 
-        });
+        // Blob 업로드 완료
 
         // 여기서 데이터베이스에 저장하거나 추가 처리를 할 수 있습니다
         // await saveToDatabase({
@@ -48,7 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
-    console.error('❌ Vercel Blob 업로드 에러:', error);
+    // Vercel Blob 업로드 에러
     
     return NextResponse.json(
       { error: (error as Error).message },
