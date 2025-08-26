@@ -73,9 +73,9 @@ export const validateAppImages = async <T extends { iconUrl: string; screenshotU
 /**
  * 앱 배열의 모든 이미지 URL을 검증하고 수정
  */
-export const validateAppsImages = async (
-  apps: { iconUrl: string; screenshotUrls: string[] }[]
-): Promise<{ iconUrl: string; screenshotUrls: string[] }[]> => {
+export const validateAppsImages = async <T extends { iconUrl: string; screenshotUrls: string[] }>(
+  apps: T[]
+): Promise<T[]> => {
   console.log('🔍 앱 이미지 URL 검증 시작:', apps.length, '개');
   
   const validatedApps = await Promise.all(
