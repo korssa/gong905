@@ -164,15 +164,6 @@ export async function POST(request: NextRequest) {
       errorMessage = error.message;
     }
     
-          // Detailed error info
-      message: errorMessage,
-      stack: error instanceof Error ? error.stack : 'No stack trace',
-      env: {
-        SMTP_USER: process.env.SMTP_USER ? 'Configured' : 'Not configured',
-        SMTP_PASS: process.env.SMTP_PASS ? 'Configured' : 'Not configured'
-      }
-    });
-    
     return NextResponse.json(
       { error: errorMessage },
       { status: 500 }
