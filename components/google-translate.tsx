@@ -12,6 +12,8 @@ interface GoogleTranslateOptions {
 
 interface GoogleTranslateElement {
   // Google Translate Element의 기본 구조
+  translate?: () => void;
+  restore?: () => void;
   [key: string]: unknown; // 인덱스 시그니처로 모든 속성 허용
 }
 
