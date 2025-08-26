@@ -2,6 +2,26 @@
 
 import { useEffect } from 'react';
 
+// Google Translate 타입 정의
+interface GoogleTranslateWindow extends Window {
+  googleTranslateElementInit?: () => void;
+  google?: {
+    translate?: {
+      TranslateElement?: {
+        new (options: any, element: string): any;
+        InlineLayout?: {
+          HORIZONTAL?: string;
+        };
+      };
+    };
+  };
+  adminModeChange?: (enabled: boolean) => void;
+}
+
+declare global {
+  interface Window extends GoogleTranslateWindow {}
+}
+
 export function GoogleTranslate() {
   useEffect(() => {
     // Google Translate 스크립트 동적 로드
@@ -11,7 +31,7 @@ export function GoogleTranslate() {
     document.head.appendChild(script);
 
     // Google Translate 초기화 함수 정의
-    (window as any).googleTranslateElementInit = function() {
+    window.googleTranslateElementInit = function() {
       console.log('🌍 구글 번역 위젯 초기화 시작...');
       
       try {
@@ -23,16 +43,16 @@ export function GoogleTranslate() {
         
         console.log('✅ 타겟 요소 찾음:', targetElement);
         
-        if (typeof (window as any).google === 'undefined' || !(window as any).google.translate) {
+        if (typeof window.google === 'undefined' || !window.google?.translate) {
           console.error('❌ Google Translate API가 로드되지 않았습니다!');
           return;
         }
         
         console.log('✅ Google Translate API 확인됨');
         
-        new (window as any).google.translate.TranslateElement({
+        new window.google!.translate!.TranslateElement!({
           pageLanguage: 'ko',
-          layout: (window as any).google.translate.TranslateElement.InlineLayout.HORIZONTAL,
+          layout: window.google!.translate!.TranslateElement!.InlineLayout!.HORIZONTAL!,
           multilanguagePage: true,
           autoDisplay: false
         }, 'google_translate_element');
@@ -51,7 +71,7 @@ export function GoogleTranslate() {
           const parsed = JSON.parse(adminState);
           return parsed.state?.isAuthenticated === true;
         }
-      } catch (error) {
+      } catch {
         // 에러 시 false 반환
       }
       return false;
@@ -112,7 +132,7 @@ export function GoogleTranslate() {
                 (el as HTMLElement).style.setProperty('left', '-9999px', 'important');
                 (el as HTMLElement).style.setProperty('width', '0', 'important');
                 (el as HTMLElement).style.setProperty('height', '0', 'important');
-              } catch (styleError) {
+              } catch {
                 // 스타일 설정 실패는 무시
               }
             }
@@ -125,8 +145,8 @@ export function GoogleTranslate() {
         
         // 3단계: Google Translate API 완전 무력화
         try {
-          if (typeof (window as any).google !== 'undefined') {
-            (window as any).google.translate = {
+          if (typeof window.google !== 'undefined') {
+            window.google.translate = {
               TranslateElement: function() {
                 console.log('🚫 번역 엔진 차단됨 (관리자 모드)');
                 return null;
@@ -136,7 +156,7 @@ export function GoogleTranslate() {
             };
           }
           
-          (window as any).googleTranslateElementInit = function() {
+          window.googleTranslateElementInit = function() {
             console.log('🚫 번역 초기화 차단됨 (관리자 모드)');
           };
           
@@ -192,11 +212,11 @@ export function GoogleTranslate() {
         }
         
         // Google Translate API 복원
-        if (typeof (window as any).google !== 'undefined' && (window as any).google.translate) {
+        if (typeof window.google !== 'undefined' && window.google.translate) {
           try {
-            delete (window as any).google.translate.TranslateElement;
-            delete (window as any).google.translate.translate;
-            delete (window as any).google.translate.translatePage;
+            delete window.google.translate.TranslateElement;
+            delete window.google.translate.translate;
+            delete window.google.translate.translatePage;
             console.log('🔄 Google Translate API 복원됨');
           } catch (apiError) {
             console.warn('Google Translate API 복원 에러:', apiError);
@@ -232,8 +252,8 @@ export function GoogleTranslate() {
           if (!widget.innerHTML.trim()) {
             console.log('🔄 빈 위젯 감지. 재초기화 시도...');
             setTimeout(function() {
-              if (typeof (window as any).googleTranslateElementInit === 'function') {
-                (window as any).googleTranslateElementInit();
+              if (typeof window.googleTranslateElementInit === 'function') {
+                window.googleTranslateElementInit();
               }
             }, 500);
           }
@@ -377,7 +397,7 @@ export function GoogleTranslate() {
     }
 
     // 전역 이벤트 리스너 등록
-    (window as any).adminModeChange = handleAdminModeChange;
+    window.adminModeChange = handleAdminModeChange;
 
     // 언어 매핑 및 피드백 차단 함수
     function startLanguageMapping() {
@@ -503,9 +523,9 @@ export function GoogleTranslate() {
             if (combo && combo.options) {
               Array.from(combo.options).forEach(function(option) {
                 const text = option.text;
-                if (text && languageMap[text] && !(option as any).dataset.updated) {
+                if (text && languageMap[text] && !(option as HTMLOptionElement).dataset.updated) {
                   option.text = languageMap[text];
-                  (option as any).dataset.updated = 'true';
+                  (option as HTMLOptionElement).dataset.updated = 'true';
                 }
               });
             }
