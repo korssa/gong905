@@ -11,8 +11,15 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-  // Allow blob storage subdomains like "<token>.public.blob.vercel-storage.com"
-  hostname: '**.blob.vercel-storage.com',
+        // Allow vercel blob public subdomains like "<token>.public.blob.vercel-storage.com"
+        hostname: '*.public.blob.vercel-storage.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        // fallback: allow any single-level subdomain under blob.vercel-storage.com
+        hostname: '*.blob.vercel-storage.com',
         port: '',
         pathname: '/**',
       },
