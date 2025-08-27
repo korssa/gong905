@@ -611,7 +611,16 @@ export default function Home() {
   // 전역 admin mode 트리거 등록 (AdminUploadDialog 및 HiddenAdminAccess에서 호출)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    // Initialize handler
+    // Initialize handler and seed adminVisible from session storage only
+    const initial = (() => {
+      try {
+        return sessionStorage.getItem('admin-session-active') === '1';
+      } catch {
+        return false;
+      }
+    })();
+    setAdminVisible(Boolean(initial));
+
     window.adminModeChange = (visible: boolean) => {
       setAdminVisible(Boolean(visible));
     };

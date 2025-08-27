@@ -74,8 +74,9 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
           if (isMounted) {
             onClose();
             // Notify page to show admin controls
-            if (typeof window !== 'undefined' && window.adminModeChange) {
-              window.adminModeChange(true);
+            if (typeof window !== 'undefined') {
+              if (window.adminModeChange) window.adminModeChange(true);
+              try { sessionStorage.setItem('admin-session-active', '1'); } catch {}
             }
           }
         }, 200);
@@ -97,8 +98,9 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
       timeoutRef.current = setTimeout(() => {
         if (isMounted) {
           onClose();
-          if (typeof window !== 'undefined' && window.adminModeChange) {
-            window.adminModeChange(false);
+          if (typeof window !== 'undefined') {
+            if (window.adminModeChange) window.adminModeChange(false);
+            try { sessionStorage.removeItem('admin-session-active'); } catch {}
           }
         }
       }, 200);
