@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Eye, EyeOff, Calendar, User, FileText, ArrowLeft } from "lucide-react";
 import { ContentItem, ContentFormData, ContentType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
+import { uploadFile } from "@/lib/storage-adapter";
 
 interface NewsManagerProps {
   onBack?: () => void;
@@ -117,18 +118,12 @@ export function NewsManager({ onBack }: NewsManagerProps) {
 
       // 이미지가 선택된 경우 업로드
       if (selectedImage) {
-        const imageFormData = new FormData();
-        imageFormData.append('file', selectedImage);
-
-        const imageResponse = await fetch('/api/content/upload-image', {
-          method: 'POST',
-          body: imageFormData,
-        });
-
-        if (imageResponse.ok) {
-          const imageData = await imageResponse.json();
-          imageUrl = imageData.url;
-        } else {
+        try {
+          // 통합 업로드 함수 사용: 클라이언트는 서버 API로 전송하고 서버가 Vercel Blob에 업로드합니다.
+          imageUrl = await uploadFile(selectedImage, 'content-images');
+          console.log('✅ 업로드된 이미지 URL:', imageUrl);
+        } catch (err) {
+          console.error('이미지 업로드 실패:', err);
           throw new Error('이미지 업로드에 실패했습니다.');
         }
       }

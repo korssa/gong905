@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, Eye, ArrowLeft } from "lucide-react";
 import { ContentItem, ContentType } from "@/types";
+import { uploadFile } from "@/lib/storage-adapter";
 
 interface ContentManagerProps {
   type: ContentType;
