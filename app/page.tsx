@@ -20,6 +20,10 @@ import { saveFileToLocal, generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
 import Image from "next/image";
 
+const isBlobUrl = (url?: string) => {
+  return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
+};
+
 // 샘플 앱 데이터
 const sampleApps: AppItem[] = [
   {
@@ -679,6 +683,7 @@ export default function Home() {
                                src={latestApp.screenshotUrls[0]}
                                alt={latestApp.name}
                                fill
+                               unoptimized={isBlobUrl(latestApp.screenshotUrls[0])}
                                className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
                              />
                           ) : (
@@ -704,6 +709,7 @@ export default function Home() {
                             alt={latestApp.name}
                             width={48}
                             height={48}
+                            unoptimized={isBlobUrl(latestApp.iconUrl)}
                             className="w-12 h-12 rounded-xl object-cover object-center flex-shrink-0"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
@@ -764,18 +770,20 @@ export default function Home() {
                            <div className="h-7 flex items-center">
                              {latestApp.store === "google-play" ? (
                                <Image 
-                                 src="/google-play-badge.png" 
-                                 alt="Google Play에서 다운로드"
-                                 width={120}
-                                 height={28}
-                                 className="h-7 object-contain"
-                               />
+                                   src="/google-play-badge.png" 
+                                   alt="Google Play에서 다운로드"
+                                   width={120}
+                                   height={28}
+                                   unoptimized={isBlobUrl('/google-play-badge.png')}
+                                   className="h-7 object-contain"
+                                 />
                              ) : (
                                <Image 
                                  src="/app-store-badge.png" 
                                  alt="App Store에서 다운로드"
                                  width={120}
                                  height={28}
+                                 unoptimized={isBlobUrl('/app-store-badge.png')}
                                  className="h-7 object-contain"
                                />
                              )}
