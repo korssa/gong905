@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Download, Share2, Star, ExternalLink, Trash2, Edit } from "lucide-react";
+import { Heart, Download, Star, Trash2, Edit } from "lucide-react";
 import { useState } from "react";
 import { AppItem } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
@@ -34,18 +34,16 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const getStoreIcon = (store: string) => {
-  if (store === "google-play") {
-    return "🤖"; // Android icon
-  }
-  return "🍎"; // Apple icon
-};
+// ...existing code...
 
 export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onToggleEvent, isFeatured = false, isEvent = false }: AppCardProps) {
   const [isLiked, setIsLiked] = useState(false);
-  const [likes, setLikes] = useState(app.likes);
   const { t } = useLanguage();
   const { isAuthenticated } = useAdmin();
+
+  const isBlobUrl = (url?: string) => {
+    return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
+  };
 
   // 번역 피드백 차단 함수
   const blockTranslationFeedback = () => {
@@ -88,7 +86,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
         (el as HTMLElement).style.top = '-9999px';
         (el as HTMLElement).style.zIndex = '-9999';
       });
-    } catch (error) {
+  } catch {
       // 에러 무시
     }
 
@@ -106,15 +104,14 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
             (el as HTMLElement).style.pointerEvents = 'none';
           }
         });
-      } catch (error) {
+      } catch {
         // 에러 무시
       }
-    }, 50);
+  }, 50);
   };
 
   const handleLike = () => {
     setIsLiked(!isLiked);
-    setLikes(prev => isLiked ? prev - 1 : prev + 1);
   };
 
   const handleStoreView = () => {
@@ -161,6 +158,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
             alt={app.name}
             width={96}
             height={96}
+            unoptimized={isBlobUrl(app.iconUrl)}
             className="w-full h-full object-cover object-center rounded-xl"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -298,6 +296,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
               src={app.screenshotUrls[0]}
               alt={app.name}
               fill
+              unoptimized={isBlobUrl(app.screenshotUrls?.[0])}
               className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
