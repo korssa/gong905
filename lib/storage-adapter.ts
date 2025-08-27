@@ -121,7 +121,17 @@ export const uploadFile = async (file: File, prefix: string = ""): Promise<strin
     (window.location.hostname.includes('vercel.app') || 
      window.location.hostname.includes('vercel-storage.com'));
 
-  const finalStorageType = isVercelEnvironment ? 'vercel-blob' : storageType;
+  // 강제 로컬 업로드 플래그: 배포 환경에서 로컬(public/uploads)에 파일을 저장하고
+  // 수동으로 레포지토리에 커밋/리디플로이하려는 경우 사용합니다.
+  // 설정 방법: NEXT_PUBLIC_FORCE_LOCAL_UPLOAD=1 (빌드/배포 환경 변수)
+  const forceLocal = (process.env.NEXT_PUBLIC_FORCE_LOCAL_UPLOAD === '1') || (process.env.FORCE_LOCAL_UPLOAD === '1');
+
+  let finalStorageType = storageType;
+  if (isVercelEnvironment && !forceLocal) {
+    finalStorageType = 'vercel-blob';
+  } else if (forceLocal) {
+    finalStorageType = 'local';
+  }
   console.log("🔍 Storage adapter - Final storage type:", finalStorageType);
 
   if (finalStorageType === 'vercel-blob') {
