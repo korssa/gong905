@@ -1,20 +1,12 @@
 export const saveFileToLocal = async (file: File, prefix: string = ""): Promise<string> => {
   try {
-    // 환경 변수 확인 및 로깅
     const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'local';
-    console.log('🔧 Storage Type:', storageType);
-    console.log('📁 File upload started:', { name: file.name, size: file.size, prefix });
 
     if (storageType === 'vercel-blob') {
-      // Vercel Blob Storage 사용
-      console.log('☁️ Using Vercel Blob Storage');
       const { uploadFile } = await import('./storage-adapter');
       const url = await uploadFile(file, prefix);
-      console.log('✅ Vercel Blob upload completed:', url);
       return url;
     } else {
-      // 로컬 저장소 사용 (기본값)
-      console.log('💾 Using Local Storage');
       const formData = new FormData();
       formData.append('file', file);
       formData.append('prefix', prefix);
@@ -25,35 +17,26 @@ export const saveFileToLocal = async (file: File, prefix: string = ""): Promise<
       });
       
       if (!response.ok) {
-        console.error('❌ Upload failed:', response.statusText);
         throw new Error(`Upload failed: ${response.statusText}`);
       }
       
       const result = await response.json();
       
       if (!result.success) {
-        console.error('❌ Upload result error:', result.error);
         throw new Error(result.error || 'Upload failed');
       }
       
-      console.log('✅ Local upload completed:', result.url);
-      return result.url; // /uploads/filename 형태의 상대 경로 반환
+      return result.url;
     }
     
   } catch (error) {
-    console.error('❌ File upload failed:', error);
-    
-    // 실패시 임시 Object URL로 폴백 (미리보기용)
-    console.log('🔄 Falling back to Object URL');
     const objectUrl = URL.createObjectURL(file);
     
-    // 메모리 누수 방지를 위해 1분 후 해제
     setTimeout(() => {
       try {
         URL.revokeObjectURL(objectUrl);
-        console.log('🧹 Object URL cleaned up');
       } catch (e) {
-        console.error('❌ Object URL cleanup failed:', e);
+        // 에러 무시
       }
     }, 60000);
     

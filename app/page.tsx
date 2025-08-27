@@ -18,7 +18,6 @@ import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
 import { saveFileToLocal, generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
-import { runSystemDiagnostic } from "@/lib/debug-utils";
 import Image from "next/image";
 
 // 샘플 앱 데이터
@@ -476,11 +475,6 @@ export default function Home() {
   useEffect(() => {
     const loadApps = async () => {
       try {
-        // 시스템 진단 실행 (개발 모드에서만)
-        if (process.env.NODE_ENV === 'development') {
-          await runSystemDiagnostic();
-        }
-        
         // 먼저 localStorage에서 로드
         const savedApps = localStorage.getItem('gallery-apps');
         if (savedApps) {
