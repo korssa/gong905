@@ -7,8 +7,31 @@ import { put, del, head } from '@vercel/blob';
 /**
  * Vercel Blob 환경 변수 확인
  */
+/**
+ * Vercel Blob 토큰 검색: 우선적으로 BLOB_READ_WRITE_TOKEN을 찾고,
+ * 없다면 배포 과정에서 다른 키명으로 설정한 (예: vercel_blob_rw_... ) 값을 찾아 반환합니다.
+ * (토큰 값 자체는 로그에 찍지 않습니다.)
+ */
+const findVercelBlobToken = (): string | undefined => {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+
+  if (process.env.VERCEL_BLOB_READ_WRITE_TOKEN) return process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
+
+  // 탐색: 환경변수 키 중에 vercel_blob_rw_ 로 시작하는 키가 있으면 사용
+  for (const k of Object.keys(process.env)) {
+    if (!k) continue;
+    const lk = k.toLowerCase();
+    if (lk.startsWith('vercel_blob_rw_') || lk.includes('vercel_blob_rw_')) {
+      // 값은 민감하므로 반환만 하고 로그에는 직접 출력하지 않습니다.
+      return process.env[k];
+    }
+  }
+
+  return undefined;
+};
+
 const checkVercelBlobConfig = () => {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  const token = findVercelBlobToken();
   if (!token) {
     throw new Error('BLOB_READ_WRITE_TOKEN environment variable is required for Vercel Blob Storage');
   }
@@ -106,7 +129,8 @@ export const uploadFile = async (file: File, prefix: string = ""): Promise<strin
     // 서버 API에 파일을 전달하고 서버에서 Vercel Blob에 업로드하도록 위임합니다.
     if (typeof window !== 'undefined') {
       const formData = new FormData();
-      formData.append('file', file as any);
+  // File 타입은 브라우저 환경에서 실제 File/Blob입니다. 명시적 캐스팅으로 lint 경고 제거
+  formData.append('file', file as Blob);
       formData.append('prefix', prefix);
 
       const res = await fetch('/api/blob/upload', {

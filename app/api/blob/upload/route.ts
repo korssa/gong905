@@ -16,14 +16,27 @@ export async function POST(request: NextRequest) {
 
     console.log('📁 Vercel Blob 업로드 시작:', { name: file.name, size: file.size, prefix });
 
-    // BLOB_READ_WRITE_TOKEN 확인
-    const token = process.env.BLOB_READ_WRITE_TOKEN;
-    if (!token) {
-      return NextResponse.json(
-        { error: 'BLOB_READ_WRITE_TOKEN environment variable is required' },
-        { status: 500 }
-      );
-    }
+      // BLOB_READ_WRITE_TOKEN 확인 (민감값 직접 로그에 노출하지 않음)
+      const getToken = () => {
+        if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+        if (process.env.VERCEL_BLOB_READ_WRITE_TOKEN) return process.env.VERCEL_BLOB_READ_WRITE_TOKEN;
+        for (const k of Object.keys(process.env)) {
+          const lk = k.toLowerCase();
+          if (lk.startsWith('vercel_blob_rw_') || lk.includes('vercel_blob_rw_')) {
+            return process.env[k];
+          }
+        }
+        return undefined;
+      };
+
+      const token = getToken();
+      if (!token) {
+        console.error('❌ BLOB token not found in environment variables');
+        return NextResponse.json(
+          { error: 'BLOB_READ_WRITE_TOKEN environment variable is required' },
+          { status: 500 }
+        );
+      }
 
     // 고유한 파일명 생성
     const timestamp = Date.now();
