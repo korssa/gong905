@@ -1,6 +1,12 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
+
+declare global {
+  interface Window {
+    adminModeChange?: (visible: boolean) => void;
+  }
+}
 import { Header } from "@/components/layout/header";
 import { AppGallery } from "@/components/app-gallery";
 import { HiddenAdminAccess } from "@/components/hidden-admin-access";
@@ -8,11 +14,11 @@ import { EditAppDialog } from "@/components/edit-app-dialog";
 import { AdminUploadDialog } from "@/components/admin-upload-dialog";
 import { SnowAnimation } from "@/components/snow-animation";
 import { MailForm } from "@/components/mail-form";
-import { ContentManager } from "@/components/content-manager";
+// ContentManager is imported in other files; not used directly here.
 import { AppStoryList } from "@/components/app-story-list";
 import { NewsList } from "@/components/news-list";
 import { GoogleTranslate } from "@/components/google-translate";
-import { Button } from "@/components/ui/button";
+// Button not used in this file
 import { AppItem, AppFormData, FilterType, ContentType } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
@@ -171,6 +177,7 @@ export default function Home() {
   const [currentContentType, setCurrentContentType] = useState<ContentType | null>(null);
   const { t } = useLanguage();
   const { isAuthenticated } = useAdmin();
+  const [adminVisible, setAdminVisible] = useState(false);
 
 
 
@@ -215,7 +222,7 @@ export default function Home() {
         (el as HTMLElement).style.top = '-9999px';
         (el as HTMLElement).style.zIndex = '-9999';
       });
-    } catch (error) {
+    } catch {
       // 에러 무시
     }
     
@@ -233,7 +240,7 @@ export default function Home() {
             (el as HTMLElement).style.pointerEvents = 'none';
           }
         });
-      } catch (error) {
+      } catch {
         // 에러 무시
       }
     }, 50);
@@ -410,8 +417,8 @@ export default function Home() {
       
       // 앱 업로드 및 저장 완료
       alert("✅ 앱이 성공적으로 업로드되었습니다!");
-    } catch (error) {
-      console.error("❌ 앱 업로드 실패:", error);
+    } catch {
+      // console.error("❌ 앱 업로드 실패:");
       alert("❌ 앱 업로드에 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -458,16 +465,16 @@ export default function Home() {
 
       // 앱 완전 삭제 완료
       
-    } catch (error) {
+    } catch {
       // 앱 삭제 실패
-      
+
       // 실패시 UI 상태 복원
       const savedApps = localStorage.getItem('gallery-apps');
       if (savedApps) {
         const parsedApps = JSON.parse(savedApps);
         setApps(parsedApps);
       }
-      
+
       alert('앱 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
@@ -520,7 +527,7 @@ export default function Home() {
            setEventApps(parsedEventApps);
            // Event Apps 로드됨
          }
-      } catch (error) {
+      } catch {
         // 앱 로드 실패
         // 실패시 샘플 데이터 사용
         setApps(sampleApps);
@@ -575,8 +582,8 @@ export default function Home() {
       setEditingApp(null);
       // 앱 업데이트 및 저장 완료
       alert("✅ 앱이 성공적으로 업데이트되었습니다!");
-    } catch (error) {
-      console.error("❌ 앱 업데이트 실패:", error);
+    } catch {
+      // console.error("❌ 앱 업데이트 실패:");
       alert("❌ 앱 업데이트에 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -600,6 +607,24 @@ export default function Home() {
       }
     }, 100);
   };
+
+  // 전역 admin mode 트리거 등록 (AdminUploadDialog 및 HiddenAdminAccess에서 호출)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    // Initialize handler
+    window.adminModeChange = (visible: boolean) => {
+      setAdminVisible(Boolean(visible));
+    };
+
+    return () => {
+      try {
+        // cleanup
+        delete window.adminModeChange;
+      } catch {
+        // ignore
+      }
+    };
+  }, []);
 
   // News 클릭 핸들러
   const handleNewsClick = () => {
@@ -954,7 +979,7 @@ export default function Home() {
             </span>
             
                          {/* 관리자 모드일 때만 표시되는 업로드 버튼 */}
-             {isAuthenticated && (
+              {isAuthenticated && adminVisible && (
                <div className="mt-4 flex justify-center">
                  <AdminUploadDialog 
                    onUpload={handleAppUpload}

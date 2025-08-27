@@ -31,7 +31,7 @@ export function UploadDialog() {
 
   const handleUpload = () => {
     // TODO: 실제 업로드 로직 구현
-    console.log("업로드:", { files: selectedFiles, title, tags });
+  // console.log("업로드:", { files: selectedFiles, title, tags });
     setIsOpen(false);
     setSelectedFiles([]);
     setTitle("");

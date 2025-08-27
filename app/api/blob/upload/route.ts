@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('📁 Vercel Blob 업로드 시작:', { name: file.name, size: file.size, prefix });
+  // console.log('📁 Vercel Blob 업로드 시작:', { name: file.name, size: file.size, prefix });
 
       // BLOB_READ_WRITE_TOKEN 확인 (민감값 직접 로그에 노출하지 않음)
       const getToken = () => {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
       const token = getToken();
       if (!token) {
-        console.error('❌ BLOB token not found in environment variables');
+  // console.error('❌ BLOB token not found in environment variables');
         return NextResponse.json(
           { error: 'BLOB_READ_WRITE_TOKEN environment variable is required' },
           { status: 500 }
@@ -44,14 +44,14 @@ export async function POST(request: NextRequest) {
     const fileExtension = file.name.split('.').pop();
     const fileName = `${prefix}_${timestamp}_${randomId}.${fileExtension}`;
 
-    console.log('📝 생성된 파일명:', fileName);
+  // console.log('📝 생성된 파일명:', fileName);
 
     // Vercel Blob에 업로드
     const blob = await put(fileName, file, {
       access: 'public',
     });
 
-    console.log('✅ Vercel Blob 업로드 완료:', blob.url);
+  // console.log('✅ Vercel Blob 업로드 완료:', blob.url);
 
     return NextResponse.json({ 
       success: true, 
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Vercel Blob 업로드 실패:', error);
+  // console.error('❌ Vercel Blob 업로드 실패:', error);
     
     return NextResponse.json(
       { 

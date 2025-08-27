@@ -8,9 +8,9 @@ const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads', 'content-images
 // 업로드 디렉토리 생성
 async function ensureUploadDir() {
   try {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  } catch (error) {
-    console.error('업로드 디렉토리 생성 오류:', error);
+  await fs.mkdir(UPLOAD_DIR, { recursive: true });
+  } catch {
+    // 오류 세부 정보는 로깅하지 않음 (production)
   }
 }
 
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
       filename: filename,
     });
 
-  } catch (error) {
-    console.error('이미지 업로드 오류:', error);
+  } catch {
+    // 오류 세부 정보는 로깅하지 않음 (production)
     return NextResponse.json({ error: '이미지 업로드에 실패했습니다.' }, { status: 500 });
   }
 }

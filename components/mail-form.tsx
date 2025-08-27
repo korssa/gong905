@@ -104,8 +104,8 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
       
              try {
          result = JSON.parse(responseText);
-       } catch (parseError) {
-         console.error('JSON parsing failed:', responseText);
+       } catch {
+         // console.error('JSON parsing failed:', responseText);
          throw new Error('Unable to process server response.');
        }
 
@@ -128,22 +128,22 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
       if (type !== "events") {
         alert(result.message || "Message sent successfully!");
       }
-               } catch (error) {
-             console.error("Mail sending failed:", error);
+               } catch (err) {
+                 // console.error("Mail sending failed:", err);
              
-             // 더 자세한 오류 정보 표시
-             let errorMessage = "Failed to send message. Please try again.";
-             if (error instanceof Error) {
-               errorMessage = error.message;
-             }
+                 // 더 자세한 오류 정보 표시
+                 let errorMessage = "Failed to send message. Please try again.";
+                 if (err instanceof Error) {
+                   errorMessage = err.message;
+                 }
              
-                           console.error("Detailed error info:", {
-                message: errorMessage,
-                stack: error instanceof Error ? error.stack : "No stack trace"
-              });
-             
-             alert(errorMessage);
-           } finally {
+                 // console.error("Detailed error info:", {
+                 //   message: errorMessage,
+                 //   stack: err instanceof Error ? err.stack : "No stack trace"
+                 // });
+            
+                 alert(errorMessage);
+               } finally {
       setIsSubmitting(false);
     }
   };

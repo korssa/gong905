@@ -45,28 +45,28 @@ export const uploadToVercelBlob = async (file: File, prefix: string = ""): Promi
   try {
     // 서버 측에서만 직접 Vercel Blob SDK를 사용하도록 토큰 존재 검사
     checkVercelBlobConfig();
-    console.log("🚀 Vercel Blob 업로드 시작:", { fileName: file.name, size: file.size, prefix });
+  // console.log("🚀 Vercel Blob 업로드 시작:", { fileName: file.name, size: file.size, prefix });
 
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(2, 15);
     const fileExtension = file.name.split('.').pop();
     const fileName = `${prefix}_${timestamp}_${randomId}.${fileExtension}`;
     
-    console.log("📝 생성된 파일명:", fileName);
+  // console.log("📝 생성된 파일명:", fileName);
 
-    console.log("📤 Vercel Blob put() 호출 시작...");
+  // console.log("📤 Vercel Blob put() 호출 시작...");
     const blob = await put(fileName, file, {
       access: 'public',
     });
 
-    console.log("✅ Vercel Blob 업로드 완료:", blob.url);
+  // console.log("✅ Vercel Blob 업로드 완료:", blob.url);
     return blob.url;
 
-  } catch (error) {
-    console.error("❌ Vercel Blob 업로드 실패:", error);
-    console.error("❌ 에러 타입:", typeof error);
-    console.error("❌ 에러 메시지:", error instanceof Error ? error.message : String(error));
-    throw new Error(`Vercel Blob upload failed: ${error}`);
+  } catch (err) {
+    // console.error("❌ Vercel Blob 업로드 실패:", err);
+    // console.error("❌ 에러 타입:", typeof err);
+    // console.error("❌ 에러 메시지:", err instanceof Error ? err.message : String(err));
+    throw new Error(`Vercel Blob upload failed: ${String(err)}`);
   }
 };
 
@@ -114,7 +114,7 @@ export const uploadFile = async (file: File, prefix: string = ""): Promise<strin
                      process.env.STORAGE_TYPE || 
                      'local';
 
-  console.log("🔍 Storage adapter - Storage type:", storageType);
+  // console.log("🔍 Storage adapter - Storage type:", storageType);
 
   // Vercel 환경에서 Vercel Blob Storage 사용
   const isVercelEnvironment = typeof window !== 'undefined' && 
@@ -132,7 +132,7 @@ export const uploadFile = async (file: File, prefix: string = ""): Promise<strin
   } else if (forceLocal) {
     finalStorageType = 'local';
   }
-  console.log("🔍 Storage adapter - Final storage type:", finalStorageType);
+  // console.log("🔍 Storage adapter - Final storage type:", finalStorageType);
 
   if (finalStorageType === 'vercel-blob') {
     // 브라우저(클라이언트) 환경에서는 비밀 토큰을 노출하지 않도록
@@ -173,25 +173,25 @@ export const uploadFile = async (file: File, prefix: string = ""): Promise<strin
  */
 export const deleteFile = async (url: string): Promise<boolean> => {
   try {
-    console.log("🗑️ 파일 삭제 시작:", url);
+  // console.log("🗑️ 파일 삭제 시작:", url);
     
     // Vercel Blob Storage URL인 경우
     if (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com')) {
-      console.log("☁️ Vercel Blob Storage 삭제");
+  // console.log("☁️ Vercel Blob Storage 삭제");
       return await deleteFromVercelBlob(url);
     }
     
     // 로컬 업로드 파일인 경우
     if (url.startsWith('/uploads/')) {
-      console.log("📁 로컬 파일 삭제");
+  // console.log("📁 로컬 파일 삭제");
       return await deleteFromLocal(url);
     }
     
     // 외부 URL인 경우 (삭제 불가)
-    console.log("ℹ️ 외부 URL - 삭제 불가능");
+  // console.log("ℹ️ 외부 URL - 삭제 불가능");
     return true; // 성공으로 처리
   } catch (error) {
-    console.error("❌ 파일 삭제 실패:", error);
+  // console.error("❌ 파일 삭제 실패:", error);
     return false;
   }
 };

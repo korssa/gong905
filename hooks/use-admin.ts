@@ -32,23 +32,5 @@ export const useAdmin = create<AdminStore>()(
 );
 
 // 개발용: 관리자 모드 강제 활성화 (테스트 후 제거)
-if (typeof window !== 'undefined') {
-  // localStorage 직접 설정
-  localStorage.setItem('admin-storage', JSON.stringify({
-    state: { isAuthenticated: true },
-    version: 0
-  }));
-  
-  // DOM이 로드된 후 실행
-  setTimeout(() => {
-    try {
-      const store = useAdmin.getState();
-      if (!store.isAuthenticated) {
-        store.login('gongmyung2024!');
-      }
-    } catch (error) {
-      const store = useAdmin.getState();
-      store.login('gongmyung2024!');
-    }
-  }, 100);
-}
+// Note: Removed development-only auto-login to prevent admin mode being enabled on initial page load.
+// If you need a development shortcut, enable it explicitly during testing only.

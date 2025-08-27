@@ -89,8 +89,8 @@ function DialogContent({
             if (closeButton) {
               closeButton.click()
             }
-          } catch (error) {
-            console.warn('Dialog close error:', error)
+          } catch {
+            // console.warn('Dialog close error');
           }
         }}
         onPointerDownOutside={(e) => {

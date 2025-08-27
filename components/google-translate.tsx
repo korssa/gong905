@@ -195,10 +195,10 @@ export function GoogleTranslate() {
     // 번역기 안전 활성화 함수  
     function enableTranslateWidget() {
       try {
-        console.log('🟢 번역기 활성화 시작...');
+        // console.log('🟢 번역기 활성화 시작...');
         
         document.body.classList.remove('admin-mode');
-        console.log('🟢 admin-mode 클래스 제거됨');
+        // console.log('🟢 admin-mode 클래스 제거됨');
         
         // 번역 차단 속성 제거
         try {
@@ -224,9 +224,9 @@ export function GoogleTranslate() {
             }
           });
           
-          console.log('🟢 번역 차단 속성 제거 완료');
+          // console.log('🟢 번역 차단 속성 제거 완료');
         } catch (unblockError) {
-          console.warn('번역 차단 해제 에러:', unblockError);
+          // console.warn('번역 차단 해제 에러:', unblockError);
         }
         
         // Google Translate API 복원
@@ -239,22 +239,22 @@ export function GoogleTranslate() {
             delete (window.google as any).translate.translate;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (window.google as any).translate.translatePage;
-            console.log('🔄 Google Translate API 복원됨');
-          } catch (apiError) {
-            console.warn('Google Translate API 복원 에러:', apiError);
+            // console.log('🔄 Google Translate API 복원됨');
+          } catch {
+            // Google Translate API 복원 에러
           }
         }
         
         // 위젯이 제거되었다면 재생성
         let widget = document.getElementById('google_translate_element');
         if (!widget) {
-          console.log('📱 번역 위젯이 제거됨. 재생성 중...');
+          // console.log('📱 번역 위젯이 제거됨. 재생성 중...');
           
           const headerWidgetContainer = document.querySelector('header .translate-widget-horizontal');
           if (headerWidgetContainer) {
             headerWidgetContainer.id = 'google_translate_element';
             widget = headerWidgetContainer as HTMLElement;
-            console.log('✅ 위젯 컨테이너 재설정됨');
+            // console.log('✅ 위젯 컨테이너 재설정됨');
           }
         }
         
@@ -269,10 +269,10 @@ export function GoogleTranslate() {
           widget.style.width = '';
           widget.style.height = '';
           
-          console.log('🟢 위젯 스타일 복원됨');
+          // console.log('🟢 위젯 스타일 복원됨');
           
           if (!widget.innerHTML.trim()) {
-            console.log('🔄 빈 위젯 감지. 재초기화 시도...');
+            // console.log('🔄 빈 위젯 감지. 재초기화 시도...');
             setTimeout(function() {
               if (typeof window.googleTranslateElementInit === 'function') {
                 window.googleTranslateElementInit();
@@ -289,7 +289,7 @@ export function GoogleTranslate() {
               '.skiptranslate:not(.goog-te-balloon-frame)'
             ].join(','));
             
-            console.log('🟢 복원할 핵심 번역 요소들:', coreTranslateElements.length);
+            // console.log('🟢 복원할 핵심 번역 요소들:', coreTranslateElements.length);
             
             coreTranslateElements.forEach(function(el) {
               try {
@@ -303,23 +303,23 @@ export function GoogleTranslate() {
                 // 개별 복원 실패는 무시
               }
             });
-          } catch (restoreError) {
-            console.warn('번역 요소 복원 에러:', restoreError);
+          } catch {
+            // 번역 요소 복원 에러
           }
         }, 200);
         
-        console.log('✅ 번역기 활성화 완료 (일반 모드)');
-      } catch (error) {
-        console.error('번역기 활성화 전체 에러:', error);
+        // console.log('✅ 번역기 활성화 완료 (일반 모드)');
+      } catch {
+        // 번역기 활성화 전체 에러
       }
     }
 
     // 관리자 모드 이벤트 핸들러
     function handleAdminModeChange(isAdminMode: boolean) {
-      console.log('🎯 관리자 모드 변경 이벤트:', isAdminMode);
+      // 관리자 모드 변경 이벤트
       
       if (isAdminMode) {
-        console.log('🚫 관리자 모드 진입 - 즉시 번역 차단');
+        // console.log('🚫 관리자 모드 진입 - 즉시 번역 차단');
         disableTranslateWidget();
         
         // Select 컴포넌트 정상 작동 보장
@@ -344,14 +344,14 @@ export function GoogleTranslate() {
                 (el as HTMLElement).style.setProperty('transform', 'none', 'important');
                 el.removeAttribute('translate');
                 el.className = el.className.replace(' notranslate', '');
-              } catch (e) {
-                // 개별 복원 실패 무시
-              }
+              } catch {
+                  // 개별 복원 실패 무시
+                }
             });
             
-            console.log('✅ Select 컴포넌트', selectElements.length, '개 정상 작동 보장');
-          } catch (selectError) {
-            console.warn('Select 복원 에러:', selectError);
+            // console.log('✅ Select 컴포넌트', selectElements.length, '개 정상 작동 보장');
+          } catch {
+            // Select 복원 에러
           }
         }, 100);
         
@@ -377,9 +377,9 @@ export function GoogleTranslate() {
             }
           });
           
-          console.log('🚫 선택적 번역 차단 속성 설정 완료 (Select 제외)');
-        } catch (blockError) {
-          console.warn('번역 차단 설정 에러:', blockError);
+          // console.log('🚫 선택적 번역 차단 속성 설정 완료 (Select 제외)');
+        } catch {
+          // 번역 차단 설정 에러
         }
         
         // 번역된 텍스트 즉시 복원
@@ -394,7 +394,7 @@ export function GoogleTranslate() {
             ].join(','));
             
             if (translatedElements.length > 0) {
-              console.log('🔄 번역된 요소', translatedElements.length, '개 즉시 복원');
+              // console.log('🔄 번역된 요소', translatedElements.length, '개 즉시 복원');
               translatedElements.forEach(function(el) {
                 try {
                   (el as HTMLElement).style.setProperty('color', '', 'important');
@@ -407,13 +407,13 @@ export function GoogleTranslate() {
                 }
               });
             }
-          } catch (textResetError) {
-            console.warn('텍스트 복원 에러:', textResetError);
+          } catch {
+            // 텍스트 복원 에러
           }
         }, 50);
         
       } else {
-        console.log('✅ 일반 모드 진입 - 번역 활성화');
+        // console.log('✅ 일반 모드 진입 - 번역 활성화');
         enableTranslateWidget();
       }
     }
@@ -572,53 +572,52 @@ export function GoogleTranslate() {
           }
         });
         
-      } catch (error) {
-        console.warn('언어 매핑 에러:', error);
+          } catch {
+        // 언어 매핑 에러
       }
     }
 
     // 페이지 로드 후 위젯 확인 및 언어 매핑 시작
     window.addEventListener('load', function() {
       // 즉시 관리자 모드 체크 (딜레이 없이)
-      console.log('🔍 페이지 로드시 즉시 관리자 모드 체크:', isAdminMode());
+      // console.log('🔍 페이지 로드시 즉시 관리자 모드 체크:', isAdminMode());
       if (isAdminMode()) {
-        console.log('🚫 관리자 모드 감지 - 즉시 번역기 비활성화');
+        // console.log('🚫 관리자 모드 감지 - 즉시 번역기 비활성화');
         disableTranslateWidget();
       } else {
-        console.log('✅ 일반 모드 - 번역기 활성화 준비');
+        // console.log('✅ 일반 모드 - 번역기 활성화 준비');
       }
       
       // 추가 안전 체크 (100ms 후)
       setTimeout(function() {
         if (isAdminMode()) {
-          console.log('🔄 관리자 모드 재확인 - 번역기 재비활성화');
+          // console.log('🔄 관리자 모드 재확인 - 번역기 재비활성화');
           disableTranslateWidget();
         }
       }, 100);
       
       setTimeout(function() {
-        const element = document.getElementById('google_translate_element');
-        const combo = document.querySelector('.goog-te-combo');
-        console.log('페이지 로드 후 상태:', {
-          element: !!element,
-          combo: !!combo,
-          innerHTML: element ? element.innerHTML.substring(0, 100) : 'null'
-        });
+  const combo = document.querySelector('.goog-te-combo');
+  // console.log('페이지 로드 후 상태:', {
+  //   element: !!element,
+  //   combo: !!combo,
+  //   innerHTML: element ? element.innerHTML.substring(0, 100) : 'null'
+  // });
         
         // 번역 위젯이 정상 로드되었으면 언어 매핑 시작
         if (combo && (combo as HTMLSelectElement).options && (combo as HTMLSelectElement).options.length > 1) {
-          console.log('✅ 번역 위젯 확인됨. 언어 매핑 및 피드백 차단 시작...');
+          // console.log('✅ 번역 위젯 확인됨. 언어 매핑 및 피드백 차단 시작...');
           startLanguageMapping();
           
           // 관리자 모드가 아니면 번역기 확실히 활성화
           if (!isAdminMode()) {
-            console.log('🟢 번역 위젯 로드 후 일반 모드 활성화');
+            // console.log('🟢 번역 위젯 로드 후 일반 모드 활성화');
             enableTranslateWidget();
           }
           
-          console.log('✅ 번역 위젯 초기화 완료 - 이벤트 기반 관리자 모드 제어 준비됨');
+          // console.log('✅ 번역 위젯 초기화 완료 - 이벤트 기반 관리자 모드 제어 준비됨');
         } else {
-          console.log('⚠️ 번역 위젯이 아직 준비되지 않음. 3초 후 재시도...');
+          // console.log('⚠️ 번역 위젯이 아직 준비되지 않음. 3초 후 재시도...');
           setTimeout(arguments.callee, 3000);
         }
       }, 2000);

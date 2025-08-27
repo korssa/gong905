@@ -18,8 +18,8 @@ async function ensureDataFile() {
     } catch {
       await fs.writeFile(CONTENT_FILE_PATH, JSON.stringify([]));
     }
-  } catch (error) {
-    console.error('데이터 파일 초기화 오류:', error);
+  } catch {
+    // console.error('데이터 파일 초기화 오류:');
   }
 }
 
@@ -29,8 +29,8 @@ async function loadContents(): Promise<ContentItem[]> {
     await ensureDataFile();
     const data = await fs.readFile(CONTENT_FILE_PATH, 'utf-8');
     return JSON.parse(data);
-  } catch (error) {
-    console.error('콘텐츠 로드 오류:', error);
+  } catch {
+    // console.error('콘텐츠 로드 오류:');
     return [];
   }
 }
@@ -40,9 +40,9 @@ async function saveContents(contents: ContentItem[]) {
   try {
     await ensureDataFile();
     await fs.writeFile(CONTENT_FILE_PATH, JSON.stringify(contents, null, 2));
-  } catch (error) {
-    console.error('콘텐츠 저장 오류:', error);
-    throw error;
+  } catch {
+    // console.error('콘텐츠 저장 오류');
+    throw new Error('콘텐츠 저장 오류');
   }
 }
 
@@ -70,8 +70,8 @@ export async function GET(request: NextRequest) {
     filteredContents.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
 
     return NextResponse.json(filteredContents);
-  } catch (error) {
-    console.error('콘텐츠 조회 오류:', error);
+  } catch {
+    // console.error('콘텐츠 조회 오류:');
     return NextResponse.json({ error: '콘텐츠 조회에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -100,8 +100,8 @@ export async function POST(request: NextRequest) {
     await saveContents(contents);
 
     return NextResponse.json(newContent, { status: 201 });
-  } catch (error) {
-    console.error('콘텐츠 생성 오류:', error);
+  } catch {
+    // console.error('콘텐츠 생성 오류');
     return NextResponse.json({ error: '콘텐츠 생성에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -128,8 +128,8 @@ export async function PUT(request: NextRequest) {
     await saveContents(contents);
 
     return NextResponse.json(contents[contentIndex]);
-  } catch (error) {
-    console.error('콘텐츠 업데이트 오류:', error);
+  } catch {
+    // console.error('콘텐츠 업데이트 오류');
     return NextResponse.json({ error: '콘텐츠 업데이트에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -155,8 +155,8 @@ export async function DELETE(request: NextRequest) {
     await saveContents(contents);
 
     return NextResponse.json({ message: '콘텐츠가 삭제되었습니다.' });
-  } catch (error) {
-    console.error('콘텐츠 삭제 오류:', error);
+  } catch {
+    // console.error('콘텐츠 삭제 오류');
     return NextResponse.json({ error: '콘텐츠 삭제에 실패했습니다.' }, { status: 500 });
   }
 }

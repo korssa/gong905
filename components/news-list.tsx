@@ -94,8 +94,8 @@ export function NewsList({ type, onBack }: NewsListProps) {
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
         setContents(data.filter((c: ContentItem) => c.isPublished));
-      } catch (err) {
-        console.error("불러오기 실패:", err);
+      } catch {
+        // console.error("불러오기 실패");
       } finally {
         setLoading(false);
       }

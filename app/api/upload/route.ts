@@ -15,15 +15,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('📁 로컬 파일 업로드 시작:', { name: file.name, size: file.size, prefix });
+  // console.log('📁 로컬 파일 업로드 시작:', { name: file.name, size: file.size, prefix });
 
     // uploads 디렉토리 확인/생성
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     try {
       await fs.access(uploadsDir);
-    } catch {
+      } catch {
       await fs.mkdir(uploadsDir, { recursive: true });
-      console.log('📂 uploads 디렉토리 생성됨');
+      // console.log('📂 uploads 디렉토리 생성됨');
     }
 
     // 고유한 파일명 생성
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // 공개 URL 생성 (상대 경로)
     const publicUrl = `/uploads/${fileName}`;
 
-    console.log('✅ 로컬 파일 업로드 완료:', { fileName, size: buffer.length, url: publicUrl });
+  // console.log('✅ 로컬 파일 업로드 완료:', { fileName, size: buffer.length, url: publicUrl });
 
     return NextResponse.json({ 
       success: true, 
@@ -50,14 +50,14 @@ export async function POST(request: NextRequest) {
       size: buffer.length
     });
 
-  } catch (error) {
-    console.error('❌ 로컬 파일 업로드 실패:', error);
-    
+  } catch (err) {
+    // console.error('❌ 로컬 파일 업로드 실패:', err);
+
     return NextResponse.json(
       { 
         success: false, 
         error: 'Failed to upload file',
-        details: error instanceof Error ? error.message : String(error)
+        details: err instanceof Error ? err.message : String(err)
       },
       { status: 500 }
     );

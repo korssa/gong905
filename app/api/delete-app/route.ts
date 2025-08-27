@@ -6,7 +6,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { id, iconUrl, screenshotUrls } = await request.json();
     
-    console.log('🗑️ 서버에서 앱 삭제 시작:', { id, iconUrl, screenshotUrls });
+  // console.log('🗑️ 서버에서 앱 삭제 시작:', { id, iconUrl, screenshotUrls });
 
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     const deletedFiles: string[] = [];
@@ -18,10 +18,10 @@ export async function DELETE(request: NextRequest) {
         const iconPath = path.join(process.cwd(), 'public', iconUrl);
         await fs.unlink(iconPath);
         deletedFiles.push(iconUrl);
-        console.log('✅ 아이콘 파일 삭제됨:', iconUrl);
-      } catch (error) {
+        // console.log('✅ 아이콘 파일 삭제됨:', iconUrl);
+      } catch {
         const errorMsg = `아이콘 삭제 실패: ${iconUrl}`;
-        console.warn('⚠️', errorMsg, error);
+        // console.warn('⚠️', errorMsg);
         errors.push(errorMsg);
       }
     }
@@ -34,10 +34,10 @@ export async function DELETE(request: NextRequest) {
             const screenshotPath = path.join(process.cwd(), 'public', screenshotUrl);
             await fs.unlink(screenshotPath);
             deletedFiles.push(screenshotUrl);
-            console.log('✅ 스크린샷 파일 삭제됨:', screenshotUrl);
-          } catch (error) {
+            // console.log('✅ 스크린샷 파일 삭제됨:', screenshotUrl);
+          } catch {
             const errorMsg = `스크린샷 삭제 실패: ${screenshotUrl}`;
-            console.warn('⚠️', errorMsg, error);
+            // console.warn('⚠️', errorMsg);
             errors.push(errorMsg);
           }
         }
@@ -52,8 +52,8 @@ export async function DELETE(request: NextRequest) {
       try {
         const data = await fs.readFile(appsJsonPath, 'utf8');
         apps = JSON.parse(data);
-      } catch (readError) {
-        console.log('📝 apps.json 파일이 없거나 읽기 실패, 새로 생성됩니다.');
+      } catch {
+        // console.log('📝 apps.json 파일이 없거나 읽기 실패, 새로 생성됩니다.');
       }
 
       // 해당 ID의 앱 제거
@@ -61,15 +61,15 @@ export async function DELETE(request: NextRequest) {
       apps = apps.filter((app: { id: string }) => app.id !== id);
       
       if (apps.length !== originalLength) {
-        await fs.writeFile(appsJsonPath, JSON.stringify(apps, null, 2));
-        console.log('✅ apps.json에서 앱 정보 삭제됨:', id);
+  await fs.writeFile(appsJsonPath, JSON.stringify(apps, null, 2));
+  // console.log('✅ apps.json에서 앱 정보 삭제됨:', id);
       } else {
-        console.log('⚠️ apps.json에서 해당 ID를 찾을 수 없음:', id);
+  // console.log('⚠️ apps.json에서 해당 ID를 찾을 수 없음:', id);
       }
 
     } catch (jsonError) {
-      const errorMsg = `apps.json 업데이트 실패: ${jsonError}`;
-      console.error('❌', errorMsg);
+  const errorMsg = `apps.json 업데이트 실패: ${jsonError}`;
+  // console.error('❌', errorMsg);
       errors.push(errorMsg);
     }
 
@@ -84,18 +84,18 @@ export async function DELETE(request: NextRequest) {
       result.message += ` (${errors.length}개 에러 발생)`;
     }
 
-    console.log('🎉 앱 삭제 완료:', result);
+  // console.log('🎉 앱 삭제 완료:', result);
 
     return NextResponse.json(result);
 
-  } catch (error) {
-    console.error('❌ 앱 삭제 API 에러:', error);
+  } catch (err) {
+    // console.error('❌ 앱 삭제 API 에러:', err);
     
     return NextResponse.json(
       { 
         success: false, 
         error: 'Failed to delete app',
-        details: error instanceof Error ? error.message : String(error)
+        details: err instanceof Error ? err.message : String(err)
       },
       { status: 500 }
     );

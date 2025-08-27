@@ -19,7 +19,7 @@ class URLManager {
       const url = URL.createObjectURL(file);
       this.urls.add(url);
       return url;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -33,8 +33,8 @@ class URLManager {
     try {
       URL.revokeObjectURL(url);
       this.urls.delete(url);
-    } catch (error) {
-      console.warn('URL 해제 실패:', error);
+    } catch {
+      // ignore revoke errors
     }
   }
 
@@ -54,7 +54,7 @@ class URLManager {
       urlsToRevoke.forEach(url => {
         try {
           URL.revokeObjectURL(url);
-        } catch (error) {
+        } catch {
           // 정리 시 에러 무시
         }
       });
@@ -98,8 +98,8 @@ if (typeof window !== 'undefined') {
     globalManagers.forEach(manager => {
       try {
         manager.dispose();
-      } catch (error) {
-        // 페이지 언로드 시 에러 무시
+           } catch {
+             // 페이지 언로드 시 에러 무시
       }
     });
     globalManagers.clear();

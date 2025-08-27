@@ -14,28 +14,28 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.log('🗑️ 파일 삭제 시작:', url);
+  // console.log('🗑️ 파일 삭제 시작:', url);
 
     // Vercel Blob Storage URL인 경우
     if (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com')) {
-      console.log('☁️ Vercel Blob Storage 파일 삭제');
+  // console.log('☁️ Vercel Blob Storage 파일 삭제');
       
       try {
-        await del(url);
-        console.log('✅ Vercel Blob Storage 파일 삭제 완료');
+  await del(url);
+  // console.log('✅ Vercel Blob Storage 파일 삭제 완료');
         
         return NextResponse.json({ 
           success: true,
           deletedFile: url,
           storageType: 'vercel-blob'
         });
-      } catch (error) {
-        console.error('❌ Vercel Blob Storage 파일 삭제 실패:', error);
+      } catch (err) {
+        // console.error('❌ Vercel Blob Storage 파일 삭제 실패:', err);
         return NextResponse.json(
           { 
             success: false, 
             error: 'Failed to delete Vercel Blob file',
-            details: error instanceof Error ? error.message : String(error)
+            details: err instanceof Error ? err.message : String(err)
           },
           { status: 500 }
         );
@@ -44,7 +44,7 @@ export async function DELETE(request: NextRequest) {
     
     // 로컬 업로드 파일인 경우
     if (url.startsWith('/uploads/')) {
-      console.log('📁 로컬 파일 삭제');
+  // console.log('📁 로컬 파일 삭제');
       
       const fileName = url.split('/').pop();
       const filePath = path.join(process.cwd(), 'public', url);
@@ -61,7 +61,7 @@ export async function DELETE(request: NextRequest) {
 
       // 파일 삭제
       await fs.unlink(filePath);
-      console.log('✅ 로컬 파일 삭제 완료:', fileName);
+  // console.log('✅ 로컬 파일 삭제 완료:', fileName);
 
       return NextResponse.json({ 
         success: true,
@@ -71,21 +71,21 @@ export async function DELETE(request: NextRequest) {
     }
 
     // 외부 URL인 경우 (삭제 불가)
-    console.log('ℹ️ 외부 URL - 삭제 불가능');
+  // console.log('ℹ️ 외부 URL - 삭제 불가능');
     return NextResponse.json({ 
       success: true,
       message: 'External URL - deletion not required',
       storageType: 'external'
     });
 
-  } catch (error) {
-    console.error('❌ 파일 삭제 실패:', error);
+  } catch (err) {
+    // console.error('❌ 파일 삭제 실패:', err);
     
     return NextResponse.json(
       { 
         success: false, 
         error: 'Failed to delete file',
-        details: error instanceof Error ? error.message : String(error)
+        details: err instanceof Error ? err.message : String(err)
       },
       { status: 500 }
     );

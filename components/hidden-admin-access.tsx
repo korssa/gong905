@@ -24,7 +24,8 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
   const [password, setPassword] = useState("");
   const [isMounted, setIsMounted] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { t } = useLanguage();
+  // language hook kept for future translations
+  useLanguage();
   const { login, logout, isAuthenticated } = useAdmin();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -72,12 +73,16 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
         timeoutRef.current = setTimeout(() => {
           if (isMounted) {
             onClose();
+            // Notify page to show admin controls
+            if (typeof window !== 'undefined' && window.adminModeChange) {
+              window.adminModeChange(true);
+            }
           }
         }, 200);
       } else {
         alert("잘못된 관리자 비밀번호입니다.");
       }
-    } catch (error) {
+    } catch {
       // Login error
       alert("로그인 중 오류가 발생했습니다.");
     }
@@ -92,9 +97,12 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
       timeoutRef.current = setTimeout(() => {
         if (isMounted) {
           onClose();
+          if (typeof window !== 'undefined' && window.adminModeChange) {
+            window.adminModeChange(false);
+          }
         }
       }, 200);
-    } catch (error) {
+    } catch {
       // Logout error
     }
   }, [logout, onClose, isMounted]);

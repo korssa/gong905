@@ -3,17 +3,17 @@
  */
 export const isValidImageUrl = async (url: string): Promise<boolean> => {
   try {
-    console.log("🔍 이미지 URL 검증 시작:", url);
+  // console.log("🔍 이미지 URL 검증 시작:", url);
     
     // HTTPS/HTTP URL
     if (url.startsWith('https://') || url.startsWith('http://')) {
-      console.log("✅ HTTPS/HTTP URL 확인됨");
+  // console.log("✅ HTTPS/HTTP URL 확인됨");
       return true;
     }
     
     // Vercel Blob Storage URL
     if (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com')) {
-      console.log("✅ Vercel Blob Storage URL 확인됨");
+  // console.log("✅ Vercel Blob Storage URL 확인됨");
       return true;
     }
     
@@ -24,25 +24,25 @@ export const isValidImageUrl = async (url: string): Promise<boolean> => {
          window.location.hostname === '127.0.0.1');
       
       if (isDevelopment) {
-        console.log("✅ 로컬 업로드 경로 (개발환경)");
+  // console.log("✅ 로컬 업로드 경로 (개발환경)");
         const response = await fetch(url, { method: 'HEAD' });
         return response.ok;
       } else {
-        console.log("❌ 로컬 업로드 경로 (프로덕션에서는 무효)");
+  // console.log("❌ 로컬 업로드 경로 (프로덕션에서는 무효)");
         return false;
       }
     }
     
     // Object URL (blob:)
     if (url.startsWith('blob:')) {
-      console.log("❌ Object URL (blob:) - 무효");
+  // console.log("❌ Object URL (blob:) - 무효");
       return false;
     }
     
-    console.log("❌ 알 수 없는 URL 형식");
+  // console.log("❌ 알 수 없는 URL 형식");
     return false;
-  } catch (error) {
-    console.error("❌ 이미지 URL 검증 에러:", error);
+  } catch {
+    // console.error("❌ 이미지 URL 검증 에러");
     return false;
   }
 };
@@ -51,21 +51,21 @@ export const isValidImageUrl = async (url: string): Promise<boolean> => {
  * 이미지 URL을 검증하고 필요시 placeholder로 교체
  */
 export const validateImageUrl = async (url: string, fallbackUrl?: string): Promise<string> => {
-  console.log("🔍 이미지 URL 검증 및 수정 시작:", url);
+  // console.log("🔍 이미지 URL 검증 및 수정 시작:", url);
   
   const isValid = await isValidImageUrl(url);
   
   if (isValid) {
-    console.log("✅ 이미지 URL 유효함:", url);
+  // console.log("✅ 이미지 URL 유효함:", url);
     return url;
   }
   
   if (fallbackUrl) {
-    console.log("⚠️ fallback URL 사용:", fallbackUrl);
+  // console.log("⚠️ fallback URL 사용:", fallbackUrl);
     return fallbackUrl;
   }
   
-  console.log("⚠️ placeholder 이미지 사용");
+  // console.log("⚠️ placeholder 이미지 사용");
   return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zNSA0MEw1MCA1NUw2NSA0MEg3NVY2MEg2NUw1MCA3NUwzNSA2MEgyNVY0MEgzNVoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+';
 };
 
