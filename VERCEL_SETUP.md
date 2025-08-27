@@ -13,7 +13,7 @@
 3. `Blob` 선택 → 데이터베이스 생성
 4. 생성된 Blob에서 `BLOB_READ_WRITE_TOKEN` 복사
 
-## ⚙️ **환경 변수 설정**
+## ⚙️ **환경 변수 설정 (중요!)**
 
 ### Vercel 대시보드에서 설정:
 ```bash
@@ -22,13 +22,29 @@
 # 필수: Vercel Blob Storage 토큰
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxxxxxx
 
-# 스토리지 타입 (vercel-blob 또는 local)
+# 필수: 스토리지 타입 설정 (vercel-blob으로 설정)
 STORAGE_TYPE=vercel-blob
 NEXT_PUBLIC_STORAGE_TYPE=vercel-blob
 
 # 선택사항: 도메인 설정
 NEXT_PUBLIC_VERCEL_URL=your-app.vercel.app
 ```
+
+### 🚨 **중요: 이미지 업로드 문제 해결**
+Vercel 배포 후 이미지가 새로고침 시 사라지는 문제를 해결하려면:
+
+1. **환경 변수 확인**:
+   - `STORAGE_TYPE=vercel-blob` ✅
+   - `NEXT_PUBLIC_STORAGE_TYPE=vercel-blob` ✅
+   - `BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxx` ✅
+
+2. **Vercel 대시보드에서 재배포**:
+   - Settings → Environment Variables 저장 후
+   - Deployments → Redeploy
+
+3. **브라우저 개발자 도구 확인**:
+   - Console에서 "🔧 Storage Type: vercel-blob" 메시지 확인
+   - "☁️ Using Vercel Blob Storage" 메시지 확인
 
 ### 로컬 개발용 (.env.local):
 ```bash
@@ -63,6 +79,53 @@ git push origin main
    - 로컬: `/uploads/filename`
    - Vercel Blob: `https://xxx.blob.vercel-storage.com/filename`
 
+## 🔍 **문제 해결**
+
+### 이미지 업로드 후 새로고침 시 사라지는 문제:
+
+#### 1. 환경 변수 확인
+```bash
+# Vercel 대시보드 → Settings → Environment Variables
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxxxxxx  # ✅ 필수
+STORAGE_TYPE=vercel-blob                        # ✅ 필수
+NEXT_PUBLIC_STORAGE_TYPE=vercel-blob            # ✅ 필수
+```
+
+#### 2. 브라우저 개발자 도구 확인
+- F12 → Console 탭
+- 이미지 업로드 시 다음 메시지들 확인:
+  ```
+  🔧 Storage Type: vercel-blob
+  ☁️ Using Vercel Blob Storage
+  ✅ Vercel Blob upload completed: https://xxx.blob.vercel-storage.com/xxx
+  ```
+
+#### 3. Vercel Blob Storage 상태 확인
+- Vercel 대시보드 → Storage → Blob
+- 업로드된 파일들이 표시되는지 확인
+
+#### 4. 재배포 후 테스트
+```bash
+# 환경 변수 변경 후
+# Vercel 대시보드 → Deployments → Redeploy
+```
+
+### 업로드 실패시:
+1. `BLOB_READ_WRITE_TOKEN` 확인
+2. Vercel 대시보드에서 Blob Storage 상태 확인
+3. 환경 변수 `NEXT_PUBLIC_STORAGE_TYPE` 확인
+4. 브라우저 개발자 도구에서 에러 로그 확인
+
+### 이미지 로드 실패시:
+1. 업로드된 파일의 URL 형식 확인
+2. Vercel Blob의 `access: 'public'` 설정 확인
+3. CORS 설정 확인
+
+### 비용 관리:
+1. Vercel 대시보드에서 사용량 모니터링
+2. 불필요한 파일 정기적 삭제
+3. 이미지 압축 고려
+
 ## 📊 **스토리지 비교**
 
 | 특징 | 로컬 스토리지 | Vercel Blob |
@@ -95,24 +158,6 @@ NEXT_PUBLIC_STORAGE_TYPE=vercel-blob
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_prod_xxx
 ```
 
-## 🔍 **문제 해결**
-
-### 업로드 실패시:
-1. `BLOB_READ_WRITE_TOKEN` 확인
-2. Vercel 대시보드에서 Blob Storage 상태 확인
-3. 환경 변수 `NEXT_PUBLIC_STORAGE_TYPE` 확인
-4. 브라우저 개발자 도구에서 에러 로그 확인
-
-### 이미지 로드 실패시:
-1. 업로드된 파일의 URL 형식 확인
-2. Vercel Blob의 `access: 'public'` 설정 확인
-3. CORS 설정 확인
-
-### 비용 관리:
-1. Vercel 대시보드에서 사용량 모니터링
-2. 불필요한 파일 정기적 삭제
-3. 이미지 압축 고려
-
 ## 📈 **모니터링**
 
 ### Vercel 대시보드에서 확인:
@@ -137,3 +182,4 @@ vercel logs your-app --follow
 - ✅ 전 세계 CDN으로 빠른 로딩
 - ✅ 자동 백업 및 중복 제거
 - ✅ 무제한 확장 가능
+- ✅ 새로고침 후에도 이미지 유지
