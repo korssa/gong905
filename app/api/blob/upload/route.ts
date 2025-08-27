@@ -1,55 +1,62 @@
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextRequest, NextResponse } from 'next/server';
+import { put } from '@vercel/blob';
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadBody;
-
+export async function POST(request: NextRequest) {
   try {
-    // Vercel Blob 업로드 핸들러 시작
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    const prefix = formData.get('prefix') as string || '';
 
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
-        // Blob 토큰 생성
-        
-        // 여기서 권한 검사를 할 수 있습니다
-        // 예: 관리자 권한 확인
-        // const isAdmin = await verifyAdminToken(request);
-        // if (!isAdmin) {
-        //   throw new Error('Unauthorized');
-        // }
+    if (!file) {
+      return NextResponse.json(
+        { error: 'No file provided' },
+        { status: 400 }
+      );
+    }
 
-        return {
-          allowedContentTypes: [
-            'image/jpeg',
-            'image/png', 
-            'image/jpg',
-            'image/webp',
-            'image/gif'
-          ],
-          maximumSizeInBytes: 10 * 1024 * 1024, // 10MB
-        };
-      },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        // Blob 업로드 완료
+    console.log('📁 Vercel Blob 업로드 시작:', { name: file.name, size: file.size, prefix });
 
-        // 여기서 데이터베이스에 저장하거나 추가 처리를 할 수 있습니다
-        // await saveToDatabase({
-        //   url: blob.url,
-        //   filename: blob.pathname,
-        //   uploadedAt: new Date()
-        // });
-      },
+    // BLOB_READ_WRITE_TOKEN 확인
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      return NextResponse.json(
+        { error: 'BLOB_READ_WRITE_TOKEN environment variable is required' },
+        { status: 500 }
+      );
+    }
+
+    // 고유한 파일명 생성
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 15);
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `${prefix}_${timestamp}_${randomId}.${fileExtension}`;
+
+    console.log('📝 생성된 파일명:', fileName);
+
+    // Vercel Blob에 업로드
+    const blob = await put(fileName, file, {
+      access: 'public',
     });
 
-    return NextResponse.json(jsonResponse);
+    console.log('✅ Vercel Blob 업로드 완료:', blob.url);
+
+    return NextResponse.json({ 
+      success: true, 
+      url: blob.url,
+      fileName,
+      size: file.size
+    });
+
   } catch (error) {
-    // Vercel Blob 업로드 에러
+    console.error('❌ Vercel Blob 업로드 실패:', error);
     
     return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 }
+      { 
+        success: false, 
+        error: 'Failed to upload file to Vercel Blob',
+        details: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
     );
   }
 }

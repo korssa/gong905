@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('📁 파일 업로드 시작:', { name: file.name, size: file.size, prefix });
+    console.log('📁 로컬 파일 업로드 시작:', { name: file.name, size: file.size, prefix });
 
     // uploads 디렉토리 확인/생성
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // 공개 URL 생성 (상대 경로)
     const publicUrl = `/uploads/${fileName}`;
 
-    console.log('✅ 파일 업로드 완료:', { fileName, size: buffer.length, url: publicUrl });
+    console.log('✅ 로컬 파일 업로드 완료:', { fileName, size: buffer.length, url: publicUrl });
 
     return NextResponse.json({ 
       success: true, 
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ 파일 업로드 실패:', error);
+    console.error('❌ 로컬 파일 업로드 실패:', error);
     
     return NextResponse.json(
       { 

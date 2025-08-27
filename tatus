@@ -1,0 +1,5 @@
+[33m2717cad[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mkorssa/gongmyung[m[33m, [m[1;31morigin/korssa/monk-watch[m[33m, [m[1;31morigin/korssa/gongmyung[m[33m, [m[1;32mkorssa/monk-watch[m[33m)[m  불필요한 로그 제거 및 코드 정리
+[33m65fd877[m  Vercel 배포 후 이미지 업로드 문제 해결 - 환경 변수 검증 및 진단 도구 추가
+[33m6b3229c[m Fix syntax error in send-mail route: remove malformed error handling code
+[33md6226e0[m Fix Vercel Blob upload: remove unsupported handleUploadUrl property
+[33m3b7ecad[m Remove all console logs and debugging statements from project

@@ -405,9 +405,10 @@ export default function Home() {
       localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
       
       // 앱 업로드 및 저장 완료
+      alert("✅ 앱이 성공적으로 업로드되었습니다!");
     } catch (error) {
-      // Failed to upload app
-      alert("Failed to upload app. Please try again.");
+      console.error("❌ 앱 업로드 실패:", error);
+      alert("❌ 앱 업로드에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -569,9 +570,10 @@ export default function Home() {
 
       setEditingApp(null);
       // 앱 업데이트 및 저장 완료
+      alert("✅ 앱이 성공적으로 업데이트되었습니다!");
     } catch (error) {
-      // Failed to update app
-      alert("Failed to update app. Please try again.");
+      console.error("❌ 앱 업데이트 실패:", error);
+      alert("❌ 앱 업데이트에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
