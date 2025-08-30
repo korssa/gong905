@@ -269,27 +269,59 @@ export function GoogleTranslate() {
 
     window.adminModeChange = handleAdminModeChange;
 
-    // 위젯 로드 후 한 번만 언어 매핑 설정
+    // 위젯 로드 후 언어 매핑 설정 (더 확실하게)
+    function initializeLanguageMapping() {
+      const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+      if (combo && combo.options.length > 1) {
+        startLanguageMapping();
+        return true;
+      }
+      return false;
+    }
+
+    // 위젯 로드 감지 및 언어 매핑 초기화
+    const checkAndInitialize = () => {
+      if (initializeLanguageMapping()) {
+        return; // 성공하면 종료
+      }
+      
+      // 실패하면 다시 시도
+      setTimeout(checkAndInitialize, 1000);
+    };
+
+    // 페이지 로드 후 시작
     window.addEventListener("load", () => {
-      setTimeout(() => {
-        const combo = document.querySelector(".goog-te-combo");
-        if (combo && (combo as HTMLSelectElement).options.length > 1) {
-          startLanguageMapping();
-        } else {
-          // 위젯이 아직 로드되지 않았다면 다시 시도
-          setTimeout(() => {
-            const combo = document.querySelector(".goog-te-combo");
-            if (combo && (combo as HTMLSelectElement).options.length > 1) {
-              startLanguageMapping();
+      setTimeout(checkAndInitialize, 1000);
+    });
+
+    // DOM 변경 감지 (MutationObserver 사용)
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node as Element;
+              if (element.querySelector && element.querySelector('.goog-te-combo')) {
+                setTimeout(initializeLanguageMapping, 100);
+              }
             }
-          }, 2000);
+          });
         }
-      }, 2000);
+      });
+    });
+
+    // DOM 변경 감지 시작
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
     });
 
     return () => {
       const existingScript = document.querySelector('script[src*="translate.google.com"]');
       if (existingScript) document.head.removeChild(existingScript);
+      
+      // observer 정리
+      observer.disconnect();
     };
   }, []);
 
