@@ -16,6 +16,71 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
   const [selectedStory, setSelectedStory] = useState<ContentItem | null>(null);
   const [likes, setLikes] = useState<{ [key: string]: number }>({});
 
+  // 번역 피드백 차단 함수
+  const blockTranslationFeedback = () => {
+    try {
+      const feedbackElements = document.querySelectorAll([
+        '.goog-te-balloon-frame',
+        '.goog-te-ftab',
+        '.goog-te-ftab-float', 
+        '.goog-tooltip',
+        '.goog-tooltip-popup',
+        '.goog-te-banner-frame',
+        '.goog-te-banner-frame-skiptranslate',
+        '.goog-te-gadget',
+        '.goog-te-combo',
+        '.goog-te-menu-frame',
+        '.goog-te-menu-value',
+        '.goog-te-banner',
+        '.goog-te-banner-frame',
+        '.goog-te-banner-frame-skiptranslate',
+        '.goog-te-banner-frame-skiptranslate-goog-inline-block',
+        '[class*="goog-te-balloon"]',
+        '[class*="goog-te-ftab"]',
+        '[class*="goog-te-tooltip"]',
+        '[class*="goog-te-banner"]',
+        '[class*="goog-te-gadget"]',
+        '[class*="goog-te-combo"]',
+        '[class*="goog-te-menu"]',
+        '[id*="goog-te"]',
+        '[id*="goog-tooltip"]',
+        '[id*="goog-balloon"]'
+      ].join(','));
+      
+      feedbackElements.forEach(el => {
+        (el as HTMLElement).style.display = 'none';
+        (el as HTMLElement).style.visibility = 'hidden';
+        (el as HTMLElement).style.opacity = '0';
+        (el as HTMLElement).style.pointerEvents = 'none';
+        (el as HTMLElement).style.position = 'absolute';
+        (el as HTMLElement).style.left = '-9999px';
+        (el as HTMLElement).style.top = '-9999px';
+        (el as HTMLElement).style.zIndex = '-9999';
+      });
+    } catch {
+      // 에러 무시
+    }
+    
+    // 추가 지연 차단 (더블 체크)
+    setTimeout(() => {
+      try {
+        const allGoogleElements = document.querySelectorAll('*');
+        allGoogleElements.forEach(el => {
+          const className = el.className || '';
+          const id = el.id || '';
+          if (className.includes('goog-') || id.includes('goog-')) {
+            (el as HTMLElement).style.display = 'none';
+            (el as HTMLElement).style.visibility = 'hidden';
+            (el as HTMLElement).style.opacity = '0';
+            (el as HTMLElement).style.pointerEvents = 'none';
+          }
+        });
+      } catch {
+        // 에러 무시
+      }
+    }, 50);
+  };
+
   // 스토리 로드
   const loadStories = async () => {
     try {
