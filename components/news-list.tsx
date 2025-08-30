@@ -383,7 +383,131 @@ export function NewsList({ type, onBack }: NewsListProps) {
       <div className="w-full max-w-4xl mx-auto px-4">
         <div className="text-center py-12">
           <h3 className="text-xl font-semibold text-gray-300 mb-2">News가 없습니다</h3>
-          <p className="text-gray-400">곧 새로운 News가 추가될 예정입니다.</p>
+          <p className="text-gray-400 mb-6">곧 새로운 News가 추가될 예정입니다.</p>
+          
+          {/* 관리자 모드에서만 추가 버튼 표시 */}
+          {isAuthenticated && (
+            <div className="mt-6">
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={resetForm} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    새 News 작성
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingContent ? 'News 수정' : '새 News 작성'}
+                    </DialogTitle>
+                    <DialogDescription>
+                      최신 업데이트와 소식을 작성하세요.
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">제목 *</label>
+                      <Input
+                        value={formData.title}
+                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="제목을 입력하세요"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">작성자 *</label>
+                      <Input
+                        value={formData.author}
+                        onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
+                        placeholder="작성자명을 입력하세요"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">내용 *</label>
+                      <Textarea
+                        value={formData.content}
+                        onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                        placeholder="내용을 입력하세요 (마크다운 지원)"
+                        rows={10}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">태그</label>
+                      <Input
+                        value={formData.tags}
+                        onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
+                        placeholder="태그를 쉼표로 구분하여 입력하세요"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">대표 이미지 (선택사항)</label>
+                      <div className="space-y-2">
+                        <input
+                          id="image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageSelect}
+                          className="hidden"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => document.getElementById('image-upload')?.click()}
+                            className="px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-300 hover:border-amber-400 rounded transition-colors"
+                          >
+                            이미지 선택
+                          </button>
+                          {selectedImage && (
+                            <button
+                              type="button"
+                              onClick={handleRemoveImage}
+                              className="px-3 py-2 text-sm bg-red-600 border border-red-600 text-white hover:bg-red-700 rounded transition-colors"
+                            >
+                              제거
+                            </button>
+                          )}
+                        </div>
+                        {imagePreview && (
+                          <div className="mt-2">
+                            <img
+                              src={imagePreview}
+                              alt="미리보기"
+                              className="w-32 h-32 object-cover rounded border"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="isPublished"
+                        checked={formData.isPublished}
+                        onChange={(e) => setFormData(prev => ({ ...prev, isPublished: e.target.checked }))}
+                      />
+                      <label htmlFor="isPublished" className="text-sm">
+                        즉시 게시
+                      </label>
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      취소
+                    </Button>
+                    <Button onClick={handleSubmit}>
+                      {editingContent ? '수정' : '저장'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
       </div>
     );
