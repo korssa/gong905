@@ -172,19 +172,18 @@ export async function POST(request: NextRequest) {
     const contents = await loadContents();
     console.log('기존 콘텐츠 수:', contents.length);
     
-    console.log('=== 새 콘텐츠 객체 생성 ===');
-    const newContent: ContentItem = {
-      id: Date.now().toString(),
-      title: body.title.trim(),
-      content: body.content.trim(),
-      author: body.author.trim(),
-      publishDate: new Date().toISOString(),
-      type: body.type,
-      tags: body.tags ? body.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
-      isPublished: body.isPublished || false,
-      views: 0,
-      imageUrl: body.imageUrl,
-    };
+         console.log('=== 새 콘텐츠 객체 생성 ===');
+     const newContent: ContentItem = {
+       id: Date.now().toString(),
+       title: body.title.trim(),
+       content: body.content.trim(),
+       author: body.author.trim(),
+       publishDate: new Date().toISOString(),
+       type: body.type,
+       tags: body.tags ? body.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+       isPublished: body.isPublished || false,
+       imageUrl: body.imageUrl,
+     };
 
     console.log('새 콘텐츠 생성 완료:', newContent);
     contents.push(newContent);

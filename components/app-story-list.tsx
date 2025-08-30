@@ -20,7 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye, EyeOff, Calendar, User, FileText, ArrowLeft } from "lucide-react";
+import { Plus, Edit, Trash2, EyeOff, Calendar, User, FileText, ArrowLeft } from "lucide-react";
 import { ContentItem, ContentFormData, ContentType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
 import { uploadFile } from "@/lib/storage-adapter";
@@ -361,7 +361,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                   {new Date(selected.publishDate).toLocaleDateString()}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" /> {selected.views}회 조회
+  
                 </span>
               </div>
             </div>
@@ -805,10 +805,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                   {new Date(content.publishDate).toLocaleDateString()}
                 </span>
               </div>
-              <div className="flex items-center gap-1 text-sm text-gray-400 mt-2">
-                <Eye className="w-3 h-3" />
-                {content.views}회 조회
-              </div>
+              
               {isAuthenticated && (
                 <div className="flex items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
                   <Button

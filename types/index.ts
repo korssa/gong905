@@ -58,7 +58,6 @@ export interface ContentItem {
   imageUrl?: string;
   tags?: string[];
   isPublished: boolean;
-  views: number;
 }
 
 export interface ContentFormData {
