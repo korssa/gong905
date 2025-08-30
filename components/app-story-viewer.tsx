@@ -70,11 +70,11 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
         <div className="w-full max-w-2xl mx-auto px-8 sm:px-12 lg:px-16" style={{ maxWidth: '672px' }}>
           {/* 헤더 */}
           <div className="border-b border-gray-600 pb-4 mb-6">
-            <h1 className="text-3xl font-bold text-white mb-2">{selectedStory.title}</h1>
+            <h1 className="text-3xl font-bold text-white mb-2" translate="no">{selectedStory.title}</h1>
             <div className="flex items-center gap-4 text-gray-400 text-sm">
               <span className="flex items-center gap-1">
                 <User className="h-4 w-4" />
-                {selectedStory.author}
+                <span translate="no">{selectedStory.author}</span>
               </span>
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -180,13 +180,13 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
               onClick={() => setSelectedStory(story)}
             >
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                <CardTitle className="text-white flex items-center gap-2" translate="no">
                   {story.title}
                 </CardTitle>
                 <CardDescription className="text-gray-400 flex items-center gap-4 mt-2">
                   <span className="flex items-center gap-1">
                     <User className="h-3 w-3" />
-                    {story.author}
+                    <span translate="no">{story.author}</span>
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />

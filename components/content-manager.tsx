@@ -92,9 +92,9 @@ export function ContentManager({
         <div className="w-full max-w-2xl mx-auto px-8 sm:px-12 lg:px-16" style={{ maxWidth: '672px' }}>
           {/* 헤더 */}
           <div className="border-b border-gray-600 pb-4 mb-6">
-            <h1 className="text-3xl font-bold text-white mb-2">{selectedContent.title}</h1>
+                         <h1 className="text-3xl font-bold text-white mb-2" translate="no">{selectedContent.title}</h1>
             <div className="flex items-center gap-4 text-gray-400 text-sm">
-              <span className="flex items-center gap-1"><User className="h-4 w-4" />{selectedContent.author}</span>
+                             <span className="flex items-center gap-1"><User className="h-4 w-4" /><span translate="no">{selectedContent.author}</span></span>
               <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{new Date(selectedContent.publishDate).toLocaleDateString()}</span>
               
               {!selectedContent.isPublished && (
@@ -191,9 +191,9 @@ export function ContentManager({
               onClick={() => setSelectedContent(content)}
             >
               <CardHeader>
-                <CardTitle className="text-white">{content.title}</CardTitle>
+                <CardTitle className="text-white" translate="no">{content.title}</CardTitle>
                 <CardDescription className="text-gray-400 flex items-center gap-4 mt-2">
-                  <span className="flex items-center gap-1"><User className="h-3 w-3" />{content.author}</span>
+                                     <span className="flex items-center gap-1"><User className="h-3 w-3" /><span translate="no">{content.author}</span></span>
                   <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(content.publishDate).toLocaleDateString()}</span>
                   
                 </CardDescription>

@@ -325,11 +325,11 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
           <div className="w-full max-w-2xl">
             {/* 헤더 정보 */}
             <div className="text-white border-b border-gray-600 pb-4 mb-6">
-              <h1 className="text-3xl font-bold mb-2">{selected.title}</h1>
+                             <h1 className="text-3xl font-bold mb-2" translate="no">{selected.title}</h1>
               <div className="flex gap-4 text-sm text-gray-400">
-                <span className="flex items-center gap-1">
-                  <User className="w-4 h-4" /> {selected.author}
-                </span>
+                                 <span className="flex items-center gap-1">
+                   <User className="w-4 h-4" /> <span translate="no">{selected.author}</span>
+                 </span>
                                  <span className="flex items-center gap-1">
                    <Calendar className="w-4 h-4" />
                    {new Date(selected.publishDate).toLocaleDateString()}
@@ -761,16 +761,16 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                   />
                 </div>
               )}
-              <CardTitle className="text-lg font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-2">
-                {content.title}
-              </CardTitle>
+                             <CardTitle className="text-lg font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-2" translate="no">
+                 {content.title}
+               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex items-center justify-between text-sm text-gray-400">
-                <span className="flex items-center gap-1">
-                  <User className="w-3 h-3" />
-                  {content.author}
-                </span>
+                                 <span className="flex items-center gap-1">
+                   <User className="w-3 h-3" />
+                   <span translate="no">{content.author}</span>
+                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {new Date(content.publishDate).toLocaleDateString()}
