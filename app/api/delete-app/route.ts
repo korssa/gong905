@@ -2,6 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+interface AppItem {
+  id: string;
+  name: string;
+  developer: string;
+  description: string;
+  iconUrl: string;
+  screenshotUrls: string[];
+  store: string;
+  status: string;
+  rating: number;
+  downloads: string;
+  views: number;
+  likes: number;
+  uploadDate: string;
+  tags?: string[];
+  storeUrl?: string;
+  version?: string;
+  size?: string;
+  category?: string;
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { id, iconUrl, screenshotUrls } = await request.json();
@@ -27,7 +48,7 @@ export async function DELETE(request: NextRequest) {
         if (response.ok) {
           // 아이콘 삭제 성공
         }
-      } catch (error) {
+      } catch (_error) {
         // 아이콘 삭제 실패는 무시하고 계속 진행
       }
     }
@@ -47,7 +68,7 @@ export async function DELETE(request: NextRequest) {
           if (response.ok) {
             // 스크린샷 삭제 성공
           }
-        } catch (error) {
+        } catch (_error) {
           // 개별 스크린샷 삭제 실패는 무시하고 계속 진행
         }
       }
@@ -58,9 +79,9 @@ export async function DELETE(request: NextRequest) {
     
     try {
       const appsData = await fs.readFile(appsFilePath, 'utf-8');
-      const apps = JSON.parse(appsData);
+      const apps = JSON.parse(appsData) as AppItem[];
       
-      const updatedApps = apps.filter((app: any) => app.id !== id);
+      const updatedApps = apps.filter((app: AppItem) => app.id !== id);
       
       if (updatedApps.length < apps.length) {
         await fs.writeFile(appsFilePath, JSON.stringify(updatedApps, null, 2));
@@ -68,7 +89,7 @@ export async function DELETE(request: NextRequest) {
         // 해당 ID를 찾을 수 없음
       }
       
-    } catch (error) {
+    } catch (_error) {
       // apps.json 파일이 없거나 읽기 실패, 새로 생성됩니다.
       await fs.writeFile(appsFilePath, JSON.stringify([], null, 2));
     }
