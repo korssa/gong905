@@ -519,28 +519,29 @@ export function NewsManager({ onBack }: NewsManagerProps) {
           </Card>
         ) : (
           news.map((item) => (
-            <Card 
-              key={item.id} 
-              className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
-              onClick={() => setSelectedNews(item)}
-            >
+                         <Card 
+               key={item.id} 
+               className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
+               onClick={() => setSelectedNews(item)}
+               onMouseEnter={blockTranslationFeedback}
+             >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-amber-400" />
-                      {item.title}
-                      {!item.isPublished && (
-                        <Badge variant="secondary" className="text-xs">
-                          임시저장
-                        </Badge>
-                      )}
-                    </CardTitle>
-                    <CardDescription className="text-gray-400 flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        {item.author}
-                      </span>
+                                         <CardTitle className="text-white flex items-center gap-2" translate="no">
+                       <FileText className="h-5 w-5 text-amber-400" />
+                       {item.title}
+                       {!item.isPublished && (
+                         <Badge variant="secondary" className="text-xs">
+                           임시저장
+                         </Badge>
+                       )}
+                     </CardTitle>
+                                         <CardDescription className="text-gray-400 flex items-center gap-4 mt-2">
+                       <span className="flex items-center gap-1">
+                         <User className="h-3 w-3" />
+                         <span translate="no">{item.author}</span>
+                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {new Date(item.publishDate).toLocaleDateString()}
@@ -588,17 +589,13 @@ export function NewsManager({ onBack }: NewsManagerProps) {
                     />
                   </div>
                 )}
-                <div className="prose prose-invert max-w-none">
-                  <div 
-                    className="text-gray-300"
-                    dangerouslySetInnerHTML={{ 
-                      __html: item.content
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                        .replace(/\n/g, '<br>')
-                    }}
-                  />
-                </div>
+                                 <div className="prose prose-invert max-w-none">
+                   <div 
+                     className="text-gray-300 whitespace-pre-wrap font-mono"
+                   >
+                     {item.content}
+                   </div>
+                 </div>
                 {item.tags && item.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-2">
                     {item.tags.map((tag, index) => (
