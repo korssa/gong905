@@ -617,7 +617,6 @@ export default function Home() {
       try {
         const sessionActive = sessionStorage.getItem('admin-session-active') === '1';
         const isAuth = isAuthenticated;
-        console.log('🔍 Admin Debug:', { sessionActive, isAuth, adminVisible });
         return sessionActive && isAuth;
       } catch {
         return false;
@@ -627,7 +626,6 @@ export default function Home() {
     setAdminVisible(Boolean(initial));
 
     window.adminModeChange = (visible: boolean) => {
-      console.log('🔍 Admin Mode Change:', visible);
       setAdminVisible(Boolean(visible));
     };
 
