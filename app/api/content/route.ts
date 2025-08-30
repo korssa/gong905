@@ -174,7 +174,14 @@ export async function POST(request: NextRequest) {
     console.error('오류 타입:', typeof error);
     console.error('오류 메시지:', error instanceof Error ? error.message : error);
     console.error('오류 스택:', error instanceof Error ? error.stack : '스택 없음');
-    return NextResponse.json({ error: '콘텐츠 생성에 실패했습니다.' }, { status: 500 });
+    
+    // 더 자세한 오류 정보를 클라이언트로 전달
+    const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+    return NextResponse.json({ 
+      error: '콘텐츠 생성에 실패했습니다.',
+      details: errorMessage,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }
 
@@ -220,7 +227,12 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(contents[contentIndex]);
   } catch (error) {
     console.error('콘텐츠 업데이트 오류:', error);
-    return NextResponse.json({ error: '콘텐츠 업데이트에 실패했습니다.' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+    return NextResponse.json({ 
+      error: '콘텐츠 업데이트에 실패했습니다.',
+      details: errorMessage,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }
 
@@ -245,8 +257,13 @@ export async function DELETE(request: NextRequest) {
     await saveContents(contents);
 
     return NextResponse.json({ message: '콘텐츠가 삭제되었습니다.' });
-  } catch {
-    
-    return NextResponse.json({ error: '콘텐츠 삭제에 실패했습니다.' }, { status: 500 });
+  } catch (error) {
+    console.error('콘텐츠 삭제 오류:', error);
+    const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+    return NextResponse.json({ 
+      error: '콘텐츠 삭제에 실패했습니다.',
+      details: errorMessage,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }

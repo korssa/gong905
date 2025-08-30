@@ -259,8 +259,9 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
           errorData = { error: responseText || '알 수 없는 오류' };
         }
         
-        console.error('저장 실패:', errorData);
-        throw new Error(errorData.error || '저장에 실패했습니다.');
+                 console.error('저장 실패:', errorData);
+         const errorMessage = errorData.details ? `${errorData.error}: ${errorData.details}` : errorData.error || '저장에 실패했습니다.';
+         throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('저장 오류:', error);
