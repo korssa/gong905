@@ -81,17 +81,31 @@ export async function POST(request: NextRequest) {
   try {
     const body: ContentFormData & { imageUrl?: string } = await request.json();
     
+    // 필수 필드 검증
+    if (!body.title?.trim()) {
+      return NextResponse.json({ error: '제목은 필수입니다.' }, { status: 400 });
+    }
+    if (!body.author?.trim()) {
+      return NextResponse.json({ error: '작성자는 필수입니다.' }, { status: 400 });
+    }
+    if (!body.content?.trim()) {
+      return NextResponse.json({ error: '내용은 필수입니다.' }, { status: 400 });
+    }
+    if (!body.type) {
+      return NextResponse.json({ error: '콘텐츠 타입은 필수입니다.' }, { status: 400 });
+    }
+    
     const contents = await loadContents();
     
     const newContent: ContentItem = {
       id: Date.now().toString(),
-      title: body.title,
-      content: body.content,
-      author: body.author,
+      title: body.title.trim(),
+      content: body.content.trim(),
+      author: body.author.trim(),
       publishDate: new Date().toISOString(),
       type: body.type,
-      tags: body.tags ? body.tags.split(',').map(tag => tag.trim()) : [],
-      isPublished: body.isPublished,
+      tags: body.tags ? body.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+      isPublished: body.isPublished || false,
       views: 0,
       imageUrl: body.imageUrl,
     };
@@ -100,8 +114,8 @@ export async function POST(request: NextRequest) {
     await saveContents(contents);
 
     return NextResponse.json(newContent, { status: 201 });
-  } catch {
-    
+  } catch (error) {
+    console.error('콘텐츠 생성 오류:', error);
     return NextResponse.json({ error: '콘텐츠 생성에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -111,6 +125,21 @@ export async function PUT(request: NextRequest) {
   try {
     const body: { id: string } & Partial<ContentFormData> & { imageUrl?: string } = await request.json();
     const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: '콘텐츠 ID는 필수입니다.' }, { status: 400 });
+    }
+
+    // 필수 필드 검증 (업데이트 시에도)
+    if (updateData.title !== undefined && !updateData.title.trim()) {
+      return NextResponse.json({ error: '제목은 필수입니다.' }, { status: 400 });
+    }
+    if (updateData.author !== undefined && !updateData.author.trim()) {
+      return NextResponse.json({ error: '작성자는 필수입니다.' }, { status: 400 });
+    }
+    if (updateData.content !== undefined && !updateData.content.trim()) {
+      return NextResponse.json({ error: '내용은 필수입니다.' }, { status: 400 });
+    }
 
     const contents = await loadContents();
     const contentIndex = contents.findIndex(content => content.id === id);
@@ -122,14 +151,17 @@ export async function PUT(request: NextRequest) {
     contents[contentIndex] = {
       ...contents[contentIndex],
       ...updateData,
-      tags: updateData.tags ? updateData.tags.split(',').map(tag => tag.trim()) : contents[contentIndex].tags,
+      title: updateData.title?.trim() || contents[contentIndex].title,
+      author: updateData.author?.trim() || contents[contentIndex].author,
+      content: updateData.content?.trim() || contents[contentIndex].content,
+      tags: updateData.tags ? updateData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : contents[contentIndex].tags,
     };
 
     await saveContents(contents);
 
     return NextResponse.json(contents[contentIndex]);
-  } catch {
-    
+  } catch (error) {
+    console.error('콘텐츠 업데이트 오류:', error);
     return NextResponse.json({ error: '콘텐츠 업데이트에 실패했습니다.' }, { status: 500 });
   }
 }

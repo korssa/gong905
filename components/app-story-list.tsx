@@ -176,13 +176,28 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
   // 콘텐츠 저장
   const handleSubmit = async () => {
     try {
+      // 필수 필드 검증
+      if (!formData.title.trim()) {
+        alert('제목을 입력해주세요.');
+        return;
+      }
+      if (!formData.author.trim()) {
+        alert('작성자를 입력해주세요.');
+        return;
+      }
+      if (!formData.content.trim()) {
+        alert('내용을 입력해주세요.');
+        return;
+      }
+
       let imageUrl = null;
 
       // 이미지가 선택된 경우 업로드
       if (selectedImage) {
         try {
           imageUrl = await uploadFile(selectedImage, 'content-images');
-        } catch {
+        } catch (error) {
+          console.error('이미지 업로드 오류:', error);
           throw new Error('이미지 업로드에 실패했습니다.');
         }
       }
@@ -193,22 +208,37 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         ? { id: editingContent.id, ...formData, imageUrl } 
         : { ...formData, imageUrl };
 
+      console.log('저장 요청:', { url, method, body });
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
+      console.log('응답 상태:', response.status);
+
       if (response.ok) {
+        const result = await response.json();
+        console.log('저장 성공:', result);
+        
         setIsDialogOpen(false);
         resetForm();
+        
         // 콘텐츠 목록 다시 로드
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
         setContents(data.filter((c: ContentItem) => c.isPublished));
+        
+        alert(editingContent ? 'App Story가 수정되었습니다.' : 'App Story가 저장되었습니다.');
+      } else {
+        const errorData = await response.json();
+        console.error('저장 실패:', errorData);
+        throw new Error(errorData.error || '저장에 실패했습니다.');
       }
-    } catch {
-      alert('App Story 저장에 실패했습니다.');
+    } catch (error) {
+      console.error('저장 오류:', error);
+      alert(error instanceof Error ? error.message : 'App Story 저장에 실패했습니다.');
     }
   };
 
