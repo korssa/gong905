@@ -59,7 +59,7 @@ export function GoogleTranslate() {
             const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
             if (combo && combo.options) {
               Array.from(combo.options).forEach((option) => {
-                const value = option.value.trim().toLowerCase(); // 핵심: 소문자로 정규화
+                                 const value = option.value.trim().split("|")[0].toLowerCase(); // 핵심: 파이프 제거 후 소문자로 정규화
                 const langLabelMap: { [key: string]: string } = {
                   af: "South Africa - Afrikaans",
                   sq: "Albania - Shqip",
