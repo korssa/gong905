@@ -60,6 +60,7 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
             variant="outline"
             onClick={() => setSelectedStory(null)}
             className="bg-[#2e2e2e] text-white hover:bg-[#444] border border-gray-700 hover:border-gray-500 transition"
+            onMouseEnter={blockTranslationFeedback}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             <span className="notranslate" translate="no">Back to Stories</span>
@@ -157,6 +158,7 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
             variant="outline"
             onClick={onBack}
             className="bg-[#2e2e2e] text-white hover:bg-[#444] border border-gray-700 hover:border-gray-500 transition"
+            onMouseEnter={blockTranslationFeedback}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             뒤로가기
