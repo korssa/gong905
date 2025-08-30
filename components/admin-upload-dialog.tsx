@@ -19,6 +19,7 @@ import { AppFormData, AppStore, AppStatus } from "@/types";
 
 import { useAdmin } from "@/hooks/use-admin";
 import { createURLManager, registerManager, unregisterManager } from "@/lib/url-manager";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 // select-protection 제거 - 버튼으로 대체
 
 // 관리자용 영어 텍스트 (번역 불필요)
@@ -210,12 +211,18 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
       <>
         <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button 
+              className="gap-2"
+              onMouseEnter={blockTranslationFeedback}
+            >
               <Lock className="h-4 w-4" />
               {adminTexts.adminPanel}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[400px]">
+          <DialogContent 
+            className="sm:max-w-[400px]"
+            onMouseEnter={blockTranslationFeedback}
+          >
             <DialogHeader>
               <DialogTitle>{adminTexts.adminPanel}</DialogTitle>
               <DialogDescription>
@@ -223,21 +230,30 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
+            <div className="space-y-4" onMouseEnter={blockTranslationFeedback}>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={adminTexts.passwordPlaceholder}
                 onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                onMouseEnter={blockTranslationFeedback}
               />
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsLoginOpen(false)}>
+            <DialogFooter onMouseEnter={blockTranslationFeedback}>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsLoginOpen(false)}
+                onMouseEnter={blockTranslationFeedback}
+              >
                 {adminTexts.cancel}
               </Button>
-              <Button onClick={handleLogin} disabled={!password.trim()}>
+              <Button 
+                onClick={createAdminButtonHandler(handleLogin)} 
+                disabled={!password.trim()}
+                onMouseEnter={blockTranslationFeedback}
+              >
                 {adminTexts.login}
               </Button>
             </DialogFooter>
@@ -255,24 +271,28 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
         onClick={() => {
           setIsOpen(true);
         }}
+        onMouseEnter={blockTranslationFeedback}
       >
         <Upload className="h-4 w-4" />
         {buttonText || adminTexts.upload}
       </Button>
       
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                  <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
+                  <DialogContent 
+                    className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto"
+                    onMouseEnter={blockTranslationFeedback}
+                  >
+          <DialogHeader onMouseEnter={blockTranslationFeedback}>
             <DialogTitle>{adminTexts.uploadTitle}</DialogTitle>
             <DialogDescription>
               {adminTexts.uploadDescription}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-4" onMouseEnter={blockTranslationFeedback}>
             {/* Basic Info */}
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div onMouseEnter={blockTranslationFeedback}>
                 <label className="block text-sm font-medium mb-2">
                   {adminTexts.appName} *
                 </label>
@@ -280,9 +300,10 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder={adminTexts.appNamePlaceholder}
+                  onMouseEnter={blockTranslationFeedback}
                 />
               </div>
-              <div>
+              <div onMouseEnter={blockTranslationFeedback}>
                 <label className="block text-sm font-medium mb-2">
                   {adminTexts.developer} *
                 </label>
@@ -290,12 +311,13 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   value={formData.developer}
                   onChange={(e) => setFormData(prev => ({ ...prev, developer: e.target.value }))}
                   placeholder={adminTexts.developerPlaceholder}
+                  onMouseEnter={blockTranslationFeedback}
                 />
               </div>
             </div>
 
             {/* Description */}
-            <div>
+            <div onMouseEnter={blockTranslationFeedback}>
               <label className="block text-sm font-medium mb-2">
                 {adminTexts.description}
               </label>
@@ -303,12 +325,13 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                   placeholder={adminTexts.descriptionPlaceholder}
+                onMouseEnter={blockTranslationFeedback}
               />
             </div>
 
             {/* Store and Status */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-2 gap-4" onMouseEnter={blockTranslationFeedback}>
+              <div onMouseEnter={blockTranslationFeedback}>
                                  <label className="block text-sm font-medium mb-2">
                    <span className="notranslate" translate="no">{adminTexts.store}</span>
                  </label>
@@ -332,6 +355,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                        // Store change error
                      }
                    }}
+                  onMouseEnter={blockTranslationFeedback}
                 >
                   {formData.store === "google-play" ? "🤖" : "🍎"} {" "}
                   <span className="notranslate" translate="no">
@@ -340,7 +364,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   <span className="ml-auto text-xs text-muted-foreground">클릭하여 변경</span>
                 </Button>
               </div>
-              <div>
+              <div onMouseEnter={blockTranslationFeedback}>
                 <label className="block text-sm font-medium mb-2">
                   {adminTexts.status}
                 </label>
@@ -366,6 +390,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                        // Status change error
                      }
                    }}
+                  onMouseEnter={blockTranslationFeedback}
                 >
                   {formData.status === "published" && "✅ " + adminTexts.published}
                   {formData.status === "in-review" && "⏳ " + adminTexts.inReview}
@@ -376,8 +401,8 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
             </div>
 
             {/* Additional Info */}
-            <div className="grid grid-cols-3 gap-4">
-              <div>
+            <div className="grid grid-cols-3 gap-4" onMouseEnter={blockTranslationFeedback}>
+              <div onMouseEnter={blockTranslationFeedback}>
                 <label className="block text-sm font-medium mb-2">
                   Rating
                 </label>
@@ -388,9 +413,10 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   step="0.1"
                   value={formData.rating}
                   onChange={(e) => setFormData(prev => ({ ...prev, rating: parseFloat(e.target.value) }))}
+                  onMouseEnter={blockTranslationFeedback}
                 />
               </div>
-              <div>
+              <div onMouseEnter={blockTranslationFeedback}>
                 <label className="block text-sm font-medium mb-2">
                   Downloads
                 </label>
@@ -398,9 +424,10 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   value={formData.downloads}
                   onChange={(e) => setFormData(prev => ({ ...prev, downloads: e.target.value }))}
                   placeholder="1K+, 10K+, 1M+"
+                  onMouseEnter={blockTranslationFeedback}
                 />
               </div>
-              <div>
+              <div onMouseEnter={blockTranslationFeedback}>
                 <label className="block text-sm font-medium mb-2">
                   Version
                 </label>
@@ -408,12 +435,13 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   value={formData.version}
                   onChange={(e) => setFormData(prev => ({ ...prev, version: e.target.value }))}
                   placeholder="1.0.0"
+                  onMouseEnter={blockTranslationFeedback}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-2 gap-4" onMouseEnter={blockTranslationFeedback}>
+              <div onMouseEnter={blockTranslationFeedback}>
                 <label className="block text-sm font-medium mb-2">
                   Size
                 </label>
@@ -421,9 +449,10 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   value={formData.size}
                   onChange={(e) => setFormData(prev => ({ ...prev, size: e.target.value }))}
                   placeholder="50MB"
+                  onMouseEnter={blockTranslationFeedback}
                 />
               </div>
-              <div>
+              <div onMouseEnter={blockTranslationFeedback}>
                 <label className="block text-sm font-medium mb-2">
                   Store URL
                 </label>
@@ -431,18 +460,20 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   value={formData.storeUrl}
                   onChange={(e) => setFormData(prev => ({ ...prev, storeUrl: e.target.value }))}
                   placeholder="https://..."
+                  onMouseEnter={blockTranslationFeedback}
                 />
               </div>
             </div>
 
             {/* App Icon */}
-            <div>
+            <div onMouseEnter={blockTranslationFeedback}>
               <label className="block text-sm font-medium mb-2">
                 App Icon *
               </label>
               <label
                 htmlFor="icon-upload"
                 className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                onMouseEnter={blockTranslationFeedback}
               >
                 {iconFile && iconUrl ? (
                   <div className="flex items-center gap-2">
@@ -470,13 +501,14 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
             </div>
 
             {/* Screenshots */}
-            <div>
+            <div onMouseEnter={blockTranslationFeedback}>
               <label className="block text-sm font-medium mb-2">
                 Screenshots
               </label>
               <label
                 htmlFor="screenshots-upload"
                 className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                onMouseEnter={blockTranslationFeedback}
               >
                 <div className="flex flex-col items-center">
                   <ImageIcon className="w-6 h-6 mb-1 text-gray-400" />
@@ -507,6 +539,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                           size="sm"
                           className="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => removeScreenshot(index)}
+                          onMouseEnter={blockTranslationFeedback}
                         >
                           <X className="h-3 w-3" />
                         </Button>
@@ -518,7 +551,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
             </div>
 
             {/* Tags */}
-            <div>
+            <div onMouseEnter={blockTranslationFeedback}>
               <label className="block text-sm font-medium mb-2">
 {adminTexts.tags}
               </label>
@@ -526,6 +559,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                 value={formData.tags}
                 onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
                 placeholder={adminTexts.tagsPlaceholder}
+                onMouseEnter={blockTranslationFeedback}
               />
               <p className="text-xs text-gray-500 mt-1">
 {adminTexts.tagsExample}
@@ -533,20 +567,32 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
             </div>
           </div>
 
-                     <DialogFooter>
-                           <Button variant="outline" onClick={() => setIsOpen(false)}>
+                     <DialogFooter onMouseEnter={blockTranslationFeedback}>
+                           <Button 
+                             variant="outline" 
+                             onClick={() => setIsOpen(false)}
+                             onMouseEnter={blockTranslationFeedback}
+                           >
                {adminTexts.cancel}
              </Button>
-                         <Button variant="outline" onClick={() => {
+                         <Button 
+                           variant="outline" 
+                           onClick={() => {
                logout();
                // 관리자 모드 해제 이벤트 즉시 발생
                if (typeof window !== 'undefined' && window.adminModeChange) {
                  window.adminModeChange(false);
                }
-             }}>
+             }}
+                           onMouseEnter={blockTranslationFeedback}
+                         >
 {adminTexts.logout}
             </Button>
-            <Button onClick={handleSubmit} disabled={!isFormValid}>
+            <Button 
+              onClick={createAdminButtonHandler(handleSubmit)} 
+              disabled={!isFormValid}
+              onMouseEnter={blockTranslationFeedback}
+            >
 {adminTexts.upload}
             </Button>
           </DialogFooter>

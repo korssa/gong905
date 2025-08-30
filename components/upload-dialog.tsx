@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Upload, Image as ImageIcon, X } from "lucide-react";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 
 export function UploadDialog() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +30,7 @@ export function UploadDialog() {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpload = async () => {
+  const handleUpload = createAdminButtonHandler(async () => {
     if (!selectedFiles || selectedFiles.length === 0) {
       alert('파일을 선택해주세요.');
       return;
@@ -83,7 +84,7 @@ export function UploadDialog() {
       alert('업로드에 실패했습니다. 다시 시도해주세요.');
       // setIsUploading(false); // This state variable is not defined in the original file
     }
-  };
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

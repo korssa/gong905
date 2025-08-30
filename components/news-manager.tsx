@@ -19,6 +19,7 @@ import { Plus, Edit, Trash2, Eye, EyeOff, Calendar, User, FileText, ArrowLeft } 
 import { ContentItem, ContentFormData, ContentType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
 import { uploadFile } from "@/lib/storage-adapter";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 
 interface NewsManagerProps {
   onBack?: () => void;
@@ -43,31 +44,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
 
   const { isAuthenticated } = useAdmin();
 
-  // 번역 피드백 차단 함수
-  const blockTranslationFeedback = () => {
-    try {
-      const selectors = [
-        '[class*="goog-"]',
-        '[id*="goog-"]',
-      ];
-      selectors.forEach(selector => {
-        document.querySelectorAll(selector).forEach(el => {
-          Object.assign((el as HTMLElement).style, {
-            display: 'none',
-            visibility: 'hidden',
-            opacity: '0',
-            pointerEvents: 'none',
-            position: 'absolute',
-            zIndex: '-9999',
-            left: '-9999px',
-            top: '-9999px',
-          });
-        });
-      });
-    } catch {
-      // 에러 무시
-    }
-  };
+
 
   // 뉴스 로드
   const loadNews = async () => {
@@ -549,28 +526,31 @@ export function NewsManager({ onBack }: NewsManagerProps) {
                     </CardDescription>
                   </div>
                   {isAuthenticated && (
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()} onMouseEnter={blockTranslationFeedback}>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => togglePublish(item)}
+                        onClick={createAdminButtonHandler(() => togglePublish(item))}
                         className="text-gray-400 hover:text-white"
+                        onMouseEnter={blockTranslationFeedback}
                       >
                         {item.isPublished ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleEdit(item)}
+                        onClick={createAdminButtonHandler(() => handleEdit(item))}
                         className="text-gray-400 hover:text-white"
+                        onMouseEnter={blockTranslationFeedback}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={createAdminButtonHandler(() => handleDelete(item.id))}
                         className="text-red-400 hover:text-red-300"
+                        onMouseEnter={blockTranslationFeedback}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Mail, Send, X } from "lucide-react";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 
 interface MailFormProps {
   type: "events" | "feedback" | "contact";
@@ -65,7 +66,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = createAdminButtonHandler(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -146,7 +147,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({
@@ -242,7 +243,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
-                  onClick={() => handleInputChange("subject", "Event App 1")}
+                  onClick={createAdminButtonHandler(() => handleInputChange("subject", "Event App 1"))}
                                      className={`px-3 py-2 text-sm rounded border transition-colors ${
                      formData.subject === "Event App 1" 
                        ? "bg-amber-500 border-amber-500 text-white" 
@@ -253,7 +254,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleInputChange("subject", "Event App 2")}
+                  onClick={createAdminButtonHandler(() => handleInputChange("subject", "Event App 2"))}
                                      className={`px-3 py-2 text-sm rounded border transition-colors ${
                      formData.subject === "Event App 2" 
                        ? "bg-amber-500 border-amber-500 text-white" 
@@ -264,7 +265,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleInputChange("subject", "Event App 3")}
+                  onClick={createAdminButtonHandler(() => handleInputChange("subject", "Event App 3"))}
                                      className={`px-3 py-2 text-sm rounded border transition-colors ${
                      formData.subject === "Event App 3" 
                        ? "bg-amber-500 border-amber-500 text-white" 
@@ -324,19 +325,19 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                    <div className="flex gap-2">
                      <button
                        type="button"
-                       onClick={() => document.getElementById('file-input')?.click()}
+                       onClick={createAdminButtonHandler(() => document.getElementById('file-input')?.click())}
                        className="px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-300 hover:border-amber-400 rounded transition-colors"
                      >
                        Choose Image
                      </button>
                      {selectedFile && (
-                       <button
-                         type="button"
-                         onClick={removeFile}
-                         className="px-3 py-2 text-sm bg-red-600 border border-red-600 text-white hover:bg-red-700 rounded transition-colors"
-                       >
-                         Remove
-                       </button>
+                                            <button
+                       type="button"
+                       onClick={createAdminButtonHandler(removeFile)}
+                       className="px-3 py-2 text-sm bg-red-600 border border-red-600 text-white hover:bg-red-700 rounded transition-colors"
+                     >
+                       Remove
+                     </button>
                      )}
                    </div>
                    {selectedFile && (
@@ -391,7 +392,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                             <Button
                  type="button"
                  variant="outline"
-                 onClick={() => setIsOpen(false)}
+                 onClick={createAdminButtonHandler(() => setIsOpen(false))}
                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
                >
                <X className="h-4 w-4" />

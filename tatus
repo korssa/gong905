@@ -1,5 +1,5 @@
-[33m2717cad[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mkorssa/gongmyung[m[33m, [m[1;31morigin/korssa/monk-watch[m[33m, [m[1;31morigin/korssa/gongmyung[m[33m, [m[1;32mkorssa/monk-watch[m[33m)[m  불필요한 로그 제거 및 코드 정리
-[33m65fd877[m  Vercel 배포 후 이미지 업로드 문제 해결 - 환경 변수 검증 및 진단 도구 추가
-[33m6b3229c[m Fix syntax error in send-mail route: remove malformed error handling code
-[33md6226e0[m Fix Vercel Blob upload: remove unsupported handleUploadUrl property
-[33m3b7ecad[m Remove all console logs and debugging statements from project
+[33m1070ab5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mkorssa/gongmyung[m[33m, [m[1;31morigin/korssa/gongmyung[m[33m)[m 뉴스 메모장 수정: isPublished 기본값 true로 설정, 관리자 권한별 콘텐츠 필터링 적용
+[33m74a893b[m 메모장 원본 형식 보존: 줄바꿈, 공백 등 원본 그대로 유지하도록 수정
+[33m7c5ed84[m app-story-viewer.tsx에 blockTranslationFeedback 함수 추가하여 빌드 오류 수정
+[33me2d70b5[m 메모장 콘텐츠에 번역 피드백 방지 추가
+[33m5746213[m 메모장 모든 뒤로가기 버튼들에 번역 피드백 방지 추가

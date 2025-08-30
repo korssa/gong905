@@ -18,6 +18,7 @@ import { AppItem, AppFormData, AppStore, AppStatus } from "@/types";
 
 // saveFileToLocal 제거 - 사용하지 않음
 import { createURLManager, registerManager, unregisterManager } from "@/lib/url-manager";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 // select-protection 제거 - 버튼으로 대체
 
 // 관리자용 영어 텍스트 (번역 불필요) 
@@ -473,7 +474,7 @@ Select a new icon below to upload
           <Button variant="outline" onClick={handleClose}>
 {adminTexts.cancel}
           </Button>
-          <Button onClick={handleSubmit} disabled={!formData.name.trim() || !formData.developer.trim()}>
+          <Button onClick={createAdminButtonHandler(handleSubmit)} disabled={!formData.name.trim() || !formData.developer.trim()}>
 {adminTexts.saveChanges}
           </Button>
         </DialogFooter>

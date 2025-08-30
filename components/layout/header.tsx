@@ -8,6 +8,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { FilterType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
 import { GoogleTranslateWidget } from "@/components/google-translate-widget";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 
 interface HeaderProps {
   viewMode: "grid" | "list";
@@ -93,7 +94,7 @@ export function Header({
           variant="ghost"
           size="sm"
           className="md:hidden text-white hover:bg-white/20"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onClick={createAdminButtonHandler(() => setIsMenuOpen(!isMenuOpen))}
         >
           <Menu className="h-4 w-4" />
         </Button>

@@ -24,6 +24,7 @@ import { Plus, Edit, Trash2, EyeOff, Calendar, User, FileText, ArrowLeft } from 
 import { ContentItem, ContentFormData, ContentType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
 import { uploadFile } from "@/lib/storage-adapter";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 
 interface NewsListProps {
   type: string; // "news"
@@ -49,53 +50,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
 
   const { isAuthenticated } = useAdmin();
 
-  // 번역 피드백 차단 함수
-  const blockTranslationFeedback = () => {
-    try {
-      const feedbackElements = document.querySelectorAll([
-        '.goog-te-balloon-frame',
-        '.goog-te-ftab',
-        '.goog-te-ftab-float', 
-        '.goog-tooltip',
-        '.goog-tooltip-popup',
-        '.goog-te-banner-frame',
-        '.goog-te-banner-frame-skiptranslate',
-        '.goog-te-gadget',
-        '.goog-te-combo',
-        '.goog-te-menu-frame',
-        '.goog-te-menu-value',
-        '.goog-te-banner',
-        '.goog-te-banner-frame',
-        '.goog-te-banner-frame-skiptranslate',
-        '.goog-te-banner-frame-skiptranslate-goog-inline-block',
-        '[class*="goog-te-balloon"]',
-        '[class*="goog-te-ftab"]',
-        '[class*="goog-te-tooltip"]',
-        '[class*="goog-te-banner"]',
-        '[class*="goog-te-gadget"]',
-        '[class*="goog-te-combo"]',
-        '[class*="goog-te-menu"]',
-        '[id*="goog-te"]',
-        '[id*="goog-tooltip"]',
-        '[id*="goog-balloon"]'
-      ].join(','));
-      
-      feedbackElements.forEach(el => {
-        (el as HTMLElement).style.display = 'none';
-        (el as HTMLElement).style.visibility = 'hidden';
-        (el as HTMLElement).style.opacity = '0';
-        (el as HTMLElement).style.pointerEvents = 'none';
-        (el as HTMLElement).style.position = 'absolute';
-        (el as HTMLElement).style.left = '-9999px';
-        (el as HTMLElement).style.top = '-9999px';
-        (el as HTMLElement).style.zIndex = '-9999';
-      });
-    } catch (error) {
-      // 에러 무시
-    }
-    
 
-  };
 
   // Load content list
   useEffect(() => {
@@ -705,28 +660,31 @@ export function NewsList({ type, onBack }: NewsListProps) {
               </div>
 
               {isAuthenticated && (
-                <div className="flex items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()} onMouseEnter={blockTranslationFeedback}>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => togglePublish(content)}
+                    onClick={createAdminButtonHandler(() => togglePublish(content))}
                     className="text-gray-400 hover:text-white"
+                    onMouseEnter={blockTranslationFeedback}
                   >
                     {content.isPublished ? <EyeOff className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleEdit(content)}
+                    onClick={createAdminButtonHandler(() => handleEdit(content))}
                     className="text-gray-400 hover:text-white"
+                    onMouseEnter={blockTranslationFeedback}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(content.id)}
+                    onClick={createAdminButtonHandler(() => handleDelete(content.id))}
                     className="text-red-400 hover:text-red-300"
+                    onMouseEnter={blockTranslationFeedback}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

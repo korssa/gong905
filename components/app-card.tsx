@@ -8,6 +8,7 @@ import { useState } from "react";
 import { AppItem } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import Image from "next/image";
 
 interface AppCardProps {
@@ -45,70 +46,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
     return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
   };
 
-  // 번역 피드백 차단 함수
-  const blockTranslationFeedback = () => {
-    try {
-      const feedbackElements = document.querySelectorAll([
-        '.goog-te-balloon-frame',
-        '.goog-te-ftab',
-        '.goog-te-ftab-float',
-        '.goog-tooltip',
-        '.goog-tooltip-popup',
-        '.goog-te-banner-frame',
-        '.goog-te-banner-frame-skiptranslate',
-        '.goog-te-gadget',
-        '.goog-te-combo',
-        '.goog-te-menu-frame',
-        '.goog-te-menu-value',
-        '.goog-te-banner',
-        '.goog-te-banner-frame',
-        '.goog-te-banner-frame-skiptranslate',
-        '.goog-te-banner-frame-skiptranslate-goog-inline-block',
-        '[class*="goog-te-balloon"]',
-        '[class*="goog-te-ftab"]',
-        '[class*="goog-te-tooltip"]',
-        '[class*="goog-te-banner"]',
-        '[class*="goog-te-gadget"]',
-        '[class*="goog-te-combo"]',
-        '[class*="goog-te-menu"]',
-        '[id*="goog-te"]',
-        '[id*="goog-tooltip"]',
-        '[id*="goog-balloon"]'
-      ].join(','));
 
-      feedbackElements.forEach(el => {
-        (el as HTMLElement).style.display = 'none';
-        (el as HTMLElement).style.visibility = 'hidden';
-        (el as HTMLElement).style.opacity = '0';
-        (el as HTMLElement).style.pointerEvents = 'none';
-        (el as HTMLElement).style.position = 'absolute';
-        (el as HTMLElement).style.left = '-9999px';
-        (el as HTMLElement).style.top = '-9999px';
-        (el as HTMLElement).style.zIndex = '-9999';
-      });
-  } catch {
-      // 에러 무시
-    }
-
-    // 추가 지연 차단 (더블 체크)
-    setTimeout(() => {
-      try {
-        const allGoogleElements = document.querySelectorAll('*');
-        allGoogleElements.forEach(el => {
-          const className = el.className || '';
-          const id = el.id || '';
-          if (className.includes('goog-') || id.includes('goog-')) {
-            (el as HTMLElement).style.display = 'none';
-            (el as HTMLElement).style.visibility = 'hidden';
-            (el as HTMLElement).style.opacity = '0';
-            (el as HTMLElement).style.pointerEvents = 'none';
-          }
-        });
-      } catch {
-        // 에러 무시
-      }
-  }, 50);
-  };
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -120,29 +58,29 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = createAdminButtonHandler(() => {
     if (onDelete && confirm(`Delete "${app.name}"?`)) {
       onDelete(app.id);
     }
-  };
+  });
 
-  const handleEdit = () => {
+  const handleEdit = createAdminButtonHandler(() => {
     if (onEdit) {
       onEdit(app);
     }
-  };
+  });
 
-  const handleToggleFeatured = () => {
+  const handleToggleFeatured = createAdminButtonHandler(() => {
     if (onToggleFeatured) {
       onToggleFeatured(app.id);
     }
-  };
+  });
 
-  const handleToggleEvent = () => {
+  const handleToggleEvent = createAdminButtonHandler(() => {
     if (onToggleEvent) {
       onToggleEvent(app.id);
     }
-  };
+  });
 
   if (viewMode === "list") {
     return (
@@ -209,7 +147,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
 
             {/* 관리자 모드에서만 편집/삭제/추천 버튼 표시 */}
             {isAuthenticated && (
-              <div className="flex flex-col items-end space-y-2 ml-4">
+              <div className="flex flex-col items-end space-y-2 ml-4" onMouseEnter={blockTranslationFeedback}>
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="ghost"
@@ -217,6 +155,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
                     onClick={handleToggleFeatured}
                     className={`${isFeatured ? 'text-red-500 hover:text-red-700' : 'text-gray-500 hover:text-red-500'}`}
                     title={isFeatured ? "Featured에서 제거" : "Featured에 추가"}
+                    onMouseEnter={blockTranslationFeedback}
                   >
                     <Heart className={`h-4 w-4 ${isFeatured ? 'fill-current' : ''}`} />
                   </Button>
@@ -226,13 +165,26 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
                     onClick={handleToggleEvent}
                     className={`${isEvent ? 'text-yellow-500 hover:text-yellow-700' : 'text-gray-500 hover:text-yellow-500'}`}
                     title={isEvent ? "Event에서 제거" : "Event에 추가"}
+                    onMouseEnter={blockTranslationFeedback}
                   >
                     <Star className={`h-4 w-4 ${isEvent ? 'fill-current' : ''}`} />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={handleEdit} className="text-blue-500 hover:text-blue-700">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleEdit} 
+                    className="text-blue-500 hover:text-blue-700"
+                    onMouseEnter={blockTranslationFeedback}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={handleDelete} className="text-red-500 hover:text-red-700">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleDelete} 
+                    className="text-red-500 hover:text-red-700"
+                    onMouseEnter={blockTranslationFeedback}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -315,13 +267,14 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
 
         {/* Admin Edit/Delete/Featured/Event Buttons */}
         {isAuthenticated && (
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-1 z-20">
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-1 z-20" onMouseEnter={blockTranslationFeedback}>
             <Button
               variant="secondary"
               size="sm"
               onClick={handleToggleFeatured}
               className={`h-7 w-7 p-0 shadow-lg ${isFeatured ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-500 hover:bg-red-500 text-white'}`}
               title={isFeatured ? "Featured에서 제거" : "Featured에 추가"}
+              onMouseEnter={blockTranslationFeedback}
             >
               <Heart className={`h-3 w-3 ${isFeatured ? 'fill-current' : ''}`} />
             </Button>
@@ -331,6 +284,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
               onClick={handleToggleEvent}
               className={`h-7 w-7 p-0 shadow-lg ${isEvent ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : 'bg-gray-500 hover:bg-yellow-500 text-white'}`}
               title={isEvent ? "Event에서 제거" : "Event에 추가"}
+              onMouseEnter={blockTranslationFeedback}
             >
               <Star className={`h-3 w-3 ${isEvent ? 'fill-current' : ''}`} />
             </Button>
@@ -339,6 +293,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
               size="sm"
               onClick={handleEdit}
               className="h-7 w-7 p-0 bg-blue-500 hover:bg-blue-600 text-white shadow-lg"
+              onMouseEnter={blockTranslationFeedback}
             >
               <Edit className="h-3 w-3" />
             </Button>
@@ -347,6 +302,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
               size="sm"
               onClick={handleDelete}
               className="h-7 w-7 p-0 shadow-lg"
+              onMouseEnter={blockTranslationFeedback}
             >
               <Trash2 className="h-3 w-3" />
             </Button>

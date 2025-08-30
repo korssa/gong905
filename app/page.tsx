@@ -24,6 +24,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
 import { saveFileToLocal, generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import Image from "next/image";
 
 const isBlobUrl = (url?: string) => {
@@ -49,51 +50,7 @@ export default function Home() {
 
 
 
-  // 번역 피드백 차단 함수
-  const blockTranslationFeedback = () => {
-    try {
-      const feedbackElements = document.querySelectorAll([
-        '.goog-te-balloon-frame',
-        '.goog-te-ftab',
-        '.goog-te-ftab-float', 
-        '.goog-tooltip',
-        '.goog-tooltip-popup',
-        '.goog-te-banner-frame',
-        '.goog-te-banner-frame-skiptranslate',
-        '.goog-te-gadget',
-        '.goog-te-combo',
-        '.goog-te-menu-frame',
-        '.goog-te-menu-value',
-        '.goog-te-banner',
-        '.goog-te-banner-frame',
-        '.goog-te-banner-frame-skiptranslate',
-        '.goog-te-banner-frame-skiptranslate-goog-inline-block',
-        '[class*="goog-te-balloon"]',
-        '[class*="goog-te-ftab"]',
-        '[class*="goog-te-tooltip"]',
-        '[class*="goog-te-banner"]',
-        '[class*="goog-te-gadget"]',
-        '[class*="goog-te-combo"]',
-        '[class*="goog-te-menu"]',
-        '[id*="goog-te"]',
-        '[id*="goog-tooltip"]',
-        '[id*="goog-balloon"]'
-      ].join(','));
-      
-      feedbackElements.forEach(el => {
-        (el as HTMLElement).style.display = 'none';
-        (el as HTMLElement).style.visibility = 'hidden';
-        (el as HTMLElement).style.opacity = '0';
-        (el as HTMLElement).style.pointerEvents = 'none';
-        (el as HTMLElement).style.position = 'absolute';
-        (el as HTMLElement).style.left = '-9999px';
-        (el as HTMLElement).style.top = '-9999px';
-        (el as HTMLElement).style.zIndex = '-9999';
-      });
-    } catch {
-      // 에러 무시
-    }
-  };
+
 
   // 푸터 링크 클릭 시 번역 피드백 차단 핸들러
   const handleFooterLinkClick = (action?: () => void, event?: React.MouseEvent) => {
@@ -833,7 +790,7 @@ export default function Home() {
            
            <div className="border-t border-gray-600 pt-6 mt-6 text-center">
             <span 
-              onClick={handleCopyrightClick}
+              onClick={createAdminButtonHandler(handleCopyrightClick)}
               className="cursor-pointer hover:text-gray-300 transition-colors text-sm text-white"
               title="관리자 모드"
             >

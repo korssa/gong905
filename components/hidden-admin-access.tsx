@@ -14,6 +14,7 @@ import {
 import { Lock } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
+import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 
 interface HiddenAdminAccessProps {
   isOpen: boolean;
@@ -182,11 +183,11 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
             닫기
           </Button>
           {!isAuthenticated ? (
-            <Button onClick={handleLogin} disabled={!password.trim()}>
+            <Button onClick={createAdminButtonHandler(handleLogin)} disabled={!password.trim()}>
               로그인
             </Button>
           ) : (
-            <Button variant="destructive" onClick={handleLogout}>
+            <Button variant="destructive" onClick={createAdminButtonHandler(handleLogout)}>
               로그아웃
             </Button>
           )}
