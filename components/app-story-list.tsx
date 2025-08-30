@@ -330,13 +330,10 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                 <span className="flex items-center gap-1">
                   <User className="w-4 h-4" /> {selected.author}
                 </span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  {new Date(selected.publishDate).toLocaleDateString()}
-                </span>
-                <span className="flex items-center gap-1">
-  
-                </span>
+                                 <span className="flex items-center gap-1">
+                   <Calendar className="w-4 h-4" />
+                   {new Date(selected.publishDate).toLocaleDateString()}
+                 </span>
               </div>
             </div>
 

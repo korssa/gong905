@@ -233,10 +233,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
                 <Calendar className="h-4 w-4" />
                 {new Date(selectedNews.publishDate).toLocaleDateString()}
               </span>
-              <span className="flex items-center gap-1">
-                <Eye className="h-4 w-4" />
-                {selectedNews.views}회 조회
-              </span>
+              
               {!selectedNews.isPublished && (
                 <Badge variant="secondary" className="text-xs">
                   임시저장
@@ -486,10 +483,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
                         <Calendar className="h-3 w-3" />
                         {new Date(item.publishDate).toLocaleDateString()}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        {item.views}회 조회
-                      </span>
+                      
                     </CardDescription>
                   </div>
                   {isAuthenticated && (
