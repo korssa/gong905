@@ -26,14 +26,26 @@ async function ensureDataFile() {
 // 콘텐츠 로드
 async function loadContents(): Promise<ContentItem[]> {
   try {
+    // Vercel 환경에서는 메모리 저장소 사용
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      console.log('Vercel 환경 감지 - 메모리 저장소에서 로드');
+      console.log('메모리 저장소 항목 수:', memoryStorage.length);
+      return memoryStorage;
+    }
+    
+    // 로컬 환경에서는 파일에서 로드
+    console.log('로컬 환경 감지 - 파일에서 로드');
     await ensureDataFile();
     const data = await fs.readFile(CONTENT_FILE_PATH, 'utf-8');
     return JSON.parse(data);
-  } catch {
-    
+  } catch (error) {
+    console.error('콘텐츠 로드 오류:', error);
     return [];
   }
 }
+
+// 메모리 기반 저장소 (Vercel 환경에서 사용)
+let memoryStorage: ContentItem[] = [];
 
 // 콘텐츠 저장
 async function saveContents(contents: ContentItem[]) {
@@ -42,7 +54,19 @@ async function saveContents(contents: ContentItem[]) {
     console.log('콘텐츠 수:', contents.length);
     console.log('현재 작업 디렉토리:', process.cwd());
     console.log('파일 경로:', CONTENT_FILE_PATH);
+    console.log('환경 변수 NODE_ENV:', process.env.NODE_ENV);
     
+    // Vercel 환경에서는 메모리 저장소 사용
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      console.log('Vercel 환경 감지 - 메모리 저장소 사용');
+      memoryStorage = [...contents];
+      console.log('메모리 저장소 업데이트 완료, 저장된 항목 수:', memoryStorage.length);
+      console.log('=== saveContents 완료 (메모리) ===');
+      return;
+    }
+    
+    // 로컬 환경에서는 파일 저장
+    console.log('로컬 환경 감지 - 파일 저장소 사용');
     console.log('데이터 파일 확인 시작');
     await ensureDataFile();
     console.log('데이터 파일 확인 완료');
@@ -64,13 +88,16 @@ async function saveContents(contents: ContentItem[]) {
       console.error('파일 상태 확인 실패:', statError);
     }
     
-    console.log('=== saveContents 완료 ===');
+    console.log('=== saveContents 완료 (파일) ===');
   } catch (error) {
     console.error('=== saveContents 오류 ===');
     console.error('오류 타입:', typeof error);
     console.error('오류 메시지:', error instanceof Error ? error.message : error);
     console.error('오류 스택:', error instanceof Error ? error.stack : '스택 없음');
-    throw new Error('콘텐츠 저장 오류');
+    console.error('현재 작업 디렉토리:', process.cwd());
+    console.error('파일 경로:', CONTENT_FILE_PATH);
+    console.error('환경 변수 NODE_ENV:', process.env.NODE_ENV);
+    throw new Error(`콘텐츠 저장 오류: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
   }
 }
 
