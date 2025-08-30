@@ -203,20 +203,25 @@ export function GoogleTranslate() {
         });
       }
 
-      // 언어 선택 시에만 실행
-      const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
-      if (combo) {
-        combo.addEventListener("change", () => {
-          updateLanguageOptions();
-          hideFeedbackElements();
-          
-          // 번역 완료 후 위젯 제거 (선택사항)
-          setTimeout(() => {
-            const el = document.getElementById("google_translate_element");
-            if (el) el.style.display = "none";
-          }, 1000);
-        });
-      }
+             // 언어 선택 시에만 실행
+       const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+       if (combo) {
+         // 초기 1회 즉시 적용
+         updateLanguageOptions();
+         hideFeedbackElements();
+
+         // 이후 사용자가 바꿀 때마다 적용
+         combo.addEventListener("change", () => {
+           updateLanguageOptions();
+           hideFeedbackElements();
+           
+           // 번역 완료 후 위젯 숨김 (완전 제거 대신 시각만 숨김)
+           setTimeout(() => {
+             const el = document.getElementById("google_translate_element");
+             if (el) el.style.opacity = "0";
+           }, 1000);
+         });
+       }
     }
 
     function handleAdminModeChange(enabled: boolean) {
@@ -324,5 +329,10 @@ export function GoogleTranslate() {
     };
   }, []);
 
-  return null;
+  return (
+    <div
+      id="google_translate_element"
+      style={{ position: "fixed", top: 0, right: 0, zIndex: 9999, opacity: 0, pointerEvents: "none" }}
+    />
+  );
 }
