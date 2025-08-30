@@ -444,8 +444,10 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                   
                   <div className="space-y-4">
                     <div onMouseEnter={blockTranslationFeedback}>
-                      <label className="block text-sm font-medium mb-2">제목 *</label>
+                      <label htmlFor="title" className="block text-sm font-medium mb-2">제목 *</label>
                       <Input
+                        id="title"
+                        name="title"
                         value={formData.title}
                         onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                         placeholder="제목을 입력하세요"
@@ -454,8 +456,10 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                     </div>
 
                     <div onMouseEnter={blockTranslationFeedback}>
-                      <label className="block text-sm font-medium mb-2">작성자 *</label>
+                      <label htmlFor="author" className="block text-sm font-medium mb-2">작성자 *</label>
                       <Input
+                        id="author"
+                        name="author"
                         value={formData.author}
                         onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
                         placeholder="작성자명을 입력하세요"
@@ -464,8 +468,10 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                     </div>
 
                     <div onMouseEnter={blockTranslationFeedback}>
-                      <label className="block text-sm font-medium mb-2">내용 *</label>
+                      <label htmlFor="content" className="block text-sm font-medium mb-2">내용 *</label>
                       <Textarea
+                        id="content"
+                        name="content"
                         value={formData.content}
                         onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                         placeholder="내용을 입력하세요 (마크다운 지원)"
@@ -474,12 +480,15 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-2">태그</label>
+                    <div onMouseEnter={blockTranslationFeedback}>
+                      <label htmlFor="tags" className="block text-sm font-medium mb-2">태그</label>
                       <Input
+                        id="tags"
+                        name="tags"
                         value={formData.tags}
                         onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
                         placeholder="태그를 쉼표로 구분하여 입력하세요"
+                        onMouseEnter={blockTranslationFeedback}
                       />
                     </div>
 
@@ -606,8 +615,10 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                 
                 <div className="space-y-4">
                   <div onMouseEnter={blockTranslationFeedback}>
-                    <label className="block text-sm font-medium mb-2">제목 *</label>
+                    <label htmlFor="title-2" className="block text-sm font-medium mb-2">제목 *</label>
                     <Input
+                      id="title-2"
+                      name="title"
                       value={formData.title}
                       onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="제목을 입력하세요"
@@ -616,8 +627,10 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                   </div>
 
                   <div onMouseEnter={blockTranslationFeedback}>
-                    <label className="block text-sm font-medium mb-2">작성자 *</label>
+                    <label htmlFor="author-2" className="block text-sm font-medium mb-2">작성자 *</label>
                     <Input
+                      id="author-2"
+                      name="author"
                       value={formData.author}
                       onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
                       placeholder="작성자명을 입력하세요"
@@ -626,8 +639,10 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                   </div>
 
                   <div onMouseEnter={blockTranslationFeedback}>
-                    <label className="block text-sm font-medium mb-2">내용 *</label>
+                    <label htmlFor="content-2" className="block text-sm font-medium mb-2">내용 *</label>
                     <Textarea
+                      id="content-2"
+                      name="content"
                       value={formData.content}
                       onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                       placeholder="내용을 입력하세요 (마크다운 지원)"
@@ -636,12 +651,15 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">태그</label>
+                  <div onMouseEnter={blockTranslationFeedback}>
+                    <label htmlFor="tags-2" className="block text-sm font-medium mb-2">태그</label>
                     <Input
+                      id="tags-2"
+                      name="tags"
                       value={formData.tags}
                       onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
                       placeholder="태그를 쉼표로 구분하여 입력하세요"
+                      onMouseEnter={blockTranslationFeedback}
                     />
                   </div>
 
