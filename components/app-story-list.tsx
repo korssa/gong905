@@ -354,7 +354,6 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                                  {/* 본문 텍스트 */}
                  <div
                    className="whitespace-pre-wrap font-mono"
-                   translate="no"
                  >
                    {selected.content}
                  </div>

@@ -166,7 +166,6 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
               <div 
                 className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none font-mono"
                 style={{ maxWidth: '100%', wordWrap: 'break-word' }}
-                translate="no"
               >
                 {selectedStory.content}
               </div>
@@ -276,7 +275,6 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
                  <div className="prose prose-invert max-w-none">
                    <div 
                      className="text-gray-300 line-clamp-3 font-mono"
-                     translate="no"
                    >
                      {story.content.substring(0, 200) + (story.content.length > 200 ? '...' : '')}
                    </div>

@@ -42,7 +42,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
     author: "",
     type: 'news' as ContentType,
     tags: "",
-    isPublished: false,
+    isPublished: true, // 기본값을 true로 설정하여 게시되도록 함
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -121,7 +121,8 @@ export function NewsList({ type, onBack }: NewsListProps) {
         setLoading(true);
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
-        setContents(data.filter((c: ContentItem) => c.isPublished));
+        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
       } catch {
 
       } finally {
@@ -137,7 +138,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
     const interval = setInterval(blockTranslationFeedback, 1000);
     
     return () => clearInterval(interval);
-  }, [type]);
+  }, [type, isAuthenticated]);
 
   // 폼 초기화
   const resetForm = () => {
@@ -147,7 +148,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
       author: "",
       type: 'news' as ContentType,
       tags: "",
-      isPublished: false,
+      isPublished: true, // 기본값을 true로 설정
     });
     setEditingContent(null);
     setSelectedImage(null);
@@ -205,7 +206,8 @@ export function NewsList({ type, onBack }: NewsListProps) {
         // 콘텐츠 목록 다시 로드
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
-        setContents(data.filter((c: ContentItem) => c.isPublished));
+        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
       }
     } catch {
       alert('News 저장에 실패했습니다.');
@@ -224,7 +226,8 @@ export function NewsList({ type, onBack }: NewsListProps) {
       if (response.ok) {
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
-        setContents(data.filter((c: ContentItem) => c.isPublished));
+        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
       }
     } catch {
       // 삭제 실패
@@ -260,7 +263,8 @@ export function NewsList({ type, onBack }: NewsListProps) {
       if (response.ok) {
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
-        setContents(data.filter((c: ContentItem) => c.isPublished));
+        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
       }
     } catch {
       // 토글 실패
@@ -322,7 +326,6 @@ export function NewsList({ type, onBack }: NewsListProps) {
                              {/* 본문 텍스트 */}
                <div
                  className="whitespace-pre-wrap font-mono"
-                 translate="no"
                >
                  {selected.content}
                </div>

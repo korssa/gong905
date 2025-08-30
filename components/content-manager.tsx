@@ -185,7 +185,6 @@ export function ContentManager({
              <div
                className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none font-mono"
                style={{ wordWrap: "break-word" }}
-               translate="no"
              >
                {selectedContent.content}
              </div>
@@ -273,7 +272,7 @@ export function ContentManager({
                     />
                   </div>
                 )}
-                                 <div className="text-gray-300 whitespace-pre-wrap font-mono" translate="no">
+                                 <div className="text-gray-300 whitespace-pre-wrap font-mono">
                    {content.content}
                  </div>
                 {content.tags && content.tags.length > 0 && (
