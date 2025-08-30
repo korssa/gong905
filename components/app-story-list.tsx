@@ -260,6 +260,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         }
         
                  console.error('저장 실패:', errorData);
+         console.error('전체 오류 객체:', JSON.stringify(errorData, null, 2));
          const errorMessage = errorData.details ? `${errorData.error}: ${errorData.details}` : errorData.error || '저장에 실패했습니다.';
          throw new Error(errorMessage);
       }
