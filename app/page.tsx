@@ -762,7 +762,7 @@ export default function Home() {
        </main>
 
                     {/* 푸터 */}
-        <footer className="border-t py-8 mt-16 bg-black">
+        <footer className="border-t py-8 mt-16 bg-black" onMouseEnter={blockTranslationFeedback}>
                      <div className="container mx-auto text-center max-w-6xl" style={{ maxWidth: '1152px' }}>
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
@@ -771,7 +771,7 @@ export default function Home() {
                    <div className="space-y-3">
                                                                                           <button 
                           onClick={(e) => handleFooterLinkClick(handleAllAppsClick, e)} 
-                          onMouseEnter={handleFooterHover}
+                          onMouseEnter={blockTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors">All Apps</div>
@@ -779,7 +779,7 @@ export default function Home() {
                        </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleNewReleasesClick, e)} 
-                          onMouseEnter={handleFooterHover}
+                          onMouseEnter={blockTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors">New Releases</div>
@@ -787,7 +787,7 @@ export default function Home() {
                        </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleFeaturedAppsClick, e)} 
-                          onMouseEnter={handleFooterHover}
+                          onMouseEnter={blockTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors">Featured Apps</div>
@@ -795,7 +795,7 @@ export default function Home() {
                        </button>
                                                                                               <button 
                            onClick={(e) => handleFooterLinkClick(handleEventsClick, e)} 
-                           onMouseEnter={handleFooterHover}
+                           onMouseEnter={blockTranslationFeedback}
                            className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                          >
                           <div className="text-base font-medium group-hover:text-amber-400 transition-colors">Events</div>
@@ -809,7 +809,7 @@ export default function Home() {
                    <div className="space-y-3">
                                                                                                                    <button 
                            onClick={(e) => handleFooterLinkClick(handleAppStoryClick, e)} 
-                           onMouseEnter={handleFooterHover}
+                           onMouseEnter={blockTranslationFeedback}
                            className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                          >
                           <div className="text-base font-medium group-hover:text-amber-400 transition-colors">App Story</div>
@@ -817,7 +817,7 @@ export default function Home() {
                         </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleNewsClick, e)} 
-                          onMouseEnter={handleFooterHover}
+                          onMouseEnter={blockTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors">News</div>
@@ -827,13 +827,13 @@ export default function Home() {
                          type="feedback"
                          buttonText="Feedback"
                          buttonDescription="Your thoughts matter"
-                         onMouseEnter={handleFooterHover}
+                         onMouseEnter={blockTranslationFeedback}
                        />
                                                                                            <MailForm
                           type="contact"
                           buttonText="Contact Us"
                           buttonDescription="Help & answers"
-                          onMouseEnter={handleFooterHover}
+                          onMouseEnter={blockTranslationFeedback}
                         />
                    </div>
                </div>
