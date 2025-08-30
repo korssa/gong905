@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { del } from '@vercel/blob';
 
 interface AppItem {
   id: string;
@@ -23,6 +24,43 @@ interface AppItem {
   category?: string;
 }
 
+// 파일 삭제 헬퍼 함수
+async function deleteFile(url: string): Promise<boolean> {
+  try {
+    // Vercel Blob Storage URL인 경우
+    if (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com')) {
+      await del(url);
+      return true;
+    }
+
+    // 로컬 파일인 경우
+    if (url.startsWith('/uploads/')) {
+      const fileName = url.split('/').pop();
+      if (!fileName) {
+        return false;
+      }
+
+      const filePath = path.join(process.cwd(), 'public', 'uploads', fileName);
+      
+      // 파일 존재 여부 확인
+      try {
+        await fs.access(filePath);
+      } catch {
+        return false;
+      }
+
+      // 파일 삭제
+      await fs.unlink(filePath);
+      return true;
+    }
+
+    // 외부 URL인 경우 (삭제 불가)
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { id, iconUrl, screenshotUrls } = await request.json();
@@ -35,41 +73,18 @@ export async function DELETE(request: NextRequest) {
     }
 
     // 아이콘 파일 삭제
+    let iconDeleted = false;
     if (iconUrl) {
-      try {
-        const response = await fetch('/api/delete-file', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url: iconUrl }),
-        });
-        
-        if (response.ok) {
-          // 아이콘 삭제 성공
-        }
-      } catch (_error) {
-        // 아이콘 삭제 실패는 무시하고 계속 진행
-      }
+      iconDeleted = await deleteFile(iconUrl);
     }
 
     // 스크린샷 파일들 삭제
+    let screenshotsDeleted = 0;
     if (screenshotUrls && Array.isArray(screenshotUrls)) {
       for (const screenshotUrl of screenshotUrls) {
-        try {
-          const response = await fetch('/api/delete-file', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url: screenshotUrl }),
-          });
-          
-          if (response.ok) {
-            // 스크린샷 삭제 성공
-          }
-        } catch (_error) {
-          // 개별 스크린샷 삭제 실패는 무시하고 계속 진행
+        const deleted = await deleteFile(screenshotUrl);
+        if (deleted) {
+          screenshotsDeleted++;
         }
       }
     }
@@ -97,8 +112,8 @@ export async function DELETE(request: NextRequest) {
     const result = {
       success: true,
       deletedAppId: id,
-      deletedIcon: !!iconUrl,
-      deletedScreenshots: screenshotUrls ? screenshotUrls.length : 0
+      deletedIcon: iconDeleted,
+      deletedScreenshots: screenshotsDeleted
     };
 
     return NextResponse.json(result);
