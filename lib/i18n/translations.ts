@@ -161,5 +161,10 @@ export const translations = {
   }
 } as const;
 
+export const languageNames = {
+  en: "English",
+  ko: "한국어"
+} as const;
+
 export type Language = keyof typeof translations;
 export type TranslationKey = keyof typeof translations.en;
