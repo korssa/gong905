@@ -326,10 +326,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
-                  onClick={() => {
-                    resetForm();
-                    setIsDialogOpen(true);
-                  }} 
+                  onClick={resetForm}
                   className="gap-2"
                 >
                   <Plus className="h-4 w-4" />
