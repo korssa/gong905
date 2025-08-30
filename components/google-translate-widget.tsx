@@ -202,25 +202,152 @@ export function GoogleTranslateWidget() {
         });
       }
 
-      // 언어 선택 시에만 실행
-      const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
-      if (combo) {
-        // 초기 1회 즉시 적용
-        updateLanguageOptions();
-        hideFeedbackElements();
+             // 언어 선택 시에만 실행
+       const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+       if (combo) {
+         // 초기 1회 즉시 적용
+         updateLanguageOptions();
+         hideFeedbackElements();
 
-        // 이후 사용자가 바꿀 때마다 적용
-        combo.addEventListener("change", () => {
-          updateLanguageOptions();
-          hideFeedbackElements();
-          
-          // 번역 완료 후 위젯 숨김 (완전 제거 대신 시각만 숨김)
-          setTimeout(() => {
-            const el = document.getElementById("google_translate_element");
-            if (el) el.style.opacity = "0";
-          }, 1000);
-        });
-      }
+         // 이후 사용자가 바꿀 때마다 적용
+         combo.addEventListener("change", () => {
+           updateLanguageOptions();
+           hideFeedbackElements();
+           
+           // 번역 완료 후 위젯 숨김 (완전 제거 대신 시각만 숨김)
+           setTimeout(() => {
+             const el = document.getElementById("google_translate_element");
+             if (el) el.style.opacity = "0";
+           }, 1000);
+         });
+
+         // 지속적인 매핑 적용 (위젯 재렌더링 방지)
+         setInterval(() => {
+           const currentCombo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+           if (currentCombo && currentCombo.options.length > 1) {
+             Array.from(currentCombo.options).forEach((option) => {
+               const value = option.value.trim().split("|")[0].toLowerCase();
+               const langLabelMap: { [key: string]: string } = {
+                 af: "South Africa - Afrikaans",
+                 sq: "Albania - Shqip",
+                 am: "Ethiopia - አማርኛ",
+                 ar: "Saudi Arabia - العربية",
+                 hy: "Armenia - Հայերեն",
+                 az: "Azerbaijan - Azərbaycan dili",
+                 eu: "Basque Country - Euskara",
+                 be: "Belarus - Беларуская",
+                 bn: "Bangladesh - বাংলা",
+                 bs: "Bosnia - Bosanski",
+                 bg: "Bulgaria - Български",
+                 ca: "Catalonia - Català",
+                 ceb: "Philippines - Cebuano",
+                 zh: "China - 中文(简体)",
+                 "zh-cn": "China - 中文(简体)",
+                 "zh-tw": "Taiwan - 中文(繁體)",
+                 hr: "Croatia - Hrvatski",
+                 cs: "Czech Republic - Čeština",
+                 da: "Denmark - Dansk",
+                 nl: "Netherlands - Nederlands",
+                 en: "USA - English",
+                 eo: "Esperanto - Esperanto",
+                 et: "Estonia - Eesti",
+                 fi: "Finland - Suomi",
+                 fr: "France - Français",
+                 fy: "Netherlands - Frysk",
+                 gl: "Spain - Galego",
+                 ka: "Georgia - ქართული",
+                 de: "Germany - Deutsch",
+                 el: "Greece - Ελληνικά",
+                 gu: "India - ગુજરાતી",
+                 ht: "Haiti - Kreyòl ayisyen",
+                 ha: "Nigeria - Hausa",
+                 haw: "Hawaii - ʻŌlelo Hawaiʻi",
+                 he: "Israel - עברית",
+                 hi: "India - हिन्दी",
+                 hmn: "Hmong - Hmoob",
+                 hu: "Hungary - Magyar",
+                 is: "Iceland - Íslenska",
+                 ig: "Nigeria - Igbo",
+                 id: "Indonesia - Bahasa Indonesia",
+                 ga: "Ireland - Gaeilge",
+                 it: "Italy - Italiano",
+                 ja: "Japan - 日本語",
+                 jv: "Indonesia - Jawa",
+                 kn: "India - ಕನ್ನಡ",
+                 kk: "Kazakhstan - Қазақ тілі",
+                 km: "Cambodia - ភាសាខ្មែរ",
+                 rw: "Rwanda - Kinyarwanda",
+                 ko: "Korea - 한국어",
+                 ku: "Kurdistan - Kurdî",
+                 ky: "Kyrgyzstan - Кыргызча",
+                 lo: "Laos - ລາວ",
+                 la: "Ancient Rome - Latina",
+                 lv: "Latvia - Latviešu",
+                 lt: "Lithuania - Lietuvių",
+                 lb: "Luxembourg - Lëtzebuergesch",
+                 mk: "North Macedonia - Македонски",
+                 mg: "Madagascar - Malagasy",
+                 ms: "Malaysia - Bahasa Melayu",
+                 ml: "India - മലയാളം",
+                 mt: "Malta - Malti",
+                 mi: "New Zealand - Māori",
+                 mr: "India - मराठी",
+                 mn: "Mongolia - Монгол",
+                 my: "Myanmar - မြန်မာစာ",
+                 ne: "Nepal - नेपाली",
+                 no: "Norway - Norsk",
+                 ny: "Malawi - Nyanja",
+                 or: "India - ଓଡ଼ିଆ",
+                 ps: "Afghanistan - پښتو",
+                 fa: "Iran - فارسی",
+                 pl: "Poland - Polski",
+                 pt: "Portugal - Português",
+                 "pt-br": "Brazil - Português (BR)",
+                 pa: "India - ਪੰਜਾਬੀ",
+                 ro: "Romania - Română",
+                 ru: "Russia - Русский",
+                 sm: "Samoa - Gagana Samoa",
+                 gd: "Scotland - Gàidhlig",
+                 sr: "Serbia - Српски",
+                 st: "Lesotho - Sesotho",
+                 sn: "Zimbabwe - Shona",
+                 sd: "Pakistan - سنڌي",
+                 si: "Sri Lanka - සිංහල",
+                 sk: "Slovakia - Slovenčina",
+                 sl: "Slovenia - Slovenščina",
+                 so: "Somalia - Soomaali",
+                 es: "Spain - Español",
+                 su: "Indonesia - Basa Sunda",
+                 sw: "East Africa - Kiswahili",
+                 sv: "Sweden - Svenska",
+                 tl: "Philippines - Tagalog",
+                 tg: "Tajikistan - Тоҷикӣ",
+                 ta: "India - தமிழ்",
+                 tt: "Tatarstan - Татар",
+                 te: "India - తెలుగు",
+                 th: "Thailand - ไทย",
+                 tr: "Turkey - Türkçe",
+                 tk: "Turkmenistan - Türkmençe",
+                 uk: "Ukraine - Українська",
+                 ur: "Pakistan - اردو",
+                 ug: "Xinjiang - ئۇيغۇرچە",
+                 uz: "Uzbekistan - Oʻzbekcha",
+                 vi: "Vietnam - Tiếng Việt",
+                 cy: "Wales - Cymraeg",
+                 xh: "South Africa - isiXhosa",
+                 yi: "Ashkenazi - ייִדיש",
+                 yo: "Nigeria - Yorùbá",
+                 zu: "South Africa - isiZulu",
+               };
+               
+               if (langLabelMap[value] && !option.dataset.updated) {
+                 option.text = langLabelMap[value];
+                 option.dataset.updated = "true";
+               }
+             });
+           }
+         }, 3000); // 3초마다 지속적으로 매핑 적용
+       }
     }
 
     function handleAdminModeChange(enabled: boolean) {
@@ -282,10 +409,36 @@ export function GoogleTranslateWidget() {
       return false;
     }
 
+    // 지속적인 매핑 적용 (위젯이 재렌더링되어도 유지)
+    function applyPersistentMapping() {
+      const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+      if (combo) {
+        // 기존 이벤트 리스너 제거 (중복 방지)
+        combo.removeEventListener("change", handleComboChange);
+        
+        // 새로운 이벤트 리스너 추가
+        combo.addEventListener("change", handleComboChange);
+        
+        // 즉시 매핑 적용
+        updateLanguageOptions();
+        hideFeedbackElements();
+      }
+    }
+
+    // 콤보 변경 핸들러
+    function handleComboChange() {
+      setTimeout(() => {
+        updateLanguageOptions();
+        hideFeedbackElements();
+      }, 100);
+    }
+
     // 위젯 로드 감지 및 언어 매핑 초기화
     const checkAndInitialize = () => {
       if (initializeLanguageMapping()) {
-        return; // 성공하면 종료
+        // 성공하면 지속적인 매핑 시작
+        setInterval(applyPersistentMapping, 2000); // 2초마다 체크
+        return;
       }
       
       // 실패하면 다시 시도
@@ -297,7 +450,7 @@ export function GoogleTranslateWidget() {
       setTimeout(checkAndInitialize, 1000);
     });
 
-    // DOM 변경 감지 (MutationObserver 사용)
+    // DOM 변경 감지 (MutationObserver 사용) - 더 강력한 감지
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList') {
@@ -305,7 +458,10 @@ export function GoogleTranslateWidget() {
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node as Element;
               if (element.querySelector && element.querySelector('.goog-te-combo')) {
-                setTimeout(initializeLanguageMapping, 100);
+                setTimeout(() => {
+                  applyPersistentMapping();
+                  initializeLanguageMapping();
+                }, 100);
               }
             }
           });
