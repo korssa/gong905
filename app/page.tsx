@@ -611,17 +611,23 @@ export default function Home() {
   // 전역 admin mode 트리거 등록 (AdminUploadDialog 및 HiddenAdminAccess에서 호출)
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    
     // Initialize handler and seed adminVisible from session storage only
     const initial = (() => {
       try {
-        return sessionStorage.getItem('admin-session-active') === '1';
+        const sessionActive = sessionStorage.getItem('admin-session-active') === '1';
+        const isAuth = isAuthenticated;
+        console.log('🔍 Admin Debug:', { sessionActive, isAuth, adminVisible });
+        return sessionActive && isAuth;
       } catch {
         return false;
       }
     })();
+    
     setAdminVisible(Boolean(initial));
 
     window.adminModeChange = (visible: boolean) => {
+      console.log('🔍 Admin Mode Change:', visible);
       setAdminVisible(Boolean(visible));
     };
 
@@ -633,7 +639,7 @@ export default function Home() {
         // ignore
       }
     };
-  }, []);
+  }, [isAuthenticated, adminVisible]);
 
   // News 클릭 핸들러
   const handleNewsClick = () => {

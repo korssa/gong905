@@ -67,24 +67,36 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
     if (!isMounted) return;
     
     try {
+      console.log('🔍 Login attempt with password:', password ? '***' : 'empty');
       if (login(password)) {
+        console.log('✅ Login successful');
         setPassword("");
         // 로그인 성공 후 지연을 두고 다이얼로그 닫기
         timeoutRef.current = setTimeout(() => {
           if (isMounted) {
+            console.log('🔍 Closing dialog and setting admin mode');
             onClose();
             // Notify page to show admin controls
             if (typeof window !== 'undefined') {
-              if (window.adminModeChange) window.adminModeChange(true);
-              try { sessionStorage.setItem('admin-session-active', '1'); } catch {}
+              if (window.adminModeChange) {
+                console.log('🔍 Calling adminModeChange(true)');
+                window.adminModeChange(true);
+              }
+              try { 
+                sessionStorage.setItem('admin-session-active', '1');
+                console.log('✅ Session storage set');
+              } catch (e) {
+                console.error('❌ Session storage error:', e);
+              }
             }
           }
         }, 200);
       } else {
+        console.log('❌ Login failed - invalid password');
         alert("잘못된 관리자 비밀번호입니다.");
       }
-    } catch {
-      // Login error
+    } catch (error) {
+      console.error('❌ Login error:', error);
       alert("로그인 중 오류가 발생했습니다.");
     }
   }, [login, password, onClose, isMounted]);
