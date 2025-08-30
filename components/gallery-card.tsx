@@ -47,11 +47,11 @@ export function GalleryCard({ item, viewMode }: GalleryCardProps) {
               <p className="text-sm text-muted-foreground mb-2">
                 작성자: {item.author}
               </p>
-              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                <span>{likes} 좋아요</span>
-                <span>{item.views} 조회</span>
-                <span>{item.uploadDate}</span>
-              </div>
+                             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                 <span>{likes} 좋아요</span>
+                 <span>{item.views} 조회</span>
+                 <span>{item.uploadDate}</span>
+               </div>
               {item.tags && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {item.tags.map((tag, index) => (
@@ -131,13 +131,13 @@ export function GalleryCard({ item, viewMode }: GalleryCardProps) {
         <p className="text-xs text-muted-foreground mb-2">{item.author}</p>
         
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center space-x-3">
-            <span className="flex items-center gap-1">
-              <Heart className="h-3 w-3" />
-              {likes}
-            </span>
-            <span>{item.views}</span>
-          </div>
+                     <div className="flex items-center space-x-3">
+             <span className="flex items-center gap-1">
+               <Heart className="h-3 w-3" />
+               {likes}
+             </span>
+             <span>{item.views}</span>
+           </div>
           <span>{item.uploadDate}</span>
         </div>
 

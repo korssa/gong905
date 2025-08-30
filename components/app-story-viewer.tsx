@@ -192,10 +192,7 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
                     <Calendar className="h-3 w-3" />
                     {new Date(story.publishDate).toLocaleDateString()}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    {story.views}회 조회
-                  </span>
+                  
                 </CardDescription>
               </CardHeader>
               <CardContent>

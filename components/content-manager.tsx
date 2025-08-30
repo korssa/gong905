@@ -96,7 +96,7 @@ export function ContentManager({
             <div className="flex items-center gap-4 text-gray-400 text-sm">
               <span className="flex items-center gap-1"><User className="h-4 w-4" />{selectedContent.author}</span>
               <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{new Date(selectedContent.publishDate).toLocaleDateString()}</span>
-              <span className="flex items-center gap-1"><Eye className="h-4 w-4" />{selectedContent.views}회 조회</span>
+              
               {!selectedContent.isPublished && (
                 <Badge variant="secondary" className="text-xs">임시저장</Badge>
               )}
@@ -195,7 +195,7 @@ export function ContentManager({
                 <CardDescription className="text-gray-400 flex items-center gap-4 mt-2">
                   <span className="flex items-center gap-1"><User className="h-3 w-3" />{content.author}</span>
                   <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(content.publishDate).toLocaleDateString()}</span>
-                  <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{content.views}회 조회</span>
+                  
                 </CardDescription>
               </CardHeader>
               <CardContent>
