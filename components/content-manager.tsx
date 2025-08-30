@@ -121,6 +121,44 @@ export function ContentManager({
     if (savedLikes) {
       setLikes(JSON.parse(savedLikes));
     }
+
+    // 번역 피드백 차단 함수
+    const blockTranslationFeedback = () => {
+      try {
+        const selectors = [
+          '[class*="goog-"]',
+          '[id*="goog-"]',
+        ];
+        selectors.forEach(selector => {
+          document.querySelectorAll(selector).forEach(el => {
+            Object.assign((el as HTMLElement).style, {
+              display: 'none',
+              visibility: 'hidden',
+              opacity: '0',
+              pointerEvents: 'none',
+              position: 'absolute',
+              zIndex: '-9999',
+              left: '-9999px',
+              top: '-9999px',
+            });
+          });
+        });
+      } catch {
+        // 에러 무시
+      }
+    };
+
+    // DOM 변화 감지 후 제거
+    const observer = new MutationObserver(() => blockTranslationFeedback());
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    // 최초 실행
+    blockTranslationFeedback();
+
+    return () => observer.disconnect();
   }, [type]);
 
   // 좋아요 핸들러
@@ -182,12 +220,12 @@ export function ContentManager({
 
                      {/* 본문 */}
            <article className="prose prose-invert dark:prose-invert" onMouseEnter={blockTranslationFeedback}>
-             <div
+             <pre
                className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none font-mono"
                style={{ wordWrap: "break-word" }}
              >
                {selectedContent.content}
-             </div>
+             </pre>
            </article>
 
                      {/* 태그 */}
@@ -272,9 +310,9 @@ export function ContentManager({
                     />
                   </div>
                 )}
-                                 <div className="text-gray-300 whitespace-pre-wrap font-mono">
+                                 <pre className="text-gray-300 whitespace-pre-wrap font-mono">
                    {content.content}
-                 </div>
+                 </pre>
                 {content.tags && content.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {content.tags.map((tag, idx) => (

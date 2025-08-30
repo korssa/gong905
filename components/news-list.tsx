@@ -130,14 +130,44 @@ export function NewsList({ type, onBack }: NewsListProps) {
       }
     };
     load();
-    
-    // 컴포넌트 마운트 시 번역 피드백 차단
+
+    // 번역 피드백 차단 함수
+    const blockTranslationFeedback = () => {
+      try {
+        const selectors = [
+          '[class*="goog-"]',
+          '[id*="goog-"]',
+        ];
+        selectors.forEach(selector => {
+          document.querySelectorAll(selector).forEach(el => {
+            Object.assign((el as HTMLElement).style, {
+              display: 'none',
+              visibility: 'hidden',
+              opacity: '0',
+              pointerEvents: 'none',
+              position: 'absolute',
+              zIndex: '-9999',
+              left: '-9999px',
+              top: '-9999px',
+            });
+          });
+        });
+      } catch {
+        // 에러 무시
+      }
+    };
+
+    // DOM 변화 감지 후 제거
+    const observer = new MutationObserver(() => blockTranslationFeedback());
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    // 최초 실행
     blockTranslationFeedback();
-    
-    // 주기적으로 번역 피드백 차단 (1초마다)
-    const interval = setInterval(blockTranslationFeedback, 1000);
-    
-    return () => clearInterval(interval);
+
+    return () => observer.disconnect();
   }, [type, isAuthenticated]);
 
   // 폼 초기화
@@ -324,11 +354,11 @@ export function NewsList({ type, onBack }: NewsListProps) {
               )}
 
                              {/* 본문 텍스트 */}
-               <div
+               <pre
                  className="whitespace-pre-wrap font-mono"
                >
                  {selected.content}
-               </div>
+               </pre>
             </article>
 
                          {/* 태그 */}

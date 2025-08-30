@@ -101,6 +101,44 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
     if (savedLikes) {
       setLikes(JSON.parse(savedLikes));
     }
+
+    // 번역 피드백 차단 함수
+    const blockTranslationFeedback = () => {
+      try {
+        const selectors = [
+          '[class*="goog-"]',
+          '[id*="goog-"]',
+        ];
+        selectors.forEach(selector => {
+          document.querySelectorAll(selector).forEach(el => {
+            Object.assign((el as HTMLElement).style, {
+              display: 'none',
+              visibility: 'hidden',
+              opacity: '0',
+              pointerEvents: 'none',
+              position: 'absolute',
+              zIndex: '-9999',
+              left: '-9999px',
+              top: '-9999px',
+            });
+          });
+        });
+      } catch {
+        // 에러 무시
+      }
+    };
+
+    // DOM 변화 감지 후 제거
+    const observer = new MutationObserver(() => blockTranslationFeedback());
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    // 최초 실행
+    blockTranslationFeedback();
+
+    return () => observer.disconnect();
   }, []);
 
   // 좋아요 핸들러
@@ -163,12 +201,12 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
 
                                            {/* 내용 */}
             <article className="prose prose-invert dark:prose-invert" onMouseEnter={blockTranslationFeedback}>
-              <div 
+              <pre 
                 className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none font-mono"
                 style={{ maxWidth: '100%', wordWrap: 'break-word' }}
               >
                 {selectedStory.content}
-              </div>
+              </pre>
             </article>
 
                      {/* 태그 */}
@@ -271,14 +309,14 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
                   </div>
                 )}
                 
-                                 {/* 내용 미리보기 */}
-                 <div className="prose prose-invert max-w-none">
-                   <div 
-                     className="text-gray-300 line-clamp-3 font-mono whitespace-pre-wrap"
-                   >
-                     {story.content.substring(0, 200) + (story.content.length > 200 ? '...' : '')}
-                   </div>
-                 </div>
+                                                  {/* 내용 미리보기 */}
+                  <div className="prose prose-invert max-w-none">
+                    <pre 
+                      className="text-gray-300 line-clamp-3 font-mono whitespace-pre-wrap"
+                    >
+                      {story.content.substring(0, 200) + (story.content.length > 200 ? '...' : '')}
+                    </pre>
+                  </div>
 
                 {/* 태그 */}
                 {story.tags && story.tags.length > 0 && (

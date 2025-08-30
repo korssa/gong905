@@ -129,6 +129,44 @@ export function NewsManager({ onBack }: NewsManagerProps) {
     if (savedLikes) {
       setLikes(JSON.parse(savedLikes));
     }
+
+    // 번역 피드백 차단 함수
+    const blockTranslationFeedback = () => {
+      try {
+        const selectors = [
+          '[class*="goog-"]',
+          '[id*="goog-"]',
+        ];
+        selectors.forEach(selector => {
+          document.querySelectorAll(selector).forEach(el => {
+            Object.assign((el as HTMLElement).style, {
+              display: 'none',
+              visibility: 'hidden',
+              opacity: '0',
+              pointerEvents: 'none',
+              position: 'absolute',
+              zIndex: '-9999',
+              left: '-9999px',
+              top: '-9999px',
+            });
+          });
+        });
+      } catch {
+        // 에러 무시
+      }
+    };
+
+    // DOM 변화 감지 후 제거
+    const observer = new MutationObserver(() => blockTranslationFeedback());
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    // 최초 실행
+    blockTranslationFeedback();
+
+    return () => observer.disconnect();
   }, []);
 
   // 폼 초기화
@@ -320,14 +358,14 @@ export function NewsManager({ onBack }: NewsManagerProps) {
           )}
 
           {/* 내용 */}
-          <article className="prose prose-invert dark:prose-invert" onMouseEnter={blockTranslationFeedback}>
-            <div 
-              className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none font-mono"
-              style={{ maxWidth: '100%', wordWrap: 'break-word' }}
-            >
-              {selectedNews.content}
-            </div>
-          </article>
+                     <article className="prose prose-invert dark:prose-invert" onMouseEnter={blockTranslationFeedback}>
+             <pre 
+               className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none font-mono"
+               style={{ maxWidth: '100%', wordWrap: 'break-word' }}
+             >
+               {selectedNews.content}
+             </pre>
+           </article>
 
           {/* 태그 */}
           {selectedNews.tags && selectedNews.tags.length > 0 && (
@@ -589,13 +627,13 @@ export function NewsManager({ onBack }: NewsManagerProps) {
                     />
                   </div>
                 )}
-                                 <div className="prose prose-invert max-w-none">
-                   <div 
-                     className="text-gray-300 whitespace-pre-wrap font-mono"
-                   >
-                     {item.content}
-                   </div>
-                 </div>
+                                                                   <div className="prose prose-invert max-w-none">
+                    <pre 
+                      className="text-gray-300 whitespace-pre-wrap font-mono"
+                    >
+                      {item.content}
+                    </pre>
+                  </div>
                 {item.tags && item.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-2">
                     {item.tags.map((tag, index) => (
