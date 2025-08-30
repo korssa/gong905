@@ -274,7 +274,7 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
                                  {/* 내용 미리보기 */}
                  <div className="prose prose-invert max-w-none">
                    <div 
-                     className="text-gray-300 line-clamp-3 font-mono"
+                     className="text-gray-300 line-clamp-3 font-mono whitespace-pre-wrap"
                    >
                      {story.content.substring(0, 200) + (story.content.length > 200 ? '...' : '')}
                    </div>
