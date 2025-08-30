@@ -43,7 +43,7 @@ export function GoogleTranslate() {
       new window.google.translate.TranslateElement(
         {
           pageLanguage: "ko",
-          layout: window.google.translate.TranslateElement!.InlineLayout!.HORIZONTAL!,
+          layout: window.google.translate.TranslateElement?.InlineLayout?.HORIZONTAL || 'horizontal',
           multilanguagePage: true,
           autoDisplay: false,
         },
@@ -236,6 +236,7 @@ export function GoogleTranslate() {
           });
 
           if (window.google) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (window.google as any).translate = {
               TranslateElement: function () {
                 return null;
