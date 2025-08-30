@@ -399,31 +399,81 @@ export function GoogleTranslateWidget() {
 
     window.adminModeChange = handleAdminModeChange;
 
-    // 위젯 로드 후 언어 매핑 설정 (더 확실하게)
-    function initializeLanguageMapping() {
-      const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
-      if (combo && combo.options.length > 1) {
-        startLanguageMapping();
-        return true;
-      }
-      return false;
-    }
+         // 위젯 리프레시 함수
+     function refreshWidget() {
+       try {
+         // 기존 위젯 제거
+         const existingElement = document.getElementById("google_translate_element");
+         if (existingElement) {
+           existingElement.innerHTML = '';
+         }
+         
+         // 기존 스크립트 제거
+         const existingScript = document.querySelector('script[src*="translate.google.com"]');
+         if (existingScript) {
+           document.head.removeChild(existingScript);
+         }
+         
+         // 새로운 스크립트 로드
+         const script = document.createElement("script");
+         script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+         script.async = true;
+         document.head.appendChild(script);
+         
+         // 위젯 재초기화
+         setTimeout(() => {
+           if (typeof window.googleTranslateElementInit === "function") {
+             window.googleTranslateElementInit();
+           }
+         }, 500);
+         
+       } catch (e) {
+         console.warn("Widget refresh failed", e);
+       }
+     }
 
-    // 지속적인 매핑 적용 (위젯이 재렌더링되어도 유지)
-    function applyPersistentMapping() {
-      const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
-      if (combo) {
-        // 기존 이벤트 리스너 제거 (중복 방지)
-        combo.removeEventListener("change", handleComboChange);
-        
-        // 새로운 이벤트 리스너 추가
-        combo.addEventListener("change", handleComboChange);
-        
-        // 즉시 매핑 적용
-        updateLanguageOptions();
-        hideFeedbackElements();
-      }
-    }
+     // 위젯 로드 후 언어 매핑 설정 (더 확실하게)
+     function initializeLanguageMapping() {
+       const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+       if (combo && combo.options.length > 1) {
+         startLanguageMapping();
+         return true;
+       }
+       return false;
+     }
+
+     // 지속적인 매핑 적용 (위젯이 재렌더링되어도 유지)
+     function applyPersistentMapping() {
+       const combo = document.querySelector(".goog-te-combo") as HTMLSelectElement;
+       if (combo) {
+         // 기존 이벤트 리스너 제거 (중복 방지)
+         combo.removeEventListener("change", handleComboChange);
+         
+         // 새로운 이벤트 리스너 추가
+         combo.addEventListener("change", handleComboChange);
+         
+         // 즉시 매핑 적용
+         updateLanguageOptions();
+         hideFeedbackElements();
+       }
+     }
+
+     // 페이지 리프레시 감지 및 위젯 재초기화
+     function handlePageRefresh() {
+       // 페이지가 리프레시되기 전에 상태 저장
+       sessionStorage.setItem('widget-needs-refresh', 'true');
+     }
+
+     // 페이지 로드 시 위젯 리프레시 필요 여부 확인
+     function checkAndRefreshWidget() {
+       const needsRefresh = sessionStorage.getItem('widget-needs-refresh');
+       if (needsRefresh === 'true') {
+         sessionStorage.removeItem('widget-needs-refresh');
+         setTimeout(() => {
+           refreshWidget();
+         }, 1000);
+       }
+     }
 
     // 콤보 변경 핸들러
     function handleComboChange() {
@@ -445,43 +495,92 @@ export function GoogleTranslateWidget() {
       setTimeout(checkAndInitialize, 1000);
     };
 
-    // 페이지 로드 후 시작
-    window.addEventListener("load", () => {
-      setTimeout(checkAndInitialize, 1000);
-    });
+         // 페이지 리프레시 감지 이벤트 리스너
+     window.addEventListener('beforeunload', handlePageRefresh);
+     
+     // 페이지 로드 후 시작
+     window.addEventListener("load", () => {
+       // 리프레시 후 위젯 재초기화 확인
+       checkAndRefreshWidget();
+       
+       // 일반적인 위젯 초기화
+       setTimeout(checkAndInitialize, 1000);
+     });
 
-    // DOM 변경 감지 (MutationObserver 사용) - 더 강력한 감지
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'childList') {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              const element = node as Element;
-              if (element.querySelector && element.querySelector('.goog-te-combo')) {
-                setTimeout(() => {
-                  applyPersistentMapping();
-                  initializeLanguageMapping();
-                }, 100);
-              }
-            }
-          });
-        }
-      });
-    });
+     // DOM 변경 감지 (MutationObserver 사용) - 더 강력한 감지
+     const observer = new MutationObserver((mutations) => {
+       mutations.forEach((mutation) => {
+         if (mutation.type === 'childList') {
+           mutation.addedNodes.forEach((node) => {
+             if (node.nodeType === Node.ELEMENT_NODE) {
+               const element = node as Element;
+               if (element.querySelector && element.querySelector('.goog-te-combo')) {
+                 setTimeout(() => {
+                   applyPersistentMapping();
+                   initializeLanguageMapping();
+                 }, 100);
+               }
+             }
+           });
+         }
+       });
+     });
 
-    // DOM 변경 감지 시작
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
+     // DOM 변경 감지 시작
+     observer.observe(document.body, {
+       childList: true,
+       subtree: true
+     });
 
-    return () => {
-      const existingScript = document.querySelector('script[src*="translate.google.com"]');
-      if (existingScript) document.head.removeChild(existingScript);
-      
-      // observer 정리
-      observer.disconnect();
-    };
+     // 수동 리프레시 버튼 추가 (개발용)
+     function addRefreshButton() {
+       const refreshButton = document.createElement('button');
+       refreshButton.textContent = '🔄';
+       refreshButton.title = 'Google Translate 위젯 새로고침';
+       refreshButton.style.cssText = `
+         position: fixed;
+         top: 10px;
+         right: 10px;
+         z-index: 10000;
+         background: #4285f4;
+         color: white;
+         border: none;
+         border-radius: 50%;
+         width: 40px;
+         height: 40px;
+         cursor: pointer;
+         font-size: 16px;
+         box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+       `;
+       
+       refreshButton.addEventListener('click', () => {
+         refreshWidget();
+       });
+       
+       document.body.appendChild(refreshButton);
+     }
+
+     // 개발 모드에서만 리프레시 버튼 표시
+     if (process.env.NODE_ENV === 'development') {
+       setTimeout(addRefreshButton, 2000);
+     }
+
+         return () => {
+       const existingScript = document.querySelector('script[src*="translate.google.com"]');
+       if (existingScript) document.head.removeChild(existingScript);
+       
+       // observer 정리
+       observer.disconnect();
+       
+       // 이벤트 리스너 정리
+       window.removeEventListener('beforeunload', handlePageRefresh);
+       
+       // 리프레시 버튼 제거
+       const refreshButton = document.querySelector('button[title="Google Translate 위젯 새로고침"]');
+       if (refreshButton) {
+         document.body.removeChild(refreshButton);
+       }
+     };
   }, []);
 
   return (
