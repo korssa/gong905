@@ -176,26 +176,36 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
   // 콘텐츠 저장
   const handleSubmit = async () => {
     try {
+      console.log('=== 콘텐츠 저장 시작 ===');
+      console.log('현재 formData:', formData);
+      
       // 필수 필드 검증
       if (!formData.title.trim()) {
+        console.log('제목 누락');
         alert('제목을 입력해주세요.');
         return;
       }
       if (!formData.author.trim()) {
+        console.log('작성자 누락');
         alert('작성자를 입력해주세요.');
         return;
       }
       if (!formData.content.trim()) {
+        console.log('내용 누락');
         alert('내용을 입력해주세요.');
         return;
       }
+
+      console.log('클라이언트 검증 통과');
 
       let imageUrl = null;
 
       // 이미지가 선택된 경우 업로드
       if (selectedImage) {
+        console.log('이미지 업로드 시작:', selectedImage.name);
         try {
           imageUrl = await uploadFile(selectedImage, 'content-images');
+          console.log('이미지 업로드 성공:', imageUrl);
         } catch (error) {
           console.error('이미지 업로드 오류:', error);
           throw new Error('이미지 업로드에 실패했습니다.');
@@ -208,7 +218,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         ? { id: editingContent.id, ...formData, imageUrl } 
         : { ...formData, imageUrl };
 
-      console.log('저장 요청:', { url, method, body });
+      console.log('API 요청 준비:', { url, method, body });
 
       const response = await fetch(url, {
         method,
@@ -216,7 +226,8 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         body: JSON.stringify(body),
       });
 
-      console.log('응답 상태:', response.status);
+      console.log('API 응답 상태:', response.status);
+      console.log('API 응답 헤더:', Object.fromEntries(response.headers.entries()));
 
       if (response.ok) {
         const result = await response.json();
@@ -226,18 +237,32 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         resetForm();
         
         // 콘텐츠 목록 다시 로드
+        console.log('콘텐츠 목록 다시 로드 시작');
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
         setContents(data.filter((c: ContentItem) => c.isPublished));
+        console.log('콘텐츠 목록 업데이트 완료');
         
         alert(editingContent ? 'App Story가 수정되었습니다.' : 'App Story가 저장되었습니다.');
       } else {
-        const errorData = await response.json();
+        console.log('API 응답 실패, 응답 텍스트 읽기 시작');
+        const responseText = await response.text();
+        console.log('API 응답 텍스트:', responseText);
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('JSON 파싱 실패:', parseError);
+          errorData = { error: responseText || '알 수 없는 오류' };
+        }
+        
         console.error('저장 실패:', errorData);
         throw new Error(errorData.error || '저장에 실패했습니다.');
       }
     } catch (error) {
       console.error('저장 오류:', error);
+      console.error('오류 스택:', error instanceof Error ? error.stack : '스택 없음');
       alert(error instanceof Error ? error.message : 'App Story 저장에 실패했습니다.');
     }
   };

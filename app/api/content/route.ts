@@ -38,17 +38,38 @@ async function loadContents(): Promise<ContentItem[]> {
 // 콘텐츠 저장
 async function saveContents(contents: ContentItem[]) {
   try {
-    console.log('saveContents 시작, 콘텐츠 수:', contents.length);
+    console.log('=== saveContents 시작 ===');
+    console.log('콘텐츠 수:', contents.length);
+    console.log('현재 작업 디렉토리:', process.cwd());
+    console.log('파일 경로:', CONTENT_FILE_PATH);
+    
+    console.log('데이터 파일 확인 시작');
     await ensureDataFile();
     console.log('데이터 파일 확인 완료');
     
+    console.log('JSON 데이터 생성 시작');
     const jsonData = JSON.stringify(contents, null, 2);
     console.log('JSON 데이터 생성 완료, 크기:', jsonData.length);
+    console.log('JSON 데이터 미리보기:', jsonData.substring(0, 200) + '...');
     
+    console.log('파일 쓰기 시작');
     await fs.writeFile(CONTENT_FILE_PATH, jsonData);
     console.log('파일 쓰기 완료:', CONTENT_FILE_PATH);
+    
+    // 파일이 실제로 생성되었는지 확인
+    try {
+      const stats = await fs.stat(CONTENT_FILE_PATH);
+      console.log('파일 크기:', stats.size, '바이트');
+    } catch (statError) {
+      console.error('파일 상태 확인 실패:', statError);
+    }
+    
+    console.log('=== saveContents 완료 ===');
   } catch (error) {
-    console.error('saveContents 오류:', error);
+    console.error('=== saveContents 오류 ===');
+    console.error('오류 타입:', typeof error);
+    console.error('오류 메시지:', error instanceof Error ? error.message : error);
+    console.error('오류 스택:', error instanceof Error ? error.stack : '스택 없음');
     throw new Error('콘텐츠 저장 오류');
   }
 }
@@ -86,11 +107,22 @@ export async function GET(request: NextRequest) {
 // POST: 새 콘텐츠 생성
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST 요청 시작');
+    console.log('=== POST 요청 시작 ===');
+    console.log('요청 URL:', request.url);
+    console.log('요청 헤더:', Object.fromEntries(request.headers.entries()));
+    
     const body: ContentFormData & { imageUrl?: string } = await request.json();
     console.log('요청 본문:', body);
+    console.log('요청 본문 타입:', typeof body);
+    console.log('요청 본문 키들:', Object.keys(body || {}));
     
     // 필수 필드 검증
+    console.log('=== 필수 필드 검증 시작 ===');
+    console.log('title:', body.title, '타입:', typeof body.title);
+    console.log('author:', body.author, '타입:', typeof body.author);
+    console.log('content:', body.content, '타입:', typeof body.content);
+    console.log('type:', body.type, '타입:', typeof body.type);
+    
     if (!body.title?.trim()) {
       console.log('제목 누락');
       return NextResponse.json({ error: '제목은 필수입니다.' }, { status: 400 });
@@ -108,10 +140,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '콘텐츠 타입은 필수입니다.' }, { status: 400 });
     }
     
-    console.log('필수 필드 검증 통과');
+    console.log('=== 필수 필드 검증 통과 ===');
+    console.log('기존 콘텐츠 로드 시작');
     const contents = await loadContents();
     console.log('기존 콘텐츠 수:', contents.length);
     
+    console.log('=== 새 콘텐츠 객체 생성 ===');
     const newContent: ContentItem = {
       id: Date.now().toString(),
       title: body.title.trim(),
@@ -125,16 +159,21 @@ export async function POST(request: NextRequest) {
       imageUrl: body.imageUrl,
     };
 
-    console.log('새 콘텐츠 생성:', newContent);
+    console.log('새 콘텐츠 생성 완료:', newContent);
     contents.push(newContent);
+    console.log('콘텐츠 배열에 추가 완료, 총 개수:', contents.length);
     
-    console.log('콘텐츠 저장 시작');
+    console.log('=== 콘텐츠 저장 시작 ===');
     await saveContents(contents);
-    console.log('콘텐츠 저장 완료');
+    console.log('=== 콘텐츠 저장 완료 ===');
 
+    console.log('=== 응답 반환 ===');
     return NextResponse.json(newContent, { status: 201 });
   } catch (error) {
-    console.error('콘텐츠 생성 오류:', error);
+    console.error('=== 콘텐츠 생성 오류 ===');
+    console.error('오류 타입:', typeof error);
+    console.error('오류 메시지:', error instanceof Error ? error.message : error);
+    console.error('오류 스택:', error instanceof Error ? error.stack : '스택 없음');
     return NextResponse.json({ error: '콘텐츠 생성에 실패했습니다.' }, { status: 500 });
   }
 }
