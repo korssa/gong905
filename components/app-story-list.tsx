@@ -20,7 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, EyeOff, Calendar, User, FileText, ArrowLeft } from "lucide-react";
+import { Plus, Edit, Trash2, EyeOff, Eye, Calendar, User, FileText, ArrowLeft } from "lucide-react";
 import { ContentItem, ContentFormData, ContentType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
 import { uploadFile } from "@/lib/storage-adapter";
