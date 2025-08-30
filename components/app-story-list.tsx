@@ -417,15 +417,22 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
           
           {/* 관리자 모드에서만 추가 버튼 표시 */}
           {isAuthenticated && (
-            <div className="mt-6">
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={resetForm} className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    새 App Story 작성
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+                         <div className="mt-6">
+               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                 <DialogTrigger asChild>
+                   <Button 
+                     onClick={resetForm} 
+                     className="gap-2"
+                     onMouseEnter={blockTranslationFeedback}
+                   >
+                     <Plus className="h-4 w-4" />
+                     새 App Story 작성
+                   </Button>
+                 </DialogTrigger>
+                 <DialogContent 
+                   className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto"
+                   onMouseEnter={blockTranslationFeedback}
+                 >
                   <DialogHeader>
                     <DialogTitle>
                       {editingContent ? 'App Story 수정' : '새 App Story 작성'}
@@ -436,31 +443,34 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                   </DialogHeader>
                   
                   <div className="space-y-4">
-                    <div>
+                    <div onMouseEnter={blockTranslationFeedback}>
                       <label className="block text-sm font-medium mb-2">제목 *</label>
                       <Input
                         value={formData.title}
                         onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                         placeholder="제목을 입력하세요"
+                        onMouseEnter={blockTranslationFeedback}
                       />
                     </div>
 
-                    <div>
+                    <div onMouseEnter={blockTranslationFeedback}>
                       <label className="block text-sm font-medium mb-2">작성자 *</label>
                       <Input
                         value={formData.author}
                         onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
                         placeholder="작성자명을 입력하세요"
+                        onMouseEnter={blockTranslationFeedback}
                       />
                     </div>
 
-                    <div>
+                    <div onMouseEnter={blockTranslationFeedback}>
                       <label className="block text-sm font-medium mb-2">내용 *</label>
                       <Textarea
                         value={formData.content}
                         onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                         placeholder="내용을 입력하세요 (마크다운 지원)"
                         rows={10}
+                        onMouseEnter={blockTranslationFeedback}
                       />
                     </div>
 
@@ -526,22 +536,29 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                     </div>
                   </div>
 
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      취소
-                    </Button>
-                    <Button onClick={handleSubmit}>
-                      {editingContent ? '수정' : '저장'}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+                                     <DialogFooter>
+                     <Button 
+                       variant="outline" 
+                       onClick={() => setIsDialogOpen(false)}
+                       onMouseEnter={blockTranslationFeedback}
+                     >
+                       취소
+                     </Button>
+                     <Button 
+                       onClick={handleSubmit}
+                       onMouseEnter={blockTranslationFeedback}
+                     >
+                       {editingContent ? '수정' : '저장'}
+                     </Button>
+                   </DialogFooter>
+                 </DialogContent>
+               </Dialog>
+             </div>
+           )}
+         </div>
+       </div>
+     );
+   }
 
   // List view
   return (
@@ -561,16 +578,23 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-white mb-2">App Story</h2>
         <p className="text-gray-400">앱 개발 과정과 이야기를 확인해보세요</p>
-        {isAuthenticated && (
-          <div className="mt-4">
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={resetForm} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  새 App Story 작성
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+                 {isAuthenticated && (
+           <div className="mt-4">
+             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+               <DialogTrigger asChild>
+                 <Button 
+                   onClick={resetForm} 
+                   className="gap-2"
+                   onMouseEnter={blockTranslationFeedback}
+                 >
+                   <Plus className="h-4 w-4" />
+                   새 App Story 작성
+                 </Button>
+               </DialogTrigger>
+               <DialogContent 
+                 className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto"
+                 onMouseEnter={blockTranslationFeedback}
+               >
                 <DialogHeader>
                   <DialogTitle>
                     {editingContent ? 'App Story 수정' : '새 App Story 작성'}
@@ -581,31 +605,34 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                 </DialogHeader>
                 
                 <div className="space-y-4">
-                  <div>
+                  <div onMouseEnter={blockTranslationFeedback}>
                     <label className="block text-sm font-medium mb-2">제목 *</label>
                     <Input
                       value={formData.title}
                       onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="제목을 입력하세요"
+                      onMouseEnter={blockTranslationFeedback}
                     />
                   </div>
 
-                  <div>
+                  <div onMouseEnter={blockTranslationFeedback}>
                     <label className="block text-sm font-medium mb-2">작성자 *</label>
                     <Input
                       value={formData.author}
                       onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
                       placeholder="작성자명을 입력하세요"
+                      onMouseEnter={blockTranslationFeedback}
                     />
                   </div>
 
-                  <div>
+                  <div onMouseEnter={blockTranslationFeedback}>
                     <label className="block text-sm font-medium mb-2">내용 *</label>
                     <Textarea
                       value={formData.content}
                       onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                       placeholder="내용을 입력하세요 (마크다운 지원)"
                       rows={10}
+                      onMouseEnter={blockTranslationFeedback}
                     />
                   </div>
 
@@ -671,14 +698,21 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                   </div>
                 </div>
 
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    취소
-                  </Button>
-                  <Button onClick={handleSubmit}>
-                    {editingContent ? '수정' : '저장'}
-                  </Button>
-                </DialogFooter>
+                                 <DialogFooter>
+                   <Button 
+                     variant="outline" 
+                     onClick={() => setIsDialogOpen(false)}
+                     onMouseEnter={blockTranslationFeedback}
+                   >
+                     취소
+                   </Button>
+                   <Button 
+                     onClick={handleSubmit}
+                     onMouseEnter={blockTranslationFeedback}
+                   >
+                     {editingContent ? '수정' : '저장'}
+                   </Button>
+                 </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>

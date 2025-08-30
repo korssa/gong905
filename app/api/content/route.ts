@@ -38,10 +38,17 @@ async function loadContents(): Promise<ContentItem[]> {
 // 콘텐츠 저장
 async function saveContents(contents: ContentItem[]) {
   try {
+    console.log('saveContents 시작, 콘텐츠 수:', contents.length);
     await ensureDataFile();
-    await fs.writeFile(CONTENT_FILE_PATH, JSON.stringify(contents, null, 2));
-  } catch {
+    console.log('데이터 파일 확인 완료');
     
+    const jsonData = JSON.stringify(contents, null, 2);
+    console.log('JSON 데이터 생성 완료, 크기:', jsonData.length);
+    
+    await fs.writeFile(CONTENT_FILE_PATH, jsonData);
+    console.log('파일 쓰기 완료:', CONTENT_FILE_PATH);
+  } catch (error) {
+    console.error('saveContents 오류:', error);
     throw new Error('콘텐츠 저장 오류');
   }
 }
@@ -79,23 +86,31 @@ export async function GET(request: NextRequest) {
 // POST: 새 콘텐츠 생성
 export async function POST(request: NextRequest) {
   try {
+    console.log('POST 요청 시작');
     const body: ContentFormData & { imageUrl?: string } = await request.json();
+    console.log('요청 본문:', body);
     
     // 필수 필드 검증
     if (!body.title?.trim()) {
+      console.log('제목 누락');
       return NextResponse.json({ error: '제목은 필수입니다.' }, { status: 400 });
     }
     if (!body.author?.trim()) {
+      console.log('작성자 누락');
       return NextResponse.json({ error: '작성자는 필수입니다.' }, { status: 400 });
     }
     if (!body.content?.trim()) {
+      console.log('내용 누락');
       return NextResponse.json({ error: '내용은 필수입니다.' }, { status: 400 });
     }
     if (!body.type) {
+      console.log('타입 누락');
       return NextResponse.json({ error: '콘텐츠 타입은 필수입니다.' }, { status: 400 });
     }
     
+    console.log('필수 필드 검증 통과');
     const contents = await loadContents();
+    console.log('기존 콘텐츠 수:', contents.length);
     
     const newContent: ContentItem = {
       id: Date.now().toString(),
@@ -110,8 +125,12 @@ export async function POST(request: NextRequest) {
       imageUrl: body.imageUrl,
     };
 
+    console.log('새 콘텐츠 생성:', newContent);
     contents.push(newContent);
+    
+    console.log('콘텐츠 저장 시작');
     await saveContents(contents);
+    console.log('콘텐츠 저장 완료');
 
     return NextResponse.json(newContent, { status: 201 });
   } catch (error) {
