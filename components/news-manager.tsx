@@ -325,7 +325,13 @@ export function NewsManager({ onBack }: NewsManagerProps) {
           {isAuthenticated && (
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={resetForm} className="gap-2">
+                <Button 
+                  onClick={() => {
+                    resetForm();
+                    setIsDialogOpen(true);
+                  }} 
+                  className="gap-2"
+                >
                   <Plus className="h-4 w-4" />
                   새 뉴스 작성
                 </Button>

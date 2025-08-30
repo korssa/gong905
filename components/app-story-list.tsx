@@ -446,7 +446,10 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                  <DialogTrigger asChild>
                    <Button 
-                     onClick={resetForm} 
+                     onClick={() => {
+                       resetForm();
+                       setIsDialogOpen(true);
+                     }} 
                      className="gap-2"
                      onMouseEnter={blockTranslationFeedback}
                    >
@@ -617,7 +620,10 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                <DialogTrigger asChild>
                  <Button 
-                   onClick={resetForm} 
+                   onClick={() => {
+                     resetForm();
+                     setIsDialogOpen(true);
+                   }} 
                    className="gap-2"
                    onMouseEnter={blockTranslationFeedback}
                  >
