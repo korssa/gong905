@@ -2,14 +2,28 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ContentItem } from "@/types";
-import { User, Calendar, Eye, ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Edit, Trash2, Eye, EyeOff, Calendar, User, FileText, ArrowLeft } from "lucide-react";
+import { ContentItem, ContentFormData, ContentType } from "@/types";
+import { useAdmin } from "@/hooks/use-admin";
+import { uploadFile } from "@/lib/storage-adapter";
 
 interface AppStoryListProps {
   type: string; // "app-story"
@@ -20,6 +34,20 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
   const [contents, setContents] = useState<ContentItem[]>([]);
   const [selected, setSelected] = useState<ContentItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingContent, setEditingContent] = useState<ContentItem | null>(null);
+  const [formData, setFormData] = useState<ContentFormData>({
+    title: "",
+    content: "",
+    author: "",
+    type: 'app-story' as ContentType,
+    tags: "",
+    isPublished: false,
+  });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const { isAuthenticated } = useAdmin();
 
   // 번역 피드백 차단 함수
   const blockTranslationFeedback = () => {
@@ -110,6 +138,134 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     
     return () => clearInterval(interval);
   }, [type]);
+
+  // 폼 초기화
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      content: "",
+      author: "",
+      type: 'app-story' as ContentType,
+      tags: "",
+      isPublished: false,
+    });
+    setEditingContent(null);
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
+  // 이미지 선택 핸들러
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setSelectedImage(file);
+      const url = URL.createObjectURL(file);
+      setImagePreview(url);
+    }
+  };
+
+  // 이미지 제거 핸들러
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
+  };
+
+  // 콘텐츠 저장
+  const handleSubmit = async () => {
+    try {
+      let imageUrl = null;
+
+      // 이미지가 선택된 경우 업로드
+      if (selectedImage) {
+        try {
+          imageUrl = await uploadFile(selectedImage, 'content-images');
+        } catch {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+      }
+
+      const url = editingContent ? `/api/content` : `/api/content`;
+      const method = editingContent ? 'PUT' : 'POST';
+      const body = editingContent 
+        ? { id: editingContent.id, ...formData, imageUrl } 
+        : { ...formData, imageUrl };
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        setIsDialogOpen(false);
+        resetForm();
+        // 콘텐츠 목록 다시 로드
+        const res = await fetch(`/api/content?type=${type}`);
+        const data = await res.json();
+        setContents(data.filter((c: ContentItem) => c.isPublished));
+      }
+    } catch {
+      alert('App Story 저장에 실패했습니다.');
+    }
+  };
+
+  // 콘텐츠 삭제
+  const handleDelete = async (id: string) => {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+
+    try {
+      const response = await fetch(`/api/content?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        const res = await fetch(`/api/content?type=${type}`);
+        const data = await res.json();
+        setContents(data.filter((c: ContentItem) => c.isPublished));
+      }
+    } catch {
+      // 삭제 실패
+    }
+  };
+
+  // 편집 모드 시작
+  const handleEdit = (content: ContentItem) => {
+    setEditingContent(content);
+    setFormData({
+      title: content.title,
+      content: content.content,
+      author: content.author,
+      type: content.type,
+      tags: content.tags?.join(', ') || "",
+      isPublished: content.isPublished,
+    });
+    setIsDialogOpen(true);
+  };
+
+  // 게시 상태 토글
+  const togglePublish = async (content: ContentItem) => {
+    try {
+      const response = await fetch('/api/content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: content.id,
+          isPublished: !content.isPublished,
+        }),
+      });
+
+      if (response.ok) {
+        const res = await fetch(`/api/content?type=${type}`);
+        const data = await res.json();
+        setContents(data.filter((c: ContentItem) => c.isPublished));
+      }
+    } catch {
+      // 토글 실패
+    }
+  };
 
     // If content selected, show detail view
   if (selected) {
@@ -251,6 +407,128 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-white mb-2">App Story</h2>
         <p className="text-gray-400">앱 개발 과정과 이야기를 확인해보세요</p>
+        {isAuthenticated && (
+          <div className="mt-4">
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={resetForm} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  새 App Story 작성
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingContent ? 'App Story 수정' : '새 App Story 작성'}
+                  </DialogTitle>
+                  <DialogDescription>
+                    앱 개발 과정과 이야기를 작성하세요.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">제목 *</label>
+                    <Input
+                      value={formData.title}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="제목을 입력하세요"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">작성자 *</label>
+                    <Input
+                      value={formData.author}
+                      onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
+                      placeholder="작성자명을 입력하세요"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">내용 *</label>
+                    <Textarea
+                      value={formData.content}
+                      onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                      placeholder="내용을 입력하세요 (마크다운 지원)"
+                      rows={10}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">태그</label>
+                    <Input
+                      value={formData.tags}
+                      onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
+                      placeholder="태그를 쉼표로 구분하여 입력하세요"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">대표 이미지 (선택사항)</label>
+                    <div className="space-y-2">
+                      <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById('image-upload')?.click()}
+                          className="px-3 py-2 text-sm bg-gray-800 border border-gray-600 text-gray-300 hover:border-amber-400 rounded transition-colors"
+                        >
+                          이미지 선택
+                        </button>
+                        {selectedImage && (
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="px-3 py-2 text-sm bg-red-600 border border-red-600 text-white hover:bg-red-700 rounded transition-colors"
+                          >
+                            제거
+                          </button>
+                        )}
+                      </div>
+                      {imagePreview && (
+                        <div className="mt-2">
+                          <img
+                            src={imagePreview}
+                            alt="미리보기"
+                            className="w-32 h-32 object-cover rounded border"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="isPublished"
+                      checked={formData.isPublished}
+                      onChange={(e) => setFormData(prev => ({ ...prev, isPublished: e.target.checked }))}
+                    />
+                    <label htmlFor="isPublished" className="text-sm">
+                      즉시 게시
+                    </label>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    취소
+                  </Button>
+                  <Button onClick={handleSubmit}>
+                    {editingContent ? '수정' : '저장'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -292,6 +570,34 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                 <Eye className="w-3 h-3" />
                 {content.views}회 조회
               </div>
+              {isAuthenticated && (
+                <div className="flex items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => togglePublish(content)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    {content.isPublished ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(content)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(content.id)}
+                    className="text-red-400 hover:text-red-300"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

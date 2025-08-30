@@ -184,10 +184,7 @@ export function GoogleTranslate() {
     // 번역기 안전 활성화 함수  
     function enableTranslateWidget() {
       try {
-        // console.log('🟢 번역기 활성화 시작...');
-        
         document.body.classList.remove('admin-mode');
-        // console.log('🟢 admin-mode 클래스 제거됨');
         
         // 번역 차단 속성 제거
         try {
@@ -213,7 +210,6 @@ export function GoogleTranslate() {
             }
           });
           
-          // console.log('🟢 번역 차단 속성 제거 완료');
           } catch {
             // 번역 차단 해제 에러
           }
@@ -228,7 +224,6 @@ export function GoogleTranslate() {
             delete (window.google as any).translate.translate;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             delete (window.google as any).translate.translatePage;
-            // console.log('🔄 Google Translate API 복원됨');
           } catch {
             // Google Translate API 복원 에러
           }
@@ -237,13 +232,10 @@ export function GoogleTranslate() {
         // 위젯이 제거되었다면 재생성
         let widget = document.getElementById('google_translate_element');
         if (!widget) {
-          // console.log('📱 번역 위젯이 제거됨. 재생성 중...');
-          
           const headerWidgetContainer = document.querySelector('header .translate-widget-horizontal');
           if (headerWidgetContainer) {
             headerWidgetContainer.id = 'google_translate_element';
             widget = headerWidgetContainer as HTMLElement;
-            // console.log('✅ 위젯 컨테이너 재설정됨');
           }
         }
         
@@ -258,10 +250,7 @@ export function GoogleTranslate() {
           widget.style.width = '';
           widget.style.height = '';
           
-          // console.log('🟢 위젯 스타일 복원됨');
-          
           if (!widget.innerHTML.trim()) {
-            // console.log('🔄 빈 위젯 감지. 재초기화 시도...');
             setTimeout(function() {
               if (typeof window.googleTranslateElementInit === 'function') {
                 window.googleTranslateElementInit();
@@ -277,8 +266,6 @@ export function GoogleTranslate() {
               '.goog-te-gadget:not(.goog-te-ftab)',
               '.skiptranslate:not(.goog-te-balloon-frame)'
             ].join(','));
-            
-            // console.log('🟢 복원할 핵심 번역 요소들:', coreTranslateElements.length);
             
             coreTranslateElements.forEach(function(el) {
               try {
@@ -296,8 +283,6 @@ export function GoogleTranslate() {
             // 번역 요소 복원 에러
           }
         }, 200);
-        
-        // console.log('✅ 번역기 활성화 완료 (일반 모드)');
       } catch {
         // 번역기 활성화 전체 에러
       }
@@ -308,7 +293,6 @@ export function GoogleTranslate() {
       // 관리자 모드 변경 이벤트
       
       if (isAdminMode) {
-        // console.log('🚫 관리자 모드 진입 - 즉시 번역 차단');
         disableTranslateWidget();
         
         // Select 컴포넌트 정상 작동 보장
@@ -338,7 +322,7 @@ export function GoogleTranslate() {
                 }
             });
             
-            // console.log('✅ Select 컴포넌트', selectElements.length, '개 정상 작동 보장');
+
           } catch {
             // Select 복원 에러
           }
@@ -366,7 +350,7 @@ export function GoogleTranslate() {
             }
           });
           
-          // console.log('🚫 선택적 번역 차단 속성 설정 완료 (Select 제외)');
+
         } catch {
           // 번역 차단 설정 에러
         }
@@ -383,7 +367,6 @@ export function GoogleTranslate() {
             ].join(','));
             
             if (translatedElements.length > 0) {
-              // console.log('🔄 번역된 요소', translatedElements.length, '개 즉시 복원');
               translatedElements.forEach(function(el) {
                 try {
                   (el as HTMLElement).style.setProperty('color', '', 'important');
@@ -402,7 +385,6 @@ export function GoogleTranslate() {
         }, 50);
         
       } else {
-        // console.log('✅ 일반 모드 진입 - 번역 활성화');
         enableTranslateWidget();
       }
     }
@@ -413,7 +395,9 @@ export function GoogleTranslate() {
     // 언어 매핑 및 피드백 차단 함수
     function startLanguageMapping() {
       try {
+        // 구글 번역에서 실제 사용하는 언어 이름들
         const languageMap: { [key: string]: string } = {
+          // 구글 번역에서 실제 사용하는 언어 이름들 (정확한 매칭)
           'Korean': 'Korea - 한국어',
           'English': 'USA - English',
           'Spanish': 'Spain - Español',
@@ -493,7 +477,285 @@ export function GoogleTranslate() {
           'Hausa': 'Nigeria - Hausa',
           'Igbo': 'Nigeria - Igbo',
           'Somali': 'Somalia - Soomaali',
-          'Malagasy': 'Madagascar - Malagasy'
+          'Malagasy': 'Madagascar - Malagasy',
+          
+          // 구글 번역에서 사용하는 다른 형태의 언어 이름들
+          'Korean (South Korea)': 'Korea - 한국어',
+          'English (United States)': 'USA - English',
+          'English (United Kingdom)': 'UK - English',
+          'English (Canada)': 'Canada - English',
+          'English (Australia)': 'Australia - English',
+          'English (India)': 'India - English',
+          'Spanish (Spain)': 'Spain - Español',
+          'Spanish (Mexico)': 'Mexico - Español',
+          'Spanish (Argentina)': 'Argentina - Español',
+          'Spanish (Colombia)': 'Colombia - Español',
+          'Spanish (Peru)': 'Peru - Español',
+          'Spanish (Venezuela)': 'Venezuela - Español',
+          'Spanish (Chile)': 'Chile - Español',
+          'Spanish (Ecuador)': 'Ecuador - Español',
+          'Spanish (Guatemala)': 'Guatemala - Español',
+          'Spanish (Cuba)': 'Cuba - Español',
+          'Spanish (Bolivia)': 'Bolivia - Español',
+          'Spanish (Dominican Republic)': 'Dominican Republic - Español',
+          'Spanish (Honduras)': 'Honduras - Español',
+          'Spanish (Paraguay)': 'Paraguay - Español',
+          'Spanish (El Salvador)': 'El Salvador - Español',
+          'Spanish (Nicaragua)': 'Nicaragua - Español',
+          'Spanish (Costa Rica)': 'Costa Rica - Español',
+          'Spanish (Puerto Rico)': 'Puerto Rico - Español',
+          'Spanish (Panama)': 'Panama - Español',
+          'Spanish (Uruguay)': 'Uruguay - Español',
+          'Spanish (Equatorial Guinea)': 'Equatorial Guinea - Español',
+          'French (France)': 'France - Français',
+          'French (Canada)': 'Canada - Français',
+          'French (Belgium)': 'Belgium - Français',
+          'French (Switzerland)': 'Switzerland - Français',
+          'French (Luxembourg)': 'Luxembourg - Français',
+          'French (Monaco)': 'Monaco - Français',
+          'German (Germany)': 'Germany - Deutsch',
+          'German (Austria)': 'Austria - Deutsch',
+          'German (Switzerland)': 'Switzerland - Deutsch',
+          'German (Luxembourg)': 'Luxembourg - Deutsch',
+          'German (Liechtenstein)': 'Liechtenstein - Deutsch',
+          'Italian (Italy)': 'Italy - Italiano',
+          'Italian (Switzerland)': 'Switzerland - Italiano',
+          'Italian (San Marino)': 'San Marino - Italiano',
+          'Italian (Vatican City)': 'Vatican City - Italiano',
+          'Portuguese (Portugal)': 'Portugal - Português',
+          'Portuguese (Brazil)': 'Brazil - Português',
+          'Portuguese (Angola)': 'Angola - Português',
+          'Portuguese (Mozambique)': 'Mozambique - Português',
+          'Portuguese (Cape Verde)': 'Cape Verde - Português',
+          'Portuguese (Guinea-Bissau)': 'Guinea-Bissau - Português',
+          'Portuguese (São Tomé and Príncipe)': 'São Tomé and Príncipe - Português',
+          'Portuguese (East Timor)': 'East Timor - Português',
+          'Portuguese (Macau)': 'Macau - Português',
+          'Russian (Russia)': 'Russia - Русский',
+          'Russian (Belarus)': 'Belarus - Русский',
+          'Russian (Kazakhstan)': 'Kazakhstan - Русский',
+          'Russian (Kyrgyzstan)': 'Kyrgyzstan - Русский',
+          'Japanese (Japan)': 'Japan - 日本語',
+          'Chinese (China)': 'China - 中文(简体)',
+          'Chinese (Taiwan)': 'Taiwan - 中文(繁體)',
+          'Chinese (Hong Kong)': 'Hong Kong - 中文(繁體)',
+          'Chinese (Singapore)': 'Singapore - 中文(简体)',
+          'Arabic (Saudi Arabia)': 'Saudi Arabia - العربية',
+          'Arabic (Egypt)': 'Egypt - العربية',
+          'Arabic (Iraq)': 'Iraq - العربية',
+          'Arabic (Syria)': 'Syria - العربية',
+          'Arabic (Lebanon)': 'Lebanon - العربية',
+          'Arabic (Jordan)': 'Jordan - العربية',
+          'Arabic (Palestine)': 'Palestine - العربية',
+          'Arabic (Kuwait)': 'Kuwait - العربية',
+          'Arabic (Bahrain)': 'Bahrain - العربية',
+          'Arabic (Qatar)': 'Qatar - العربية',
+          'Arabic (United Arab Emirates)': 'UAE - العربية',
+          'Arabic (Oman)': 'Oman - العربية',
+          'Arabic (Yemen)': 'Yemen - العربية',
+          'Arabic (Libya)': 'Libya - العربية',
+          'Arabic (Tunisia)': 'Tunisia - العربية',
+          'Arabic (Algeria)': 'Algeria - العربية',
+          'Arabic (Morocco)': 'Morocco - العربية',
+          'Arabic (Sudan)': 'Sudan - العربية',
+          'Arabic (South Sudan)': 'South Sudan - العربية',
+          'Arabic (Chad)': 'Chad - العربية',
+          'Arabic (Djibouti)': 'Djibouti - العربية',
+          'Arabic (Comoros)': 'Comoros - العربية',
+          'Arabic (Eritrea)': 'Eritrea - العربية',
+          'Arabic (Somalia)': 'Somalia - العربية',
+          'Arabic (Mauritania)': 'Mauritania - العربية',
+          'Hindi (India)': 'India - हिन्दी',
+          'Turkish (Turkey)': 'Turkey - Türkçe',
+          'Turkish (Cyprus)': 'Cyprus - Türkçe',
+          'Dutch (Netherlands)': 'Netherlands - Nederlands',
+          'Dutch (Belgium)': 'Belgium - Nederlands',
+          'Dutch (Suriname)': 'Suriname - Nederlands',
+          'Polish (Poland)': 'Poland - Polski',
+          'Swedish (Sweden)': 'Sweden - Svenska',
+          'Swedish (Finland)': 'Finland - Svenska',
+          'Norwegian (Norway)': 'Norway - Norsk',
+          'Norwegian (Bokmål)': 'Norway - Norsk (Bokmål)',
+          'Norwegian (Nynorsk)': 'Norway - Norsk (Nynorsk)',
+          'Danish (Denmark)': 'Denmark - Dansk',
+          'Finnish (Finland)': 'Finland - Suomi',
+          'Greek (Greece)': 'Greece - Ελληνικά',
+          'Greek (Cyprus)': 'Cyprus - Ελληνικά',
+          'Czech (Czech Republic)': 'Czech Republic - Čeština',
+          'Hungarian (Hungary)': 'Hungary - Magyar',
+          'Romanian (Romania)': 'Romania - Română',
+          'Romanian (Moldova)': 'Moldova - Română',
+          'Bulgarian (Bulgaria)': 'Bulgaria - Български',
+          'Croatian (Croatia)': 'Croatia - Hrvatski',
+          'Croatian (Bosnia and Herzegovina)': 'Bosnia and Herzegovina - Hrvatski',
+          'Slovak (Slovakia)': 'Slovakia - Slovenčina',
+          'Slovenian (Slovenia)': 'Slovenia - Slovenščina',
+          'Estonian (Estonia)': 'Estonia - Eesti',
+          'Latvian (Latvia)': 'Latvia - Latviešu',
+          'Lithuanian (Lithuania)': 'Lithuania - Lietuvių',
+          'Ukrainian (Ukraine)': 'Ukraine - Українська',
+          'Vietnamese (Vietnam)': 'Vietnam - Tiếng Việt',
+          'Thai (Thailand)': 'Thailand - ไทย',
+          'Indonesian (Indonesia)': 'Indonesia - Bahasa Indonesia',
+          'Malay (Malaysia)': 'Malaysia - Bahasa Melayu',
+          'Malay (Brunei)': 'Brunei - Bahasa Melayu',
+          'Malay (Singapore)': 'Singapore - Bahasa Melayu',
+          'Filipino (Philippines)': 'Philippines - Filipino',
+          'Hebrew (Israel)': 'Israel - עברית',
+          'Persian (Iran)': 'Iran - فارسی',
+          'Persian (Afghanistan)': 'Afghanistan - فارسی',
+          'Persian (Tajikistan)': 'Tajikistan - فارسی',
+          'Urdu (Pakistan)': 'Pakistan - اردو',
+          'Urdu (India)': 'India - اردو',
+          'Bengali (Bangladesh)': 'Bangladesh - বাংলা',
+          'Bengali (India)': 'India - বাংলা',
+          'Tamil (India)': 'India - தமிழ்',
+          'Tamil (Sri Lanka)': 'Sri Lanka - தமிழ்',
+          'Tamil (Singapore)': 'Singapore - தமிழ்',
+          'Tamil (Malaysia)': 'Malaysia - தமிழ்',
+          'Telugu (India)': 'India - తెలుగు',
+          'Gujarati (India)': 'India - ગુજરાતી',
+          'Kannada (India)': 'India - ಕನ್ನಡ',
+          'Malayalam (India)': 'India - മലയാളം',
+          'Marathi (India)': 'India - मराठी',
+          'Punjabi (India)': 'India - ਪੰਜਾਬੀ',
+          'Punjabi (Pakistan)': 'Pakistan - پنجابی',
+          'Nepali (Nepal)': 'Nepal - नेपाली',
+          'Nepali (India)': 'India - नेपाली',
+          'Sinhala (Sri Lanka)': 'Sri Lanka - සිංහල',
+          'Myanmar (Myanmar)': 'Myanmar - မြန်မာ',
+          'Khmer (Cambodia)': 'Cambodia - ខ្មែរ',
+          'Lao (Laos)': 'Laos - ລາວ',
+          'Georgian (Georgia)': 'Georgia - ქართული',
+          'Armenian (Armenia)': 'Armenia - Հայերեն',
+          'Azerbaijani (Azerbaijan)': 'Azerbaijan - Azərbaycan',
+          'Azerbaijani (Iran)': 'Iran - آذربایجان',
+          'Kazakh (Kazakhstan)': 'Kazakhstan - Қазақ',
+          'Kazakh (China)': 'China - Қазақ',
+          'Kyrgyz (Kyrgyzstan)': 'Kyrgyzstan - Кыргыз',
+          'Kyrgyz (China)': 'China - Кыргыз',
+          'Tajik (Tajikistan)': 'Tajikistan - Тоҷикӣ',
+          'Turkmen (Turkmenistan)': 'Turkmenistan - Türkmen',
+          'Uzbek (Uzbekistan)': 'Uzbekistan - O\'zbek',
+          'Mongolian (Mongolia)': 'Mongolia - Монгол',
+          'Mongolian (China)': 'China - Монгол',
+          'Albanian (Albania)': 'Albania - Shqip',
+          'Albanian (Kosovo)': 'Kosovo - Shqip',
+          'Albanian (North Macedonia)': 'North Macedonia - Shqip',
+          'Basque (Spain)': 'Spain - Euskera',
+          'Catalan (Spain)': 'Spain - Català',
+          'Catalan (Andorra)': 'Andorra - Català',
+          'Galician (Spain)': 'Spain - Galego',
+          'Icelandic (Iceland)': 'Iceland - Íslenska',
+          'Irish (Ireland)': 'Ireland - Gaeilge',
+          'Welsh (United Kingdom)': 'Wales - Cymraeg',
+          'Maltese (Malta)': 'Malta - Malti',
+          'Afrikaans (South Africa)': 'South Africa - Afrikaans',
+          'Afrikaans (Namibia)': 'Namibia - Afrikaans',
+          'Swahili (Kenya)': 'Kenya - Kiswahili',
+          'Swahili (Tanzania)': 'Tanzania - Kiswahili',
+          'Swahili (Uganda)': 'Uganda - Kiswahili',
+          'Yoruba (Nigeria)': 'Nigeria - Yorùbá',
+          'Yoruba (Benin)': 'Benin - Yorùbá',
+          'Zulu (South Africa)': 'South Africa - isiZulu',
+          'Xhosa (South Africa)': 'South Africa - isiXhosa',
+          'Amharic (Ethiopia)': 'Ethiopia - አማርኛ',
+          'Hausa (Nigeria)': 'Nigeria - Hausa',
+          'Hausa (Niger)': 'Niger - Hausa',
+          'Hausa (Ghana)': 'Ghana - Hausa',
+          'Hausa (Cameroon)': 'Cameroon - Hausa',
+          'Hausa (Chad)': 'Chad - Hausa',
+          'Hausa (Sudan)': 'Sudan - Hausa',
+          'Igbo (Nigeria)': 'Nigeria - Igbo',
+          'Somali (Somalia)': 'Somalia - Soomaali',
+          'Somali (Ethiopia)': 'Ethiopia - Soomaali',
+          'Somali (Kenya)': 'Kenya - Soomaali',
+          'Somali (Djibouti)': 'Djibouti - Soomaali',
+          'Malagasy (Madagascar)': 'Madagascar - Malagasy',
+          
+          // 구글 번역에서 사용하는 약어들도 매핑
+          'ko': 'Korea - 한국어',
+          'en': 'USA - English',
+          'es': 'Spain - Español',
+          'fr': 'France - Français',
+          'de': 'Germany - Deutsch',
+          'it': 'Italy - Italiano',
+          'pt': 'Portugal - Português',
+          'ru': 'Russia - Русский',
+          'ja': 'Japan - 日本語',
+          'zh': 'China - 中文(简体)',
+          'zh-CN': 'China - 中文(简体)',
+          'zh-TW': 'Taiwan - 中文(繁體)',
+          'zh-HK': 'Hong Kong - 中文(繁體)',
+          'ar': 'Saudi Arabia - العربية',
+          'hi': 'India - हिन्दी',
+          'tr': 'Turkey - Türkçe',
+          'nl': 'Netherlands - Nederlands',
+          'pl': 'Poland - Polski',
+          'sv': 'Sweden - Svenska',
+          'no': 'Norway - Norsk',
+          'da': 'Denmark - Dansk',
+          'fi': 'Finland - Suomi',
+          'el': 'Greece - Ελληνικά',
+          'cs': 'Czech Republic - Čeština',
+          'hu': 'Hungary - Magyar',
+          'ro': 'Romania - Română',
+          'bg': 'Bulgaria - Български',
+          'hr': 'Croatia - Hrvatski',
+          'sk': 'Slovakia - Slovenčina',
+          'sl': 'Slovenia - Slovenščina',
+          'et': 'Estonia - Eesti',
+          'lv': 'Latvia - Latviešu',
+          'lt': 'Lithuania - Lietuvių',
+          'uk': 'Ukraine - Українська',
+          'vi': 'Vietnam - Tiếng Việt',
+          'th': 'Thailand - ไทย',
+          'id': 'Indonesia - Bahasa Indonesia',
+          'ms': 'Malaysia - Bahasa Melayu',
+          'tl': 'Philippines - Filipino',
+          'he': 'Israel - עברית',
+          'fa': 'Iran - فارسی',
+          'ur': 'Pakistan - اردو',
+          'bn': 'Bangladesh - বাংলা',
+          'ta': 'Tamil Nadu - தமிழ்',
+          'te': 'Andhra Pradesh - తెలుగు',
+          'gu': 'Gujarat - ગુજરાતી',
+          'kn': 'Karnataka - ಕನ್ನಡ',
+          'ml': 'Kerala - മലയാളം',
+          'mr': 'Maharashtra - मराठी',
+          'pa': 'Punjab - ਪੰਜਾਬੀ',
+          'ne': 'Nepal - नेपाली',
+          'si': 'Sri Lanka - සිංහල',
+          'my': 'Myanmar - မြန်မာ',
+          'km': 'Cambodia - ខ្មែរ',
+          'lo': 'Laos - ລາວ',
+          'ka': 'Georgia - ქართული',
+          'hy': 'Armenia - Հայերեն',
+          'az': 'Azerbaijan - Azərbaycan',
+          'kk': 'Kazakhstan - Қазақ',
+          'ky': 'Kyrgyzstan - Кыргыз',
+          'tg': 'Tajikistan - Тоҷикӣ',
+          'tk': 'Turkmenistan - Türkmen',
+          'uz': 'Uzbekistan - O\'zbek',
+          'mn': 'Mongolia - Монгол',
+          'sq': 'Albania - Shqip',
+          'eu': 'Basque Country - Euskera',
+          'ca': 'Catalonia - Català',
+          'gl': 'Galicia - Galego',
+          'is': 'Iceland - Íslenska',
+          'ga': 'Ireland - Gaeilge',
+          'cy': 'Wales - Cymraeg',
+          'mt': 'Malta - Malti',
+          'af': 'South Africa - Afrikaans',
+          'sw': 'Kenya - Kiswahili',
+          'yo': 'Nigeria - Yorùbá',
+          'zu': 'South Africa - isiZulu',
+          'xh': 'South Africa - isiXhosa',
+          'am': 'Ethiopia - አማርኛ',
+          'ha': 'Nigeria - Hausa',
+          'ig': 'Nigeria - Igbo',
+          'so': 'Somalia - Soomaali',
+          'mg': 'Madagascar - Malagasy'
         };
         
         // 안전한 피드백 차단 함수
@@ -527,43 +789,148 @@ export function GoogleTranslate() {
           }
         }
         
-        // 언어 옵션 업데이트
+        // 언어 옵션 업데이트 함수 개선
         function updateLanguageOptions() {
           try {
             const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
             if (combo && combo.options) {
-              Array.from(combo.options).forEach(function(option) {
+              let updatedCount = 0;
+              Array.from(combo.options).forEach(function(option, index) {
                 const text = option.text;
-                if (text && languageMap[text] && !(option as HTMLOptionElement).dataset.updated) {
-                  option.text = languageMap[text];
-                  (option as HTMLOptionElement).dataset.updated = 'true';
+                
+                if (text && !(option as HTMLOptionElement).dataset.updated) {
+                  // 정확한 매칭 시도
+                  if (languageMap[text]) {
+                    option.text = languageMap[text];
+                    (option as HTMLOptionElement).dataset.updated = 'true';
+                    updatedCount++;
+                  } else {
+                    // 부분 매칭 시도 (언어 코드나 약어)
+                    const lowerText = text.toLowerCase();
+                    for (const [key, value] of Object.entries(languageMap)) {
+                      if (key.toLowerCase().includes(lowerText) || 
+                          lowerText.includes(key.toLowerCase()) ||
+                          key.toLowerCase().startsWith(lowerText) ||
+                          lowerText.startsWith(key.toLowerCase())) {
+                        option.text = value;
+                        (option as HTMLOptionElement).dataset.updated = 'true';
+                        updatedCount++;
+                        break;
+                      }
+                    }
+                  }
                 }
               });
             }
-          } catch {
+          } catch (error) {
             // 에러 무시
           }
         }
         
-        // 초기 업데이트
+        // 강제 언어 옵션 업데이트 (모든 옵션을 다시 매핑)
+        function forceUpdateLanguageOptions() {
+          try {
+            const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+            if (combo && combo.options) {
+              let updatedCount = 0;
+              Array.from(combo.options).forEach(function(option, index) {
+                const text = option.text;
+                
+                if (text) {
+                  // 기존 업데이트 플래그 제거
+                  delete (option as HTMLOptionElement).dataset.updated;
+                  
+                  // 정확한 매칭 시도
+                  if (languageMap[text]) {
+                    option.text = languageMap[text];
+                    (option as HTMLOptionElement).dataset.updated = 'true';
+                    updatedCount++;
+                  } else {
+                    // 부분 매칭 시도
+                    const lowerText = text.toLowerCase();
+                    for (const [key, value] of Object.entries(languageMap)) {
+                      if (key.toLowerCase().includes(lowerText) || 
+                          lowerText.includes(key.toLowerCase()) ||
+                          key.toLowerCase().startsWith(lowerText) ||
+                          lowerText.startsWith(key.toLowerCase())) {
+                        option.text = value;
+                        (option as HTMLOptionElement).dataset.updated = 'true';
+                        updatedCount++;
+                        break;
+                      }
+                    }
+                  }
+                }
+              });
+            }
+          } catch (error) {
+            // 에러 무시
+          }
+        }
+        
+        // 초기 업데이트 (더 빠른 실행)
         setTimeout(() => {
           updateLanguageOptions();
           hideFeedbackElements();
-        }, 1000);
+        }, 500);
         
-        // 주기적 피드백 차단
-        setInterval(hideFeedbackElements, 2000);
+        // 추가 업데이트 (위젯이 늦게 로드되는 경우 대비)
+        setTimeout(() => {
+          forceUpdateLanguageOptions();
+          hideFeedbackElements();
+        }, 2000);
         
-        // 클릭 이벤트 시 피드백 차단
+        // 추가 업데이트 (위젯이 완전히 로드된 후)
+        setTimeout(() => {
+          forceUpdateLanguageOptions();
+          hideFeedbackElements();
+        }, 5000);
+        
+        // 주기적 피드백 차단 및 언어 옵션 업데이트
+        setInterval(() => {
+          hideFeedbackElements();
+          updateLanguageOptions();
+        }, 3000);
+        
+        // 클릭 이벤트 시 피드백 차단 및 언어 옵션 업데이트
         document.addEventListener('click', function(e) {
           if (e.target && (e.target as Element).closest('.goog-te-combo, .goog-te-menu2')) {
-            setTimeout(hideFeedbackElements, 200);
+            setTimeout(() => {
+              hideFeedbackElements();
+              forceUpdateLanguageOptions();
+            }, 200);
           }
         });
         
-          } catch {
-        // 언어 매핑 에러
-      }
+        // MutationObserver를 사용하여 동적으로 추가되는 요소 감지
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                  const element = node as Element;
+                  if (element.classList && 
+                      (element.classList.contains('goog-te-combo') || 
+                       element.classList.contains('goog-te-menu2'))) {
+                    setTimeout(() => {
+                      forceUpdateLanguageOptions();
+                      hideFeedbackElements();
+                    }, 100);
+                  }
+                }
+              });
+            }
+          });
+        });
+        
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+        
+              } catch (error) {
+          // 에러 무시
+        }
     }
 
     // 페이지 로드 후 위젯 확인 및 언어 매핑 시작
@@ -575,16 +942,34 @@ export function GoogleTranslate() {
       // Now, we only register the handler and start language mapping; actual
       // admin toggles happen only via explicit calls to window.adminModeChange().
 
-      setTimeout(function() {
+      // 구글 번역 위젯 로드 확인 및 언어 매핑 시작
+      function checkAndStartLanguageMapping() {
         const combo = document.querySelector('.goog-te-combo');
         if (combo && (combo as HTMLSelectElement).options && (combo as HTMLSelectElement).options.length > 1) {
           startLanguageMapping();
           // ensure translate widget is ready (do not force admin behavior)
           enableTranslateWidget();
-        } else {
-          setTimeout(arguments.callee, 3000);
+          return true;
         }
-      }, 2000);
+        return false;
+      }
+
+              // 즉시 확인
+        if (!checkAndStartLanguageMapping()) {
+          // 위젯이 아직 로드되지 않았다면 주기적으로 확인
+          let attempts = 0;
+          const maxAttempts = 20; // 최대 10초 대기
+          
+          const checkInterval = setInterval(() => {
+            attempts++;
+            
+            if (checkAndStartLanguageMapping()) {
+              clearInterval(checkInterval);
+            } else if (attempts >= maxAttempts) {
+              clearInterval(checkInterval);
+            }
+          }, 500);
+        }
     });
 
     return () => {

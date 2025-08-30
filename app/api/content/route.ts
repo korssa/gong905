@@ -19,7 +19,7 @@ async function ensureDataFile() {
       await fs.writeFile(CONTENT_FILE_PATH, JSON.stringify([]));
     }
   } catch {
-    // console.error('데이터 파일 초기화 오류:');
+    
   }
 }
 
@@ -30,7 +30,7 @@ async function loadContents(): Promise<ContentItem[]> {
     const data = await fs.readFile(CONTENT_FILE_PATH, 'utf-8');
     return JSON.parse(data);
   } catch {
-    // console.error('콘텐츠 로드 오류:');
+    
     return [];
   }
 }
@@ -41,7 +41,7 @@ async function saveContents(contents: ContentItem[]) {
     await ensureDataFile();
     await fs.writeFile(CONTENT_FILE_PATH, JSON.stringify(contents, null, 2));
   } catch {
-    // console.error('콘텐츠 저장 오류');
+    
     throw new Error('콘텐츠 저장 오류');
   }
 }
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(filteredContents);
   } catch {
-    // console.error('콘텐츠 조회 오류:');
+    
     return NextResponse.json({ error: '콘텐츠 조회에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(newContent, { status: 201 });
   } catch {
-    // console.error('콘텐츠 생성 오류');
+    
     return NextResponse.json({ error: '콘텐츠 생성에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -129,7 +129,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(contents[contentIndex]);
   } catch {
-    // console.error('콘텐츠 업데이트 오류');
+    
     return NextResponse.json({ error: '콘텐츠 업데이트에 실패했습니다.' }, { status: 500 });
   }
 }
@@ -156,7 +156,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ message: '콘텐츠가 삭제되었습니다.' });
   } catch {
-    // console.error('콘텐츠 삭제 오류');
+    
     return NextResponse.json({ error: '콘텐츠 삭제에 실패했습니다.' }, { status: 500 });
   }
 }

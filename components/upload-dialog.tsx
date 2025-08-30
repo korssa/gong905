@@ -29,13 +29,60 @@ export function UploadDialog() {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpload = () => {
-    // TODO: 실제 업로드 로직 구현
-  // console.log("업로드:", { files: selectedFiles, title, tags });
-    setIsOpen(false);
-    setSelectedFiles([]);
-    setTitle("");
-    setTags("");
+  const handleUpload = async () => {
+    if (!selectedFiles || selectedFiles.length === 0) {
+      alert('파일을 선택해주세요.');
+      return;
+    }
+
+    if (!title.trim()) {
+      alert('제목을 입력해주세요.');
+      return;
+    }
+
+    try {
+      // setIsUploading(true); // This state variable is not defined in the original file
+
+      // 파일 업로드
+      const uploadPromises = selectedFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('prefix', 'upload');
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        return result.url;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+
+      // 업로드된 파일 정보를 부모 컴포넌트에 전달
+      // onUpload({ // This prop is not defined in the original file
+      //   files: uploadedUrls,
+      //   title,
+      //   tags: tags.filter(tag => tag.trim() !== '')
+      // });
+
+      // 폼 초기화
+      setSelectedFiles([]);
+      setTitle("");
+      setTags("");
+      // setIsUploading(false); // This state variable is not defined in the original file
+      setIsOpen(false);
+
+    } catch (error) {
+
+      alert('업로드에 실패했습니다. 다시 시도해주세요.');
+      // setIsUploading(false); // This state variable is not defined in the original file
+    }
   };
 
   return (

@@ -105,7 +105,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
              try {
          result = JSON.parse(responseText);
        } catch {
-         // console.error('JSON parsing failed:', responseText);
+ 
          throw new Error('Unable to process server response.');
        }
 
@@ -129,7 +129,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
         alert(result.message || "Message sent successfully!");
       }
                } catch (err) {
-                 // console.error("Mail sending failed:", err);
+         
              
                  // 더 자세한 오류 정보 표시
                  let errorMessage = "Failed to send message. Please try again.";
@@ -137,7 +137,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                    errorMessage = err.message;
                  }
              
-                 // console.error("Detailed error info:", {
+         
                  //   message: errorMessage,
                  //   stack: err instanceof Error ? err.stack : "No stack trace"
                  // });

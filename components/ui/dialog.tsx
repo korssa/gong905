@@ -90,7 +90,7 @@ function DialogContent({
               closeButton.click()
             }
           } catch {
-            // console.warn('Dialog close error');
+    
           }
         }}
         onPointerDownOutside={(e) => {

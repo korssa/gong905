@@ -52,7 +52,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
         setNews(data);
       }
     } catch {
-      // console.error('뉴스 로드 오류');
+      
     }
   };
 
@@ -121,9 +121,9 @@ export function NewsManager({ onBack }: NewsManagerProps) {
         try {
           // 통합 업로드 함수 사용: 클라이언트는 서버 API로 전송하고 서버가 Vercel Blob에 업로드합니다.
           imageUrl = await uploadFile(selectedImage, 'content-images');
-          // console.log('✅ 업로드된 이미지 URL:', imageUrl);
+
         } catch {
-          // console.error('이미지 업로드 실패');
+
           throw new Error('이미지 업로드에 실패했습니다.');
         }
       }
@@ -146,7 +146,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
         loadNews();
       }
     } catch {
-      // console.error('뉴스 저장 오류');
+      
       alert('뉴스 저장에 실패했습니다.');
     }
   };
@@ -164,7 +164,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
         loadNews();
       }
     } catch {
-      // console.error('뉴스 삭제 오류');
+      
     }
   };
 
@@ -198,7 +198,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
         loadNews();
       }
     } catch {
-      // console.error('게시 상태 변경 오류');
+      
     }
   };
 
