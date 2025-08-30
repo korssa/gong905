@@ -3,12 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-// Google 번역 위젯 사용
 import { Menu, Search, Grid, List } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { FilterType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
-import { GoogleTranslateWidget } from "@/components/google-translate-widget";
 
 interface HeaderProps {
   viewMode: "grid" | "list";
@@ -64,8 +62,7 @@ export function Header({
           </Button>
         </div>
 
-        {/* 구글 번역 위젯 */}
-        <GoogleTranslateWidget />
+        {/* 구글 번역 위젯 - page.tsx에서 처리됨 */}
 
         {/* 검색바 */}
         <div className="flex-1 max-w-md">
