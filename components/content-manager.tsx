@@ -154,20 +154,20 @@ export function ContentManager({
           </Button>
         </div>
 
-        {/* 콘텐츠 뷰 */}
-        <div className="w-full max-w-2xl mx-auto px-8 sm:px-12 lg:px-16" style={{ maxWidth: '672px' }}>
-          {/* 헤더 */}
-          <div className="border-b border-gray-600 pb-4 mb-6">
-                         <h1 className="text-3xl font-bold text-white mb-2" translate="no">{selectedContent.title}</h1>
-            <div className="flex items-center gap-4 text-gray-400 text-sm">
-                             <span className="flex items-center gap-1"><User className="h-4 w-4" /><span translate="no">{selectedContent.author}</span></span>
-              <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{new Date(selectedContent.publishDate).toLocaleDateString()}</span>
-              
-              {!selectedContent.isPublished && (
-                <Badge variant="secondary" className="text-xs">임시저장</Badge>
-              )}
-            </div>
-          </div>
+                 {/* 콘텐츠 뷰 */}
+         <div className="w-full max-w-2xl mx-auto px-8 sm:px-12 lg:px-16" style={{ maxWidth: '672px' }}>
+           {/* 헤더 */}
+           <div className="border-b border-gray-600 pb-4 mb-6" onMouseEnter={blockTranslationFeedback}>
+                          <h1 className="text-3xl font-bold text-white mb-2" translate="no">{selectedContent.title}</h1>
+             <div className="flex items-center gap-4 text-gray-400 text-sm">
+                              <span className="flex items-center gap-1"><User className="h-4 w-4" /><span translate="no">{selectedContent.author}</span></span>
+               <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{new Date(selectedContent.publishDate).toLocaleDateString()}</span>
+               
+               {!selectedContent.isPublished && (
+                 <Badge variant="secondary" className="text-xs">임시저장</Badge>
+               )}
+             </div>
+           </div>
 
           {/* 이미지 */}
           {selectedContent.imageUrl && (
@@ -180,41 +180,41 @@ export function ContentManager({
             </div>
           )}
 
-          {/* 본문 */}
-          <article className="prose prose-invert dark:prose-invert">
-            <div
-              className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none"
-              style={{ wordWrap: "break-word" }}
-              dangerouslySetInnerHTML={{
-                __html: selectedContent.content
-                  .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                  .replace(/\*(.*?)\*/g, "<em>$1</em>")
-                  .replace(/\n/g, "<br>"),
-              }}
-            />
-          </article>
+                     {/* 본문 */}
+           <article className="prose prose-invert dark:prose-invert" onMouseEnter={blockTranslationFeedback}>
+             <div
+               className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none"
+               style={{ wordWrap: "break-word" }}
+               dangerouslySetInnerHTML={{
+                 __html: selectedContent.content
+                   .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                   .replace(/\*(.*?)\*/g, "<em>$1</em>")
+                   .replace(/\n/g, "<br>"),
+               }}
+             />
+           </article>
 
-          {/* 태그 */}
-          {selectedContent.tags && selectedContent.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2 mt-6">
-              {selectedContent.tags.map((tag, idx) => (
-                <span key={idx} className="text-xs px-2 py-0 rounded" style={{ backgroundColor: '#fff', color: '#000' }}>
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
+                     {/* 태그 */}
+           {selectedContent.tags && selectedContent.tags.length > 0 && (
+             <div className="flex flex-wrap gap-1 mb-2 mt-6" onMouseEnter={blockTranslationFeedback}>
+               {selectedContent.tags.map((tag, idx) => (
+                 <span key={idx} className="text-xs px-2 py-0 rounded" style={{ backgroundColor: '#fff', color: '#000' }}>
+                   {tag}
+                 </span>
+               ))}
+             </div>
+           )}
 
-          {/* 좋아요 */}
-          <div className="flex justify-start mt-6 pt-6 border-t border-gray-600">
-            <button
-              onClick={() => handleLike(selectedContent.id)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200 group"
-            >
-              <span className="text-2xl group-hover:scale-110 transition-transform">👍</span>
-              <span className="text-sm font-medium">{likes[selectedContent.id] || 0}</span>
-            </button>
-          </div>
+                     {/* 좋아요 */}
+           <div className="flex justify-start mt-6 pt-6 border-t border-gray-600" onMouseEnter={blockTranslationFeedback}>
+             <button
+               onClick={() => handleLike(selectedContent.id)}
+               className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200 group"
+             >
+               <span className="text-2xl group-hover:scale-110 transition-transform">👍</span>
+               <span className="text-sm font-medium">{likes[selectedContent.id] || 0}</span>
+             </button>
+           </div>
         </div>
       </div>
     );
@@ -251,12 +251,13 @@ export function ContentManager({
             </CardContent>
           </Card>
         ) : (
-          contents.map((content) => (
-            <Card
-              key={content.id}
-              className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
-              onClick={() => setSelectedContent(content)}
-            >
+                     contents.map((content) => (
+             <Card
+               key={content.id}
+               className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
+               onClick={() => setSelectedContent(content)}
+               onMouseEnter={blockTranslationFeedback}
+             >
               <CardHeader>
                 <CardTitle className="text-white" translate="no">{content.title}</CardTitle>
                 <CardDescription className="text-gray-400 flex items-center gap-4 mt-2">

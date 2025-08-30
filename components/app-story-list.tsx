@@ -324,7 +324,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         <div className="w-full flex justify-center">
           <div className="w-full max-w-2xl">
             {/* 헤더 정보 */}
-            <div className="text-white border-b border-gray-600 pb-4 mb-6">
+            <div className="text-white border-b border-gray-600 pb-4 mb-6" onMouseEnter={blockTranslationFeedback}>
                              <h1 className="text-3xl font-bold mb-2" translate="no">{selected.title}</h1>
               <div className="flex gap-4 text-sm text-gray-400">
                                  <span className="flex items-center gap-1">
@@ -338,7 +338,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
             </div>
 
                           {/* 본문 콘텐츠 */}
-              <article className="text-left text-gray-300 leading-relaxed space-y-6">
+              <article className="text-left text-gray-300 leading-relaxed space-y-6" onMouseEnter={blockTranslationFeedback}>
                                 {/* 이미지가 있으면 본문 시작 부분에 배치 */}
                  {selected.imageUrl && (
                    <div className="flex justify-start mb-6">
@@ -365,7 +365,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
 
                            {/* 태그 */}
               {selected.tags && selected.tags.length > 0 && (
-                <div className="flex gap-2 flex-wrap mt-6 pt-4 border-t border-gray-600">
+                <div className="flex gap-2 flex-wrap mt-6 pt-4 border-t border-gray-600" onMouseEnter={blockTranslationFeedback}>
                   {selected.tags.map((tag, index) => (
                     <span
                       key={index}
