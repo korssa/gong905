@@ -107,31 +107,9 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    // apps.json에서 앱 정보 삭제
-    const appsFilePath = path.join(process.cwd(), 'data', 'apps.json');
-    console.log('📁 Apps file path:', appsFilePath);
-    
-    try {
-      const appsData = await fs.readFile(appsFilePath, 'utf-8');
-      console.log('📄 Apps data:', appsData);
-      const apps = JSON.parse(appsData) as AppItem[];
-      console.log('📱 Apps array:', apps);
-      
-      const updatedApps = apps.filter((app: AppItem) => app.id !== id);
-      console.log('🔄 Updated apps:', updatedApps);
-      
-      if (updatedApps.length < apps.length) {
-        await fs.writeFile(appsFilePath, JSON.stringify(updatedApps, null, 2));
-        console.log('✅ Apps file updated');
-      } else {
-        console.log('⚠️ App not found in apps.json');
-      }
-      
-    } catch (error) {
-      console.error('❌ Error reading/writing apps.json:', error);
-      // apps.json 파일이 없거나 읽기 실패, 새로 생성됩니다.
-      await fs.writeFile(appsFilePath, JSON.stringify([], null, 2));
-    }
+    // localStorage 기반 앱 데이터는 클라이언트에서 처리되므로
+    // 서버에서는 파일 삭제만 처리하고 성공 응답 반환
+    console.log('✅ File deletion completed, localStorage sync handled by client');
 
     const result = {
       success: true,
