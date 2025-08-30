@@ -38,7 +38,7 @@ export function GoogleTranslate() {
       const target = document.getElementById("google_translate_element");
       if (!target) return;
 
-      if (typeof window.google === "undefined" || !window.google.translate) return;
+      if (typeof window.google === "undefined" || !window.google.translate || !window.google.translate.TranslateElement) return;
 
       new window.google.translate.TranslateElement(
         {
