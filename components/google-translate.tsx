@@ -179,9 +179,9 @@ export function GoogleTranslate() {
                 }
               });
             }
-          } catch (e) {
-            console.warn("Language mapping failed", e);
-          }
+              } catch (e) {
+      // Language mapping failed
+    }
         }
 
       function hideFeedbackElements() {

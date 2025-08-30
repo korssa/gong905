@@ -146,11 +146,10 @@ export function NewsManager({ onBack }: NewsManagerProps) {
         resetForm();
         loadNews();
       }
-         } catch (error) {
-       console.error('뉴스 저장 오류:', error);
-       const errorMessage = error instanceof Error ? error.message : '뉴스 저장에 실패했습니다.';
-       alert(errorMessage);
-     }
+             } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '뉴스 저장에 실패했습니다.';
+      alert(errorMessage);
+    }
   };
 
   // 뉴스 삭제

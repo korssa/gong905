@@ -182,9 +182,9 @@ export function GoogleTranslateWidget() {
              }
            });
          }
-       } catch (e) {
-         console.warn("Language mapping failed", e);
-       }
+           } catch (e) {
+      // Language mapping failed
+    }
      }
 
      function hideFeedbackElements() {
@@ -283,9 +283,9 @@ export function GoogleTranslateWidget() {
            }
          }, 500);
          
-       } catch (e) {
-         console.warn("Widget refresh failed", e);
-       }
+           } catch (e) {
+      // Widget refresh failed
+    }
      }
 
      // 🔍 2. initializeLanguageMapping + applyPersistentMapping 통합
