@@ -351,16 +351,13 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                    </div>
                  )}
 
-                {/* 본문 텍스트 */}
-                <div
-                  className="whitespace-pre-wrap"
-                  dangerouslySetInnerHTML={{
-                    __html: selected.content
-                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                      .replace(/\*(.*?)\*/g, "<em>$1</em>")
-                      .replace(/\n/g, "<br>")
-                  }}
-                />
+                                 {/* 본문 텍스트 */}
+                 <div
+                   className="whitespace-pre-wrap font-mono"
+                   translate="no"
+                 >
+                   {selected.content}
+                 </div>
               </article>
 
                            {/* 태그 */}

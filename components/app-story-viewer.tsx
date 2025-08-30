@@ -161,19 +161,16 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
             </div>
           )}
 
-                     {/* 내용 */}
-           <article className="prose prose-invert dark:prose-invert" onMouseEnter={blockTranslationFeedback}>
-             <div 
-               className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none"
-               style={{ maxWidth: '100%', wordWrap: 'break-word' }}
-               dangerouslySetInnerHTML={{ 
-                 __html: selectedStory.content
-                   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                   .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                   .replace(/\n/g, '<br>')
-               }}
-             />
-           </article>
+                                           {/* 내용 */}
+            <article className="prose prose-invert dark:prose-invert" onMouseEnter={blockTranslationFeedback}>
+              <div 
+                className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none font-mono"
+                style={{ maxWidth: '100%', wordWrap: 'break-word' }}
+                translate="no"
+              >
+                {selectedStory.content}
+              </div>
+            </article>
 
                      {/* 태그 */}
            {selectedStory.tags && selectedStory.tags.length > 0 && (
@@ -275,19 +272,15 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
                   </div>
                 )}
                 
-                {/* 내용 미리보기 */}
-                <div className="prose prose-invert max-w-none">
-                  <div 
-                    className="text-gray-300 line-clamp-3"
-                    dangerouslySetInnerHTML={{ 
-                      __html: story.content
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                        .replace(/\n/g, '<br>')
-                        .substring(0, 200) + (story.content.length > 200 ? '...' : '')
-                    }}
-                  />
-                </div>
+                                 {/* 내용 미리보기 */}
+                 <div className="prose prose-invert max-w-none">
+                   <div 
+                     className="text-gray-300 line-clamp-3 font-mono"
+                     translate="no"
+                   >
+                     {story.content.substring(0, 200) + (story.content.length > 200 ? '...' : '')}
+                   </div>
+                 </div>
 
                 {/* 태그 */}
                 {story.tags && story.tags.length > 0 && (

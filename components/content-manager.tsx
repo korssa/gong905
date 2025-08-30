@@ -183,15 +183,12 @@ export function ContentManager({
                      {/* 본문 */}
            <article className="prose prose-invert dark:prose-invert" onMouseEnter={blockTranslationFeedback}>
              <div
-               className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none"
+               className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none font-mono"
                style={{ wordWrap: "break-word" }}
-               dangerouslySetInnerHTML={{
-                 __html: selectedContent.content
-                   .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                   .replace(/\*(.*?)\*/g, "<em>$1</em>")
-                   .replace(/\n/g, "<br>"),
-               }}
-             />
+               translate="no"
+             >
+               {selectedContent.content}
+             </div>
            </article>
 
                      {/* 태그 */}
@@ -276,14 +273,9 @@ export function ContentManager({
                     />
                   </div>
                 )}
-                <div className="text-gray-300 whitespace-pre-wrap">
-                  <div dangerouslySetInnerHTML={{
-                    __html: content.content
-                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                      .replace(/\*(.*?)\*/g, "<em>$1</em>")
-                      .replace(/\n/g, "<br>"),
-                  }} />
-                </div>
+                                 <div className="text-gray-300 whitespace-pre-wrap font-mono" translate="no">
+                   {content.content}
+                 </div>
                 {content.tags && content.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {content.tags.map((tag, idx) => (
