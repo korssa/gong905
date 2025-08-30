@@ -43,6 +43,71 @@ export function NewsManager({ onBack }: NewsManagerProps) {
 
   const { isAuthenticated } = useAdmin();
 
+  // 번역 피드백 차단 함수
+  const blockTranslationFeedback = () => {
+    try {
+      const feedbackElements = document.querySelectorAll([
+        '.goog-te-balloon-frame',
+        '.goog-te-ftab',
+        '.goog-te-ftab-float', 
+        '.goog-tooltip',
+        '.goog-tooltip-popup',
+        '.goog-te-banner-frame',
+        '.goog-te-banner-frame-skiptranslate',
+        '.goog-te-gadget',
+        '.goog-te-combo',
+        '.goog-te-menu-frame',
+        '.goog-te-menu-value',
+        '.goog-te-banner',
+        '.goog-te-banner-frame',
+        '.goog-te-banner-frame-skiptranslate',
+        '.goog-te-banner-frame-skiptranslate-goog-inline-block',
+        '[class*="goog-te-balloon"]',
+        '[class*="goog-te-ftab"]',
+        '[class*="goog-te-tooltip"]',
+        '[class*="goog-te-banner"]',
+        '[class*="goog-te-gadget"]',
+        '[class*="goog-te-combo"]',
+        '[class*="goog-te-menu"]',
+        '[id*="goog-te"]',
+        '[id*="goog-tooltip"]',
+        '[id*="goog-balloon"]'
+      ].join(','));
+      
+      feedbackElements.forEach(el => {
+        (el as HTMLElement).style.display = 'none';
+        (el as HTMLElement).style.visibility = 'hidden';
+        (el as HTMLElement).style.opacity = '0';
+        (el as HTMLElement).style.pointerEvents = 'none';
+        (el as HTMLElement).style.position = 'absolute';
+        (el as HTMLElement).style.left = '-9999px';
+        (el as HTMLElement).style.top = '-9999px';
+        (el as HTMLElement).style.zIndex = '-9999';
+      });
+    } catch {
+      // 에러 무시
+    }
+    
+    // 추가 지연 차단 (더블 체크)
+    setTimeout(() => {
+      try {
+        const allGoogleElements = document.querySelectorAll('*');
+        allGoogleElements.forEach(el => {
+          const className = el.className || '';
+          const id = el.id || '';
+          if (className.includes('goog-') || id.includes('goog-')) {
+            (el as HTMLElement).style.display = 'none';
+            (el as HTMLElement).style.visibility = 'hidden';
+            (el as HTMLElement).style.opacity = '0';
+            (el as HTMLElement).style.pointerEvents = 'none';
+          }
+        });
+      } catch {
+        // 에러 무시
+      }
+    }, 50);
+  };
+
   // 뉴스 로드
   const loadNews = async () => {
     try {
@@ -213,6 +278,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
             variant="outline"
             onClick={() => setSelectedNews(null)}
             className="bg-[#2e2e2e] text-white hover:bg-[#444] border border-gray-700 hover:border-gray-500 transition"
+            onMouseEnter={blockTranslationFeedback}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             <span className="notranslate" translate="no">Back to News</span>
@@ -222,12 +288,12 @@ export function NewsManager({ onBack }: NewsManagerProps) {
         {/* 뉴스 상세 내용 - 672px 고정 너비 */}
         <div className="w-full max-w-2xl mx-auto px-8 sm:px-12 lg:px-16" style={{ maxWidth: '672px' }}>
           {/* 헤더 */}
-          <div className="border-b border-gray-600 pb-4 mb-6">
-            <h1 className="text-3xl font-bold text-white mb-2">{selectedNews.title}</h1>
+          <div className="border-b border-gray-600 pb-4 mb-6" onMouseEnter={blockTranslationFeedback}>
+            <h1 className="text-3xl font-bold text-white mb-2" translate="no">{selectedNews.title}</h1>
             <div className="flex items-center gap-4 text-gray-400 text-sm">
               <span className="flex items-center gap-1">
                 <User className="h-4 w-4" />
-                {selectedNews.author}
+                <span translate="no">{selectedNews.author}</span>
               </span>
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -254,22 +320,18 @@ export function NewsManager({ onBack }: NewsManagerProps) {
           )}
 
           {/* 내용 */}
-          <article className="prose prose-invert dark:prose-invert">
+          <article className="prose prose-invert dark:prose-invert" onMouseEnter={blockTranslationFeedback}>
             <div 
-              className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none"
+              className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-none font-mono"
               style={{ maxWidth: '100%', wordWrap: 'break-word' }}
-              dangerouslySetInnerHTML={{ 
-                __html: selectedNews.content
-                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                  .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                  .replace(/\n/g, '<br>')
-              }}
-            />
+            >
+              {selectedNews.content}
+            </div>
           </article>
 
           {/* 태그 */}
           {selectedNews.tags && selectedNews.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2 mt-4">
+            <div className="flex flex-wrap gap-1 mb-2 mt-4" onMouseEnter={blockTranslationFeedback}>
               {selectedNews.tags.map((tag, index) => (
                 <span
                   key={index}
@@ -283,7 +345,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
           )}
 
           {/* 좋아요 버튼 */}
-          <div className="flex justify-start mt-6 pt-6 border-t border-gray-600">
+          <div className="flex justify-start mt-6 pt-6 border-t border-gray-600" onMouseEnter={blockTranslationFeedback}>
             <button
               onClick={() => handleLike(selectedNews.id)}
               className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200 group"
