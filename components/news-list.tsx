@@ -94,24 +94,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
       // 에러 무시
     }
     
-    // 추가 지연 차단 (더블 체크)
-    setTimeout(() => {
-      try {
-        const allGoogleElements = document.querySelectorAll('*');
-        allGoogleElements.forEach(el => {
-          const className = el.className || '';
-          const id = el.id || '';
-          if (className.includes('goog-') || id.includes('goog-')) {
-            (el as HTMLElement).style.display = 'none';
-            (el as HTMLElement).style.visibility = 'hidden';
-            (el as HTMLElement).style.opacity = '0';
-            (el as HTMLElement).style.pointerEvents = 'none';
-          }
-        });
-      } catch (error) {
-        // 에러 무시
-      }
-    }, 50);
+
   };
 
   // Load content list
