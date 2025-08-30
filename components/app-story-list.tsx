@@ -42,7 +42,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     author: "",
     type: 'app-story' as ContentType,
     tags: "",
-    isPublished: false,
+    isPublished: true, // 기본값을 true로 설정하여 게시되도록 함
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -121,7 +121,8 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         setLoading(true);
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
-        setContents(data.filter((c: ContentItem) => c.isPublished));
+        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
       } catch (err) {
         // 불러오기 실패
       } finally {
@@ -147,7 +148,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       author: "",
       type: 'app-story' as ContentType,
       tags: "",
-      isPublished: false,
+      isPublished: true, // 기본값을 true로 설정
     });
     setEditingContent(null);
     setSelectedImage(null);
@@ -236,12 +237,13 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         setIsDialogOpen(false);
         resetForm();
         
-        // 콘텐츠 목록 다시 로드
-        console.log('콘텐츠 목록 다시 로드 시작');
-        const res = await fetch(`/api/content?type=${type}`);
-        const data = await res.json();
-        setContents(data.filter((c: ContentItem) => c.isPublished));
-        console.log('콘텐츠 목록 업데이트 완료');
+                 // 콘텐츠 목록 다시 로드
+         console.log('콘텐츠 목록 다시 로드 시작');
+         const res = await fetch(`/api/content?type=${type}`);
+         const data = await res.json();
+         // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+         setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
+         console.log('콘텐츠 목록 업데이트 완료');
         
         alert(editingContent ? 'App Story가 수정되었습니다.' : 'App Story가 저장되었습니다.');
       } else {
@@ -279,7 +281,8 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       if (response.ok) {
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
-        setContents(data.filter((c: ContentItem) => c.isPublished));
+        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
       }
     } catch {
       // 삭제 실패
@@ -315,7 +318,8 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       if (response.ok) {
         const res = await fetch(`/api/content?type=${type}`);
         const data = await res.json();
-        setContents(data.filter((c: ContentItem) => c.isPublished));
+        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
       }
     } catch {
       // 토글 실패
@@ -557,15 +561,16 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 p-3 bg-gray-700/50 rounded-lg border border-gray-600">
                       <input
                         type="checkbox"
                         id="isPublished"
                         checked={formData.isPublished}
                         onChange={(e) => setFormData(prev => ({ ...prev, isPublished: e.target.checked }))}
+                        className="w-4 h-4 text-amber-400 bg-gray-800 border-gray-600 rounded focus:ring-amber-400 focus:ring-2"
                       />
-                      <label htmlFor="isPublished" className="text-sm">
-                        즉시 게시
+                      <label htmlFor="isPublished" className="text-sm font-medium text-white">
+                        게시하기 (체크 시 App Story 목록에 표시)
                       </label>
                     </div>
                   </div>
@@ -728,15 +733,16 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 p-3 bg-gray-700/50 rounded-lg border border-gray-600">
                     <input
                       type="checkbox"
                       id="isPublished"
                       checked={formData.isPublished}
                       onChange={(e) => setFormData(prev => ({ ...prev, isPublished: e.target.checked }))}
+                      className="w-4 h-4 text-amber-400 bg-gray-800 border-gray-600 rounded focus:ring-amber-400 focus:ring-2"
                     />
-                    <label htmlFor="isPublished" className="text-sm">
-                      즉시 게시
+                    <label htmlFor="isPublished" className="text-sm font-medium text-white">
+                      게시하기 (체크 시 App Story 목록에 표시)
                     </label>
                   </div>
                 </div>

@@ -35,7 +35,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
     author: "",
     type: 'news' as ContentType,
     tags: "",
-    isPublished: false,
+    isPublished: true, // 기본값을 true로 설정하여 게시되도록 함
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -49,7 +49,8 @@ export function NewsManager({ onBack }: NewsManagerProps) {
       const response = await fetch(`/api/content?type=news`);
       if (response.ok) {
         const data = await response.json();
-        setNews(data);
+        // 관리자일 경우 전체 뉴스, 일반 사용자는 게시된 뉴스만 표시
+        setNews(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
       }
     } catch {
       
@@ -73,7 +74,7 @@ export function NewsManager({ onBack }: NewsManagerProps) {
       author: "",
       type: 'news' as ContentType,
       tags: "",
-      isPublished: false,
+      isPublished: true, // 기본값을 true로 설정
     });
     setEditingNews(null);
     setSelectedImage(null);
@@ -421,17 +422,18 @@ export function NewsManager({ onBack }: NewsManagerProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="isPublished"
-                      checked={formData.isPublished}
-                      onChange={(e) => setFormData(prev => ({ ...prev, isPublished: e.target.checked }))}
-                    />
-                    <label htmlFor="isPublished" className="text-sm">
-                      즉시 게시
-                    </label>
-                  </div>
+                                     <div className="flex items-center space-x-2 p-3 bg-gray-700/50 rounded-lg border border-gray-600">
+                     <input
+                       type="checkbox"
+                       id="isPublished"
+                       checked={formData.isPublished}
+                       onChange={(e) => setFormData(prev => ({ ...prev, isPublished: e.target.checked }))}
+                       className="w-4 h-4 text-amber-400 bg-gray-800 border-gray-600 rounded focus:ring-amber-400 focus:ring-2"
+                     />
+                     <label htmlFor="isPublished" className="text-sm font-medium text-white">
+                       게시하기 (체크 시 News 목록에 표시)
+                     </label>
+                   </div>
                 </div>
 
                 <DialogFooter>
