@@ -388,15 +388,10 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                       const newStatus = statuses[nextIndex];
                       setFormData(prev => ({ ...prev, status: newStatus }));
                       
-                      // development 상태일 때 번역 차단
+                      // development 상태일 때 번역 피드백 방지
                       if (newStatus === "development") {
-                        if (typeof window !== 'undefined' && window.adminModeChange) {
-                          try {
-                            window.adminModeChange(true);
-                          } catch (error) {
-                            console.warn('adminModeChange 호출 실패:', error);
-                          }
-                        }
+                        // 번역 피드백 방지만 수행
+                        blockTranslationFeedback();
                       }
                     } catch (error) {
                       console.error('Status change error:', error);

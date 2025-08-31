@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppCard } from "./app-card";
 import { AppItem, AppStore } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
+import { loadAppsFromBlob } from "@/lib/data-loader";
 
 interface AppGalleryProps {
   apps: AppItem[];
@@ -18,9 +19,30 @@ interface AppGalleryProps {
   showNumbering?: boolean;
 }
 
-export function AppGallery({ apps, viewMode, onDeleteApp, onEditApp, onToggleFeatured, onToggleEvent, featuredApps = [], eventApps = [], showNumbering = false }: AppGalleryProps) {
+export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp, onToggleFeatured, onToggleEvent, featuredApps = [], eventApps = [], showNumbering = false }: AppGalleryProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<AppStore>("google-play");
+  const [apps, setApps] = useState<AppItem[]>(initialApps);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Vercel Blob Storage에서 앱 데이터 로드
+  useEffect(() => {
+    const loadApps = async () => {
+      setIsLoading(true);
+      try {
+        const blobApps = await loadAppsFromBlob();
+        if (blobApps.length > 0) {
+          setApps(blobApps);
+        }
+      } catch (error) {
+        console.error('Failed to load apps from blob:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadApps();
+  }, []);
 
   const filteredApps = apps.filter(app => app.store === activeTab);
 

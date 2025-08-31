@@ -117,7 +117,9 @@ export const uploadFile = async (file: File, prefix: string = ""): Promise<strin
   const forceLocal = (process.env.NEXT_PUBLIC_FORCE_LOCAL_UPLOAD === '1') || (process.env.FORCE_LOCAL_UPLOAD === '1');
 
   let finalStorageType = storageType;
-  if (isVercelEnvironment && !forceLocal) {
+  
+  // Vercel 환경이거나 환경변수가 vercel-blob으로 설정된 경우 강제로 Vercel Blob 사용
+  if ((isVercelEnvironment && !forceLocal) || storageType === 'vercel-blob') {
     finalStorageType = 'vercel-blob';
   } else if (forceLocal) {
     finalStorageType = 'local';

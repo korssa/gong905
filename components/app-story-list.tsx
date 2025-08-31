@@ -25,6 +25,7 @@ import { ContentItem, ContentFormData, ContentType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
 import { uploadFile } from "@/lib/storage-adapter";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
+import { loadContentsFromBlob } from "@/lib/data-loader";
 
 interface AppStoryListProps {
   type: string; // "app-story"
@@ -57,12 +58,23 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     const load = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/content?type=${type}`);
-        const data = await res.json();
-        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
-        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
+        
+        // 먼저 Vercel Blob Storage에서 로드 시도
+        const blobContents = await loadContentsFromBlob();
+        const filteredBlobContents = blobContents.filter((c: ContentItem) => c.type === type);
+        
+        if (filteredBlobContents.length > 0) {
+          // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+          setContents(isAuthenticated ? filteredBlobContents : filteredBlobContents.filter((c: ContentItem) => c.isPublished));
+        } else {
+          // Blob에 데이터가 없으면 기존 API 사용
+          const res = await fetch(`/api/content?type=${type}`);
+          const data = await res.json();
+          // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+          setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
+        }
       } catch (err) {
-        // 불러오기 실패
+        console.error('Failed to load contents:', err);
       } finally {
         setLoading(false);
       }
