@@ -150,7 +150,11 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
       
              // 관리자 모드 진입 이벤트 즉시 발생
        if (typeof window !== 'undefined' && window.adminModeChange) {
-         window.adminModeChange(true);
+         try {
+           window.adminModeChange(true);
+         } catch (error) {
+           console.warn('adminModeChange 호출 실패:', error);
+         }
        }
     } else {
       alert("Incorrect password");
@@ -339,22 +343,26 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   type="button"
                   variant="outline"
                   className="w-full justify-start h-10 bg-white hover:bg-gray-50 border border-gray-200"
-                                     onClick={() => {
-                     try {
-                       const stores: AppStore[] = ["google-play", "app-store"];
-                       const currentIndex = stores.indexOf(formData.store);
-                       const nextIndex = (currentIndex + 1) % stores.length;
-                       const newStore = stores[nextIndex];
-                       setFormData(prev => ({ ...prev, store: newStore }));
-                       
-                                               // store 변경 시에도 번역 차단 (개발 중임을 나타냄)
-                        if (typeof window !== 'undefined' && window.adminModeChange) {
+                  onClick={createAdminButtonHandler(() => {
+                    try {
+                      const stores: AppStore[] = ["google-play", "app-store"];
+                      const currentIndex = stores.indexOf(formData.store);
+                      const nextIndex = (currentIndex + 1) % stores.length;
+                      const newStore = stores[nextIndex];
+                      setFormData(prev => ({ ...prev, store: newStore }));
+                      
+                      // store 변경 시에도 번역 차단 (개발 중임을 나타냄)
+                      if (typeof window !== 'undefined' && window.adminModeChange) {
+                        try {
                           window.adminModeChange(true);
+                        } catch (error) {
+                          console.warn('adminModeChange 호출 실패:', error);
                         }
-                     } catch (error) {
-                       // Store change error
-                     }
-                   }}
+                      }
+                    } catch (error) {
+                      console.error('Store change error:', error);
+                    }
+                  })}
                   onMouseEnter={blockTranslationFeedback}
                 >
                   {formData.store === "google-play" ? "🤖" : "🍎"} {" "}
@@ -372,24 +380,28 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   type="button"
                   variant="outline"
                   className="w-full justify-start h-10 bg-white hover:bg-gray-50 border border-gray-200"
-                                     onClick={() => {
-                     try {
-                       const statuses: AppStatus[] = ["published", "in-review", "development"];
-                       const currentIndex = statuses.indexOf(formData.status);
-                       const nextIndex = (currentIndex + 1) % statuses.length;
-                       const newStatus = statuses[nextIndex];
-                       setFormData(prev => ({ ...prev, status: newStatus }));
-                       
-                                               // development 상태일 때 번역 차단
-                        if (newStatus === "development") {
-                          if (typeof window !== 'undefined' && window.adminModeChange) {
+                  onClick={createAdminButtonHandler(() => {
+                    try {
+                      const statuses: AppStatus[] = ["published", "in-review", "development"];
+                      const currentIndex = statuses.indexOf(formData.status);
+                      const nextIndex = (currentIndex + 1) % statuses.length;
+                      const newStatus = statuses[nextIndex];
+                      setFormData(prev => ({ ...prev, status: newStatus }));
+                      
+                      // development 상태일 때 번역 차단
+                      if (newStatus === "development") {
+                        if (typeof window !== 'undefined' && window.adminModeChange) {
+                          try {
                             window.adminModeChange(true);
+                          } catch (error) {
+                            console.warn('adminModeChange 호출 실패:', error);
                           }
                         }
-                     } catch (error) {
-                       // Status change error
-                     }
-                   }}
+                      }
+                    } catch (error) {
+                      console.error('Status change error:', error);
+                    }
+                  })}
                   onMouseEnter={blockTranslationFeedback}
                 >
                   {formData.status === "published" && "✅ " + adminTexts.published}
@@ -581,7 +593,11 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                logout();
                // 관리자 모드 해제 이벤트 즉시 발생
                if (typeof window !== 'undefined' && window.adminModeChange) {
-                 window.adminModeChange(false);
+                 try {
+                   window.adminModeChange(false);
+                 } catch (error) {
+                   console.warn('adminModeChange 호출 실패:', error);
+                 }
                }
              }}
                            onMouseEnter={blockTranslationFeedback}
