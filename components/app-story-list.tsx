@@ -716,7 +716,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         {contents.map((content) => (
                      <Card
              key={content.id}
-             className="bg-gray-800/50 border-gray-700 transition-all duration-300 cursor-pointer"
+             className="bg-gray-800/50 border-2 border-gray-700 hover:border-amber-400/70 hover:bg-gray-800/80 transition-all duration-300 cursor-pointer group"
              onClick={() => {
                setSelected(content);
                blockTranslationFeedback();
@@ -732,7 +732,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
                   />
                 </div>
               )}
-                             <CardTitle className="text-lg font-semibold text-white line-clamp-2" translate="no">
+                             <CardTitle className="text-lg font-semibold text-white group-hover:text-amber-300 transition-colors line-clamp-2" translate="no">
                  {content.title}
                </CardTitle>
             </CardHeader>
