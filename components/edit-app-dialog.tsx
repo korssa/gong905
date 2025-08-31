@@ -255,7 +255,10 @@ export function EditAppDialog({ app, isOpen, onClose, onUpdate }: EditAppDialogP
                 }}
                 onMouseEnter={blockTranslationFeedback}
               >
-                {formData.store === "google-play" ? "🤖" : "🍎"}
+                {formData.store === "google-play" ? "🤖" : "🍎"} {" "}
+                <span className="notranslate" translate="no">
+                  {formData.store === "google-play" ? adminTexts.googlePlay : adminTexts.appStore}
+                </span>
               </Button>
             </div>
             <div>
@@ -282,9 +285,9 @@ export function EditAppDialog({ app, isOpen, onClose, onUpdate }: EditAppDialogP
                 }}
                 onMouseEnter={blockTranslationFeedback}
               >
-                {formData.status === "published" && "✅"}
-                {formData.status === "in-review" && "⏳"}
-                {formData.status === "development" && "🚧"}
+                {formData.status === "published" && "✅ " + adminTexts.published}
+                {formData.status === "in-review" && "⏳ " + adminTexts.inReview}
+                {formData.status === "development" && "🚧 " + adminTexts.development}
               </Button>
             </div>
           </div>
