@@ -351,14 +351,8 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                       const newStore = stores[nextIndex];
                       setFormData(prev => ({ ...prev, store: newStore }));
                       
-                      // store 변경 시에도 번역 차단 (개발 중임을 나타냄)
-                      if (typeof window !== 'undefined' && window.adminModeChange) {
-                        try {
-                          window.adminModeChange(true);
-                        } catch (error) {
-                          console.warn('adminModeChange 호출 실패:', error);
-                        }
-                      }
+                      // store 변경 시 번역 피드백 방지
+                      blockTranslationFeedback();
                     } catch (error) {
                       console.error('Store change error:', error);
                     }
@@ -380,23 +374,20 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   type="button"
                   variant="outline"
                   className="w-full justify-start h-10 bg-white hover:bg-gray-50 border border-gray-200"
-                  onClick={createAdminButtonHandler(() => {
+                  onClick={() => {
                     try {
+                      // 번역 피드백 방지
+                      blockTranslationFeedback();
+                      
                       const statuses: AppStatus[] = ["published", "in-review", "development"];
                       const currentIndex = statuses.indexOf(formData.status);
                       const nextIndex = (currentIndex + 1) % statuses.length;
                       const newStatus = statuses[nextIndex];
                       setFormData(prev => ({ ...prev, status: newStatus }));
-                      
-                      // development 상태일 때 번역 피드백 방지
-                      if (newStatus === "development") {
-                        // 번역 피드백 방지만 수행
-                        blockTranslationFeedback();
-                      }
                     } catch (error) {
                       console.error('Status change error:', error);
                     }
-                  })}
+                  }}
                   onMouseEnter={blockTranslationFeedback}
                 >
                   {formData.status === "published" && "✅ " + adminTexts.published}
