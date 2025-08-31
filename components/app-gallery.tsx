@@ -25,6 +25,11 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
   const [apps, setApps] = useState<AppItem[]>(initialApps);
   const [isLoading, setIsLoading] = useState(false);
 
+  // initialApps가 변경될 때마다 업데이트
+  useEffect(() => {
+    setApps(initialApps);
+  }, [initialApps]);
+
   // Vercel Blob Storage에서 앱 데이터 로드
   useEffect(() => {
     const loadApps = async () => {
@@ -33,16 +38,21 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
         const blobApps = await loadAppsFromBlob();
         if (blobApps.length > 0) {
           setApps(blobApps);
+        } else {
+          // Blob에 데이터가 없으면 props의 데이터 사용
+          setApps(initialApps);
         }
       } catch (error) {
         console.error('Failed to load apps from blob:', error);
+        // 에러 발생 시 props의 데이터 사용
+        setApps(initialApps);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadApps();
-  }, []);
+  }, [initialApps]);
 
   const filteredApps = apps.filter(app => app.store === activeTab);
 
