@@ -256,9 +256,7 @@ export function EditAppDialog({ app, isOpen, onClose, onUpdate }: EditAppDialogP
                 onMouseEnter={blockTranslationFeedback}
               >
                 {formData.store === "google-play" ? "🤖" : "🍎"} {" "}
-                <span className="notranslate" translate="no">
-                  {formData.store === "google-play" ? adminTexts.googlePlay : adminTexts.appStore}
-                </span>
+                {formData.store === "google-play" ? adminTexts.googlePlay : adminTexts.appStore}
               </Button>
             </div>
             <div>
