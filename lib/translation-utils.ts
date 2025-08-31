@@ -59,3 +59,11 @@ export const createAdminEventHandler = (handler: (event: React.MouseEvent) => vo
     handler(event);
   };
 };
+
+// 관리자 모드 폼 제출 핸들러 래퍼
+export const createAdminFormHandler = (handler: (event: React.FormEvent) => void | Promise<void>) => {
+  return async (event: React.FormEvent) => {
+    blockTranslationFeedback();
+    await handler(event);
+  };
+};

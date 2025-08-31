@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Mail, Send, X } from "lucide-react";
-import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
+import { blockTranslationFeedback, createAdminButtonHandler, createAdminFormHandler } from "@/lib/translation-utils";
 
 interface MailFormProps {
   type: "events" | "feedback" | "contact";
@@ -66,7 +66,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
     }
   };
 
-  const handleSubmit = createAdminButtonHandler(async (e: React.FormEvent) => {
+  const handleSubmit = createAdminFormHandler(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
