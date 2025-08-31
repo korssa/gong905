@@ -259,7 +259,7 @@ export function EditAppDialog({ app, isOpen, onClose, onUpdate }: EditAppDialogP
                 <span className="notranslate" translate="no">
                   {formData.store === "google-play" ? adminTexts.googlePlay : adminTexts.appStore}
                 </span>
-                <span className="ml-auto text-xs text-muted-foreground">클릭하여 변경</span>
+                <span className="ml-auto text-xs text-muted-foreground notranslate" translate="no">클릭하여 변경</span>
               </Button>
             </div>
             <div>
@@ -289,7 +289,7 @@ export function EditAppDialog({ app, isOpen, onClose, onUpdate }: EditAppDialogP
                 {formData.status === "published" && "✅ " + adminTexts.published}
                 {formData.status === "in-review" && "⏳ " + adminTexts.inReview}
                 {formData.status === "development" && "🚧 " + adminTexts.development}
-                <span className="ml-auto text-xs text-muted-foreground">클릭하여 변경</span>
+                <span className="ml-auto text-xs text-muted-foreground notranslate" translate="no">클릭하여 변경</span>
               </Button>
             </div>
           </div>
