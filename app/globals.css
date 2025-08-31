@@ -238,6 +238,57 @@ button[data-nextjs-toast-wrapper] {
   /* 구글 번역에서 제외 */
 }
 
+/* 번역 후에도 원본 형식 유지 */
+.preserve-format {
+  white-space: pre-wrap !important;
+  word-break: keep-all !important;
+  word-wrap: break-word !important;
+  font-family: monospace !important;
+  line-height: 1.6 !important;
+  tab-size: 2 !important;
+  -moz-tab-size: 2 !important;
+  -webkit-tab-size: 2 !important;
+}
+
+/* 번역된 텍스트도 원본 형식 유지 */
+.preserve-format * {
+  white-space: pre-wrap !important;
+  word-break: keep-all !important;
+  word-wrap: break-word !important;
+  font-family: monospace !important;
+  line-height: 1.6 !important;
+  tab-size: 2 !important;
+  -moz-tab-size: 2 !important;
+  -webkit-tab-size: 2 !important;
+}
+
+/* Google Translate가 추가하는 스타일 무력화 */
+.preserve-format font[style*="background-color"],
+.preserve-format span[style*="background-color"] {
+  background-color: transparent !important;
+  white-space: pre-wrap !important;
+  word-break: keep-all !important;
+  word-wrap: break-word !important;
+  font-family: monospace !important;
+  line-height: 1.6 !important;
+}
+
+/* 번역 후 줄바꿈과 띄어쓰기 보존 */
+.preserve-format br {
+  display: block !important;
+  content: "" !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.preserve-format .goog-text-highlight {
+  white-space: pre-wrap !important;
+  word-break: keep-all !important;
+  word-wrap: break-word !important;
+  font-family: monospace !important;
+  line-height: 1.6 !important;
+}
+
 /* 구글 번역 위젯 스타일링 - 다크 테마 */
 #google_translate_element {
   display: inline-block !important;

@@ -293,7 +293,13 @@ export function NewsList({ type, onBack }: NewsListProps) {
 
                              {/* 본문 텍스트 */}
                <pre
-                 className="whitespace-pre-wrap font-mono"
+                 className="whitespace-pre-wrap font-mono preserve-format"
+                 style={{
+                   whiteSpace: 'pre-wrap',
+                   wordBreak: 'keep-all',
+                   wordWrap: 'break-word',
+                   fontFamily: 'monospace'
+                 }}
                >
                  {selected.content}
                </pre>
@@ -627,7 +633,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
         {contents.map((content) => (
                      <Card
              key={content.id}
-             className="bg-gray-800/50 border-gray-700 hover:border-amber-400/50 hover:bg-gray-800/70 transition-all duration-300 cursor-pointer group"
+             className="bg-gray-800/50 border-gray-700 transition-all duration-300 cursor-pointer"
              onClick={() => {
                setSelected(content);
                blockTranslationFeedback();
@@ -639,11 +645,11 @@ export function NewsList({ type, onBack }: NewsListProps) {
                   <img
                     src={content.imageUrl}
                     alt={content.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               )}
-                               <CardTitle className="text-lg font-semibold text-white group-hover:text-amber-400 transition-colors line-clamp-2" translate="no">
+                               <CardTitle className="text-lg font-semibold text-white line-clamp-2" translate="no">
                    {content.title}
                  </CardTitle>
             </CardHeader>
