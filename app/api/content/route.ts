@@ -139,15 +139,19 @@ export async function POST(request: NextRequest) {
     contents.push(newContent);
     await saveContents(contents);
 
-    // Blob 동기화 (영속 저장) - 실패 시 재시도
+    // Blob 동기화 (영속 저장) - 타입별로 분리해서 저장
     let blobSyncSuccess = false;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const origin = new URL(request.url).origin;
+        
+        // 현재 타입의 콘텐츠만 필터링해서 저장
+        const currentTypeContents = contents.filter(content => content.type === body.type);
+        
         const response = await fetch(`${origin}/api/data/contents`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(contents),
+          body: JSON.stringify(currentTypeContents),
         });
         
         if (response.ok) {
@@ -216,15 +220,19 @@ export async function PUT(request: NextRequest) {
 
     await saveContents(contents);
 
-    // Blob 동기화 (영속 저장) - 실패 시 재시도
+    // Blob 동기화 (영속 저장) - 타입별로 분리해서 저장
     let blobSyncSuccess = false;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const origin = new URL(request.url).origin;
+        
+        // 현재 타입의 콘텐츠만 필터링해서 저장
+        const currentTypeContents = contents.filter(content => content.type === contents[contentIndex].type);
+        
         const response = await fetch(`${origin}/api/data/contents`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(contents),
+          body: JSON.stringify(currentTypeContents),
         });
         
         if (response.ok) {
@@ -274,20 +282,27 @@ export async function DELETE(request: NextRequest) {
     contents.splice(contentIndex, 1);
     await saveContents(contents);
 
-    // Blob 동기화 (영속 저장) - 실패 시 재시도
+    // Blob 동기화 (영속 저장) - 타입별로 분리해서 저장
     let blobSyncSuccess = false;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const origin = new URL(request.url).origin;
-        const response = await fetch(`${origin}/api/data/contents`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(contents),
-        });
         
-        if (response.ok) {
-          blobSyncSuccess = true;
-          break;
+        // 삭제된 콘텐츠의 타입을 찾아서 해당 타입만 필터링해서 저장
+        const deletedContent = contents.find(content => content.id === id);
+        if (deletedContent) {
+          const currentTypeContents = contents.filter(content => content.type === deletedContent.type);
+          
+          const response = await fetch(`${origin}/api/data/contents`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentTypeContents),
+          });
+          
+          if (response.ok) {
+            blobSyncSuccess = true;
+            break;
+          }
         }
       } catch (error) {
         console.warn(`Blob sync attempt ${attempt} failed:`, error);
