@@ -45,7 +45,7 @@ export function AppStoryViewer({ onBack }: AppStoryViewerProps) {
   // 스토리 로드
   const loadStories = async () => {
     try {
-      const response = await fetch(`/api/content?type=app-story`);
+      const response = await fetch(`/api/content?type=appstory`);
       if (response.ok) {
         const data = await response.json();
         setStories(data.filter((story: ContentItem) => story.isPublished));

@@ -395,7 +395,7 @@ export default function Home() {
 
   // App Story 클릭 핸들러
   const handleAppStoryClick = () => {
-    setCurrentContentType("app-story");
+            setCurrentContentType("appstory");
     setCurrentFilter("all"); // 갤러리 필터 초기화
     // 메모장 본문 위치로 스크롤
     setTimeout(() => {
@@ -638,7 +638,7 @@ export default function Home() {
                    {currentContentType ? (
                      // App Story 또는 News 모드
                      <div className="space-y-6" data-content-manager>
-                       {currentContentType === "app-story" ? (
+                       {currentContentType === "appstory" ? (
                          // App Story는 새로운 리스트 뷰 사용
                          <AppStoryList
                            type={currentContentType}

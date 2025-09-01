@@ -29,7 +29,7 @@ import { loadContentsFromBlob } from "@/lib/data-loader";
 import { loadMemoDraft, saveMemoDraft, clearMemoDraft } from "@/lib/memo-storage";
 
 interface AppStoryListProps {
-  type: string; // "app-story"
+  type: string; // "appstory"
   onBack?: () => void;
 }
 
@@ -43,7 +43,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     title: "",
     content: "",
     author: "",
-    type: 'app-story' as ContentType,
+    type: 'appstory' as ContentType,
     tags: "",
     isPublished: true, // 기본값을 true로 설정하여 게시되도록 함
   });
@@ -169,7 +169,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       title: "",
       content: "",
       author: "",
-      type: 'app-story' as ContentType,
+      type: 'appstory' as ContentType,
       tags: "",
       isPublished: true, // 기본값을 true로 설정
     });

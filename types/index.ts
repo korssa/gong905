@@ -46,7 +46,7 @@ export interface FilterOptions {
 }
 
 // App Story와 News를 위한 새로운 타입들
-export type ContentType = "app-story" | "news";
+export type ContentType = "appstory" | "news";
 
 export interface ContentItem {
   id: string;

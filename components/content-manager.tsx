@@ -219,7 +219,7 @@ export function ContentManager({
         {contents.length === 0 ? (
           <Card className="bg-gray-800 border-gray-700">
             <CardContent className="p-8 text-center text-gray-400">
-              아직 작성된 {type === "app-story" ? "스토리" : "뉴스"}가 없습니다.
+              아직 작성된 {type === "appstory" ? "스토리" : "뉴스"}가 없습니다.
             </CardContent>
           </Card>
         ) : (
