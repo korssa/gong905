@@ -118,8 +118,13 @@ export async function POST(request: NextRequest) {
     
     const contents = await loadContents();
     
+    // ID 범위 분리: App Story (1-10000), News (10001-20000)
+    const baseId = body.type === 'appstory' ? 1 : 10001;
+    const timestamp = Date.now();
+    const id = (baseId + (timestamp % 10000)).toString();
+    
     const newContent: ContentItem = {
-      id: Date.now().toString(),
+      id,
       title: body.title.trim(),
       content: body.content.trim(),
       author: body.author.trim(),
@@ -136,11 +141,9 @@ export async function POST(request: NextRequest) {
     // 디버깅: 현재 콘텐츠 상태 로그
     console.log(`[POST] 새 콘텐츠 생성 후 총 ${contents.length}개 콘텐츠:`, contents.map(c => ({ id: c.id, type: c.type, title: c.title })));
 
-    // App Story 전용 디버깅
-    if (body.type === 'appstory') {
-      console.log(`[App Story] 생성된 콘텐츠:`, newContent);
-      console.log(`[App Story] 전체 콘텐츠 배열:`, contents);
-    }
+    // 콘텐츠 생성 로그
+    console.log(`[${body.type.toUpperCase()}] 생성된 콘텐츠:`, newContent);
+    console.log(`[${body.type.toUpperCase()}] 전체 콘텐츠 배열:`, contents);
 
     // Blob 동기화 (영속 저장) - 전체 콘텐츠 저장
     let blobSyncSuccess = false;

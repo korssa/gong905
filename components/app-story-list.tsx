@@ -57,7 +57,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
   // 위젯 토글 시 메모 저장 브로드캐스트 수신
   useEffect(() => {
     const handler = () => {
-      saveMemoDraft('app-story', {
+      saveMemoDraft('appstory', {
         title: formData.title,
         content: formData.content,
         author: formData.author,
@@ -85,16 +85,16 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 폼 변경 즉시 저장
-  useEffect(() => {
-    saveMemoDraft('app-story', {
-      title: formData.title,
-      content: formData.content,
-      author: formData.author,
-      tags: formData.tags,
-      isPublished: formData.isPublished,
-    });
-  }, [formData.title, formData.content, formData.author, formData.tags, formData.isPublished]);
+      // 폼 변경 즉시 저장
+    useEffect(() => {
+      saveMemoDraft('appstory', {
+        title: formData.title,
+        content: formData.content,
+        author: formData.author,
+        tags: formData.tags,
+        isPublished: formData.isPublished,
+      });
+    }, [formData.title, formData.content, formData.author, formData.tags, formData.isPublished]);
 
   // Load content list
   useEffect(() => {
@@ -176,7 +176,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     setEditingContent(null);
     setSelectedImage(null);
     setImagePreview(null);
-    clearMemoDraft('app-story');
+    clearMemoDraft('appstory');
   };
 
   // 이미지 선택 핸들러
@@ -242,7 +242,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         const result = await response.json();
         
         setIsDialogOpen(false);
-        clearMemoDraft('app-story');
+        clearMemoDraft('appstory');
         resetForm();
         
         // 콘텐츠 목록 다시 로드 (타입별로 정확히 필터링)
