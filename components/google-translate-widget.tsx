@@ -207,6 +207,16 @@ export function GoogleTranslateWidget() {
      }
 
     function handleAdminModeChange(enabled: boolean) {
+      try {
+        // 위젯 상태 토글 전 현재 작성 중 드래프트를 안전하게 저장 (App Story/News 공통)
+        const saveDraftSafely = () => {
+          try {
+            const event = new CustomEvent('memo:save-draft');
+            window.dispatchEvent(event);
+          } catch {}
+        };
+        saveDraftSafely();
+      } catch {}
       if (enabled) {
         try {
           document.documentElement.setAttribute("translate", "no");

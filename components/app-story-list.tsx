@@ -26,6 +26,7 @@ import { useAdmin } from "@/hooks/use-admin";
 import { uploadFile } from "@/lib/storage-adapter";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { loadContentsFromBlob } from "@/lib/data-loader";
+import { loadMemoDraft, saveMemoDraft, clearMemoDraft } from "@/lib/memo-storage";
 
 interface AppStoryListProps {
   type: string; // "app-story"
@@ -52,6 +53,48 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
   const { isAuthenticated } = useAdmin();
 
 
+
+  // 위젯 토글 시 메모 저장 브로드캐스트 수신
+  useEffect(() => {
+    const handler = () => {
+      saveMemoDraft('app-story', {
+        title: formData.title,
+        content: formData.content,
+        author: formData.author,
+        tags: formData.tags,
+        isPublished: formData.isPublished,
+      });
+    };
+    window.addEventListener('memo:save-draft', handler);
+    return () => window.removeEventListener('memo:save-draft', handler);
+  }, [formData.title, formData.content, formData.author, formData.tags, formData.isPublished]);
+
+  // 폼 로컬 캐시 복원
+  useEffect(() => {
+    const draft = loadMemoDraft('app-story');
+    if (draft) {
+      setFormData(prev => ({
+        ...prev,
+        title: draft.title ?? prev.title,
+        content: draft.content ?? prev.content,
+        author: draft.author ?? prev.author,
+        tags: draft.tags ?? prev.tags,
+        isPublished: typeof draft.isPublished === 'boolean' ? draft.isPublished : prev.isPublished,
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 폼 변경 즉시 저장
+  useEffect(() => {
+    saveMemoDraft('app-story', {
+      title: formData.title,
+      content: formData.content,
+      author: formData.author,
+      tags: formData.tags,
+      isPublished: formData.isPublished,
+    });
+  }, [formData.title, formData.content, formData.author, formData.tags, formData.isPublished]);
 
   // Load content list
   useEffect(() => {
@@ -133,6 +176,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     setEditingContent(null);
     setSelectedImage(null);
     setImagePreview(null);
+    clearMemoDraft('app-story');
   };
 
   // 이미지 선택 핸들러
@@ -198,6 +242,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         const result = await response.json();
         
         setIsDialogOpen(false);
+        clearMemoDraft('app-story');
         resetForm();
         
         // 콘텐츠 목록 다시 로드
