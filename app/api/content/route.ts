@@ -67,8 +67,20 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') as 'app-story' | 'news' | null;
     const published = searchParams.get('published');
-
-    const contents = await loadContents();
+    
+    // 프로덕션에서는 Blob 데이터를 우선 조회하여 영속 저장소 사용
+    let contents: ContentItem[] = [];
+    try {
+      const origin = new URL(request.url).origin;
+      const res = await fetch(`${origin}/api/data/contents`, { cache: 'no-store' });
+      if (res.ok) {
+        contents = await res.json();
+      } else {
+        contents = await loadContents();
+      }
+    } catch {
+      contents = await loadContents();
+    }
     let filteredContents = contents;
 
     // 타입별 필터링
@@ -127,6 +139,16 @@ export async function POST(request: NextRequest) {
     contents.push(newContent);
     await saveContents(contents);
 
+    // Blob 동기화 (영속 저장)
+    try {
+      const origin = new URL(request.url).origin;
+      await fetch(`${origin}/api/data/contents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contents),
+      });
+    } catch {}
+
     return NextResponse.json(newContent, { status: 201 });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
@@ -169,13 +191,23 @@ export async function PUT(request: NextRequest) {
     contents[contentIndex] = {
       ...contents[contentIndex],
       ...updateData,
-      title: updateData.title?.trim() || contents[contentIndex].title,
-      author: updateData.author?.trim() || contents[contentIndex].author,
-      content: updateData.content?.trim() || contents[contentIndex].content,
+      title: updateData.title?.trim() ?? contents[contentIndex].title,
+      author: updateData.author?.trim() ?? contents[contentIndex].author,
+      content: updateData.content?.trim() ?? contents[contentIndex].content,
       tags: updateData.tags ? updateData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : contents[contentIndex].tags,
     };
 
     await saveContents(contents);
+
+    // Blob 동기화 (영속 저장)
+    try {
+      const origin = new URL(request.url).origin;
+      await fetch(`${origin}/api/data/contents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contents),
+      });
+    } catch {}
 
     return NextResponse.json(contents[contentIndex]);
   } catch (error) {
@@ -207,6 +239,16 @@ export async function DELETE(request: NextRequest) {
 
     contents.splice(contentIndex, 1);
     await saveContents(contents);
+
+    // Blob 동기화 (영속 저장)
+    try {
+      const origin = new URL(request.url).origin;
+      await fetch(`${origin}/api/data/contents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contents),
+      });
+    } catch {}
 
     return NextResponse.json({ message: '콘텐츠가 삭제되었습니다.' });
   } catch (error) {
