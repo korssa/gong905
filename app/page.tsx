@@ -24,6 +24,8 @@ import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
 import { saveFileToLocal, generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
+import { uploadFile, deleteFile } from "@/lib/storage-adapter";
+import { loadAppsFromBlob, saveAppsToBlob } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import Image from "next/image";
 
@@ -184,12 +186,10 @@ export default function Home() {
 
   const handleAppUpload = async (data: AppFormData, files: { icon: File; screenshots: File[] }) => {
     try {
-      // 아이콘 파일 저장
-      const iconUrl = await saveFileToLocal(files.icon, "icon");
-      
-      // 스크린샷 파일들 저장
+      // 아이콘/스크린샷 파일 업로드 (Vercel Blob 우선)
+      const iconUrl = await uploadFile(files.icon, "icon");
       const screenshotUrls = await Promise.all(
-        files.screenshots.map(file => saveFileToLocal(file, "screenshot"))
+        files.screenshots.map(file => uploadFile(file, "screenshot"))
       );
 
       // 새 앱 아이템 생성
@@ -218,7 +218,11 @@ export default function Home() {
       const updatedApps = [newApp, ...apps];
       setApps(updatedApps);
       
-      // localStorage에 저장
+      // Blob JSON에 동기화
+      try {
+        await saveAppsToBlob(updatedApps);
+      } catch {}
+      // 캐시용 localStorage 업데이트
       localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
       
       // 앱 업로드 및 저장 완료
@@ -243,21 +247,12 @@ export default function Home() {
       // 2. 로컬 상태에서 즉시 제거 (UI 반응성)
       setApps(prev => prev.filter(app => app.id !== id));
 
-      // 3. 서버에서 실제 파일들 삭제
-      const deleteResponse = await fetch('/api/delete-app', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          id,
-          iconUrl: appToDelete.iconUrl,
-          screenshotUrls: appToDelete.screenshotUrls 
-        }),
-      });
-
-      if (!deleteResponse.ok) {
-        throw new Error(`서버 삭제 실패: ${deleteResponse.statusText}`);
+      // 3. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
+      if (appToDelete.iconUrl) {
+        await deleteFile(appToDelete.iconUrl);
+      }
+      if (appToDelete.screenshotUrls && appToDelete.screenshotUrls.length > 0) {
+        await Promise.all(appToDelete.screenshotUrls.map(url => deleteFile(url)));
       }
 
       // 4. localStorage에서도 제거
@@ -269,6 +264,11 @@ export default function Home() {
         // localStorage에서 앱 삭제됨
       }
 
+      // 5. Blob JSON 동기화
+      try {
+        const current = savedApps ? JSON.parse(savedApps) : apps.filter(app => app.id !== id);
+        await saveAppsToBlob(current);
+      } catch {}
       // 앱 완전 삭제 완료
       
     } catch {
@@ -293,29 +293,27 @@ export default function Home() {
   useEffect(() => {
     const loadApps = async () => {
       try {
-        // 먼저 localStorage에서 로드
-        const savedApps = localStorage.getItem('gallery-apps');
-        if (savedApps) {
-          const parsedApps = JSON.parse(savedApps) as AppItem[];
-          // localStorage에서 앱 로드됨
-          
-          // 이미지 URL 검증 및 수정
-          // 이미지 URL 검증 시작
-          const validatedApps = await validateAppsImages(parsedApps);
-          
-          // 검증된 앱들이 원본과 다르면 localStorage 업데이트
-          if (JSON.stringify(validatedApps) !== JSON.stringify(parsedApps)) {
-            localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
-            // 무효한 이미지 URL 수정됨 - localStorage 업데이트
-          }
-          
+        // 1) Vercel Blob에서 앱 JSON 우선 로드
+        const blobApps = await loadAppsFromBlob();
+        if (blobApps && blobApps.length > 0) {
+          const validatedApps = await validateAppsImages(blobApps);
           setApps(validatedApps);
-          // 앱 로드 및 이미지 검증 완료
+          localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
         } else {
-          // localStorage가 비어있으면 샘플 데이터로 초기화
-          setApps(sampleApps);
-          localStorage.setItem('gallery-apps', JSON.stringify(sampleApps));
-          // 샘플 데이터로 초기화됨
+          // 2) Blob 비어있으면 localStorage 캐시 시도
+          const savedApps = localStorage.getItem('gallery-apps');
+          if (savedApps) {
+            const parsedApps = JSON.parse(savedApps) as AppItem[];
+            const validatedApps = await validateAppsImages(parsedApps);
+            if (JSON.stringify(validatedApps) !== JSON.stringify(parsedApps)) {
+              localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
+            }
+            setApps(validatedApps);
+          } else {
+            // 3) 아무것도 없으면 빈 배열 (샘플 제거 정책)
+            setApps(sampleApps);
+            localStorage.setItem('gallery-apps', JSON.stringify(sampleApps));
+          }
         }
 
                  // Featured Apps 로드
