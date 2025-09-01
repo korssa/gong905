@@ -136,11 +136,19 @@ export async function POST(request: NextRequest) {
     // 디버깅: 현재 콘텐츠 상태 로그
     console.log(`[POST] 새 콘텐츠 생성 후 총 ${contents.length}개 콘텐츠:`, contents.map(c => ({ id: c.id, type: c.type, title: c.title })));
 
+    // App Story 전용 디버깅
+    if (body.type === 'appstory') {
+      console.log(`[App Story] 생성된 콘텐츠:`, newContent);
+      console.log(`[App Story] 전체 콘텐츠 배열:`, contents);
+    }
+
     // Blob 동기화 (영속 저장) - 전체 콘텐츠 저장
     let blobSyncSuccess = false;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const origin = new URL(request.url).origin;
+        
+        console.log(`[Blob Sync] 시도 ${attempt}/3: ${contents.length}개 콘텐츠 전송`);
         
         // 전체 콘텐츠를 보내서 모든 타입의 데이터를 보존
         const response = await fetch(`${origin}/api/data/contents`, {
@@ -150,11 +158,15 @@ export async function POST(request: NextRequest) {
         });
         
         if (response.ok) {
+          const result = await response.json();
+          console.log(`[Blob Sync] 성공 (${attempt}/3):`, result);
           blobSyncSuccess = true;
           break;
+        } else {
+          console.warn(`[Blob Sync] 실패 (${attempt}/3): ${response.status} ${response.statusText}`);
         }
       } catch (error) {
-        console.warn(`Blob sync attempt ${attempt} failed:`, error);
+        console.warn(`[Blob Sync] 오류 (${attempt}/3):`, error);
         if (attempt < 3) {
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 지수 백오프
         }
@@ -162,7 +174,9 @@ export async function POST(request: NextRequest) {
     }
     
     if (!blobSyncSuccess) {
-      console.error('All Blob sync attempts failed for content creation');
+      console.error('[Blob Sync] 모든 시도 실패 - 콘텐츠 생성은 성공했지만 영속 저장 실패');
+    } else {
+      console.log('[Blob Sync] 성공적으로 완료됨');
     }
 
     return NextResponse.json(newContent, { status: 201 });
