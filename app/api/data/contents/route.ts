@@ -4,12 +4,8 @@ import path from 'path';
 import { put, list } from '@vercel/blob';
 import type { ContentItem } from '@/types';
 
-// 타입별로 파일명 분리
-const getContentsFileName = (contents: ContentItem[]) => {
-  if (contents.length === 0) return 'contents.json';
-  const type = contents[0].type;
-  return `${type}-contents.json`;
-};
+// 단일 파일로 모든 타입의 콘텐츠를 저장
+const CONTENTS_FILE_NAME = 'contents.json';
 const LOCAL_CONTENTS_PATH = path.join(process.cwd(), 'data', 'contents.json');
 
 // Vercel 환경에서의 임시 메모리 저장소 (Blob 실패 시 폴백)
@@ -62,35 +58,16 @@ export async function GET() {
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
 
     if (isProd) {
-      // 1) Blob에서 최신 JSON 시도 (타입별로 검색)
+      // 1) Blob에서 단일 JSON 파일 시도
       try {
-        // appstory와 news 타입 모두 검색
-        const { blobs } = await list({ prefix: '', limit: 100 });
+        const { blobs } = await list({ prefix: CONTENTS_FILE_NAME, limit: 1 });
         if (blobs && blobs.length > 0) {
-          const contentFiles = blobs.filter(blob => 
-            blob.pathname.includes('-contents.json')
-          );
-          
-          if (contentFiles.length > 0) {
-            // 모든 타입의 콘텐츠를 합쳐서 반환
-            let allContents: ContentItem[] = [];
-            for (const file of contentFiles) {
-              try {
-                const res = await fetch(file.url, { cache: 'no-store' });
-                if (res.ok) {
-                  const json = await res.json();
-                  if (Array.isArray(json)) {
-                    allContents = [...allContents, ...json];
-                  }
-                }
-              } catch {
-                // 개별 파일 로드 실패 시 무시
-              }
-            }
-            
-            if (allContents.length > 0) {
-              return NextResponse.json(allContents);
-            }
+          const url = blobs[0].url;
+          const res = await fetch(url, { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            const data = Array.isArray(json) ? (json as ContentItem[]) : [];
+            return NextResponse.json(data);
           }
         }
       } catch {
@@ -130,8 +107,7 @@ export async function POST(request: NextRequest) {
     if (isProd) {
       // Blob 저장 우선 시도, 실패 시 메모리 폴백으로도 성공 처리
       try {
-        const fileName = getContentsFileName(contents);
-        await put(fileName, JSON.stringify(contents, null, 2), {
+        await put(CONTENTS_FILE_NAME, JSON.stringify(contents, null, 2), {
           access: 'public',
           contentType: 'application/json; charset=utf-8',
           addRandomSuffix: false,
@@ -139,7 +115,7 @@ export async function POST(request: NextRequest) {
         // Blob 저장 성공
         // 메모리와의 불일치 방지를 위해 메모리도 최신으로 갱신
         memoryContents = [...contents];
-        return NextResponse.json({ success: true, storage: 'blob', fileName });
+        return NextResponse.json({ success: true, storage: 'blob' });
       } catch {
         // Blob 저장 실패: 토큰 누락 등
         memoryContents = [...contents];

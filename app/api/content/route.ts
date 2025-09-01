@@ -145,13 +145,11 @@ export async function POST(request: NextRequest) {
       try {
         const origin = new URL(request.url).origin;
         
-        // 현재 타입의 콘텐츠만 필터링해서 저장
-        const currentTypeContents = contents.filter(content => content.type === body.type);
-        
+        // 전체 콘텐츠를 보내서 모든 타입의 데이터를 보존
         const response = await fetch(`${origin}/api/data/contents`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(currentTypeContents),
+          body: JSON.stringify(contents),
         });
         
         if (response.ok) {
@@ -226,13 +224,11 @@ export async function PUT(request: NextRequest) {
       try {
         const origin = new URL(request.url).origin;
         
-        // 현재 타입의 콘텐츠만 필터링해서 저장
-        const currentTypeContents = contents.filter(content => content.type === contents[contentIndex].type);
-        
+        // 전체 콘텐츠를 보내서 모든 타입의 데이터를 보존
         const response = await fetch(`${origin}/api/data/contents`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(currentTypeContents),
+          body: JSON.stringify(contents),
         });
         
         if (response.ok) {
@@ -288,21 +284,16 @@ export async function DELETE(request: NextRequest) {
       try {
         const origin = new URL(request.url).origin;
         
-        // 삭제된 콘텐츠의 타입을 찾아서 해당 타입만 필터링해서 저장
-        const deletedContent = contents.find(content => content.id === id);
-        if (deletedContent) {
-          const currentTypeContents = contents.filter(content => content.type === deletedContent.type);
-          
-          const response = await fetch(`${origin}/api/data/contents`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(currentTypeContents),
-          });
-          
-          if (response.ok) {
-            blobSyncSuccess = true;
-            break;
-          }
+        // 전체 콘텐츠를 보내서 모든 타입의 데이터를 보존
+        const response = await fetch(`${origin}/api/data/contents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(contents),
+        });
+        
+        if (response.ok) {
+          blobSyncSuccess = true;
+          break;
         }
       } catch (error) {
         console.warn(`Blob sync attempt ${attempt} failed:`, error);
