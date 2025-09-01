@@ -244,8 +244,9 @@ export default function Home() {
 
       // 앱 삭제 시작
 
-      // 2. 로컬 상태에서 즉시 제거 (UI 반응성)
-      setApps(prev => prev.filter(app => app.id !== id));
+      // 2. 현재 상태에서 새로운 리스트 계산 후 즉시 반영 (UI 반응성 및 일관성)
+      const newApps = apps.filter(app => app.id !== id);
+      setApps(newApps);
 
       // 3. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
       if (appToDelete.iconUrl) {
@@ -255,19 +256,12 @@ export default function Home() {
         await Promise.all(appToDelete.screenshotUrls.map(url => deleteFile(url)));
       }
 
-      // 4. localStorage에서도 제거
-      const savedApps = localStorage.getItem('gallery-apps');
-      if (savedApps) {
-        const parsedApps = JSON.parse(savedApps);
-        const updatedApps = parsedApps.filter((app: AppItem) => app.id !== id);
-        localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
-        // localStorage에서 앱 삭제됨
-      }
+      // 4. localStorage 업데이트 (항상 최신 newApps로 저장)
+      localStorage.setItem('gallery-apps', JSON.stringify(newApps));
 
-      // 5. Blob JSON 동기화
+      // 5. Blob JSON 동기화 (항상 최신 newApps로 동기화)
       try {
-        const current = savedApps ? JSON.parse(savedApps) : apps.filter(app => app.id !== id);
-        await saveAppsToBlob(current);
+        await saveAppsToBlob(newApps);
       } catch {}
       // 앱 완전 삭제 완료
       
@@ -275,9 +269,9 @@ export default function Home() {
       // 앱 삭제 실패
 
       // 실패시 UI 상태 복원
-      const savedApps = localStorage.getItem('gallery-apps');
-      if (savedApps) {
-        const parsedApps = JSON.parse(savedApps);
+      const savedAppsStr = localStorage.getItem('gallery-apps');
+      if (savedAppsStr) {
+        const parsedApps = JSON.parse(savedAppsStr);
         setApps(parsedApps);
       }
 

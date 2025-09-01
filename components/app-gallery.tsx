@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppCard } from "./app-card";
 import { AppItem, AppStore } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
-import { loadAppsFromBlob } from "@/lib/data-loader";
 
 interface AppGalleryProps {
   apps: AppItem[];
@@ -23,38 +22,18 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<AppStore>("google-play");
   const [apps, setApps] = useState<AppItem[]>(initialApps);
-  const [isLoading, setIsLoading] = useState(false);
 
   // initialApps가 변경될 때마다 업데이트
   useEffect(() => {
     setApps(initialApps);
   }, [initialApps]);
 
-  // Vercel Blob Storage에서 앱 데이터 로드
+  // 부모 상태(initialApps)를 진실의 원천으로 사용
+  // Blob 재로딩으로 부모 상태를 덮어쓰지 않음 (추가/삭제 직후 UI가 되돌아가는 문제 방지)
   useEffect(() => {
-    const loadApps = async () => {
-      setIsLoading(true);
-      try {
-        const blobApps = await loadAppsFromBlob();
-        if (blobApps.length > 0) {
-          setApps(blobApps);
-        } else {
-          // Blob에 데이터가 없으면 props의 데이터 사용
-          setApps(initialApps);
-        }
-      } catch (error) {
-        console.error('Failed to load apps from blob:', error);
-        // 에러 발생 시 props의 데이터 사용
-        setApps(initialApps);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadApps();
+    // 초기/갱신 시 부모에서 전달된 상태로 동기화
+    setApps(initialApps);
   }, [initialApps]);
-
-  const filteredApps = apps.filter(app => app.store === activeTab);
 
   const googlePlayApps = apps.filter(app => app.store === "google-play");
   const appStoreApps = apps.filter(app => app.store === "app-store");
