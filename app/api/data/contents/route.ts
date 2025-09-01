@@ -58,29 +58,32 @@ export async function GET() {
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
 
     if (isProd) {
-      // 1) Blob에서 단일 JSON 파일 시도
+      // 1) Blob에서 최신 JSON 파일 시도 (여러 개 가져와서 최신 것 선택)
       try {
-        const { blobs } = await list({ prefix: CONTENTS_FILE_NAME, limit: 1 });
+        const { blobs } = await list({ prefix: CONTENTS_FILE_NAME, limit: 100 });
         if (blobs && blobs.length > 0) {
-          const url = blobs[0].url;
-          const res = await fetch(url, { cache: 'no-store' });
+          // 최신순 정렬 (uploadedAt 기준)
+          blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+          const latestBlob = blobs[0];
+          
+          console.log(`[Blob] 총 ${blobs.length}개 파일 중 최신: ${latestBlob.uploadedAt}`);
+          
+          const res = await fetch(latestBlob.url, { cache: 'no-store' });
           if (res.ok) {
             const json = await res.json();
             const data = Array.isArray(json) ? (json as ContentItem[]) : [];
+            console.log(`[Blob] 최신 데이터 로드 성공: ${data.length}개 콘텐츠`);
             return NextResponse.json(data);
           }
         }
-      } catch {
+      } catch (error) {
+        console.warn('[Blob] 조회 실패:', error);
         // Blob 조회 실패 시 무시하고 폴백 진행
       }
 
-      // 2) 메모리 폴백 - /api/content와 동기화
+      // 2) 메모리 폴백
       if (memoryContents.length > 0) {
-        return NextResponse.json(memoryContents);
-      }
-
-      // 3) 메모리 폴백 (무한 재귀 방지)
-      if (memoryContents.length > 0) {
+        console.log(`[Memory] 폴백 데이터 사용: ${memoryContents.length}개 콘텐츠`);
         return NextResponse.json(memoryContents);
       }
 
@@ -106,17 +109,20 @@ export async function POST(request: NextRequest) {
     if (isProd) {
       // Blob 저장 우선 시도, 실패 시 메모리 폴백으로도 성공 처리
       try {
+        console.log(`[Blob] 저장 시도: ${contents.length}개 콘텐츠`);
         await put(CONTENTS_FILE_NAME, JSON.stringify(contents, null, 2), {
           access: 'public',
           contentType: 'application/json; charset=utf-8',
           addRandomSuffix: false,
         });
         // Blob 저장 성공
+        console.log('[Blob] 저장 성공');
         // 메모리와의 불일치 방지를 위해 메모리도 최신으로 갱신
         memoryContents = [...contents];
         return NextResponse.json({ success: true, storage: 'blob' });
-      } catch {
+      } catch (error) {
         // Blob 저장 실패: 토큰 누락 등
+        console.warn('[Blob] 저장 실패, 메모리 폴백 사용:', error);
         memoryContents = [...contents];
         return NextResponse.json({ success: true, storage: 'memory', warning: 'Blob save failed; using in-memory fallback' });
       }

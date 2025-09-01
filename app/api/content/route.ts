@@ -41,29 +41,7 @@ async function loadContents(): Promise<ContentItem[]> {
 }
 
 // 메모리 기반 저장소 (Vercel 환경에서 사용)
-let memoryStorage: ContentItem[] = [
-  // 테스트용 초기 데이터 (필요시 제거)
-  {
-    id: 'test-1',
-    title: '테스트 News',
-    content: '테스트 내용입니다.',
-    author: '테스트 작성자',
-    publishDate: new Date().toISOString(),
-    type: 'news',
-    tags: ['테스트'],
-    isPublished: true,
-  },
-  {
-    id: 'test-2',
-    title: '테스트 App Story',
-    content: '테스트 앱 스토리입니다.',
-    author: '테스트 작성자',
-    publishDate: new Date().toISOString(),
-    type: 'appstory',
-    tags: ['테스트'],
-    isPublished: true,
-  }
-];
+let memoryStorage: ContentItem[] = [];
 
 // 콘텐츠 저장
 async function saveContents(contents: ContentItem[]) {
