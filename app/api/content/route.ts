@@ -26,25 +26,8 @@ async function ensureDataFile() {
 // 콘텐츠 로드
 async function loadContents(): Promise<ContentItem[]> {
   try {
-    // Vercel 환경에서는 Blob 데이터를 먼저 시도
+    // Vercel 환경에서는 메모리 저장소만 사용 (무한 재귀 방지)
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-      try {
-        // Blob에서 기존 데이터 로드 시도
-        const origin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
-        const res = await fetch(`${origin}/api/data/contents`, { cache: 'no-store' });
-        if (res.ok) {
-          const blobData = await res.json();
-          if (Array.isArray(blobData) && blobData.length > 0) {
-            // Blob 데이터가 있으면 메모리 업데이트 후 반환
-            memoryStorage = [...blobData];
-            return blobData;
-          }
-        }
-      } catch (error) {
-        console.warn('Blob 데이터 로드 실패, 메모리 사용:', error);
-      }
-      
-      // Blob 실패 시 메모리 저장소 사용
       return memoryStorage;
     }
     
@@ -58,7 +41,29 @@ async function loadContents(): Promise<ContentItem[]> {
 }
 
 // 메모리 기반 저장소 (Vercel 환경에서 사용)
-let memoryStorage: ContentItem[] = [];
+let memoryStorage: ContentItem[] = [
+  // 테스트용 초기 데이터 (필요시 제거)
+  {
+    id: 'test-1',
+    title: '테스트 News',
+    content: '테스트 내용입니다.',
+    author: '테스트 작성자',
+    publishDate: new Date().toISOString(),
+    type: 'news',
+    tags: ['테스트'],
+    isPublished: true,
+  },
+  {
+    id: 'test-2',
+    title: '테스트 App Story',
+    content: '테스트 앱 스토리입니다.',
+    author: '테스트 작성자',
+    publishDate: new Date().toISOString(),
+    type: 'appstory',
+    tags: ['테스트'],
+    isPublished: true,
+  }
+];
 
 // 콘텐츠 저장
 async function saveContents(contents: ContentItem[]) {
@@ -85,22 +90,12 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') as 'appstory' | 'news' | null;
     const published = searchParams.get('published');
     
-    // 프로덕션에서는 Blob 데이터를 우선 조회하여 영속 저장소 사용
+    // 프로덕션에서는 메모리 저장소만 사용 (무한 재귀 방지)
     let contents: ContentItem[] = [];
     try {
-      const origin = new URL(request.url).origin;
-      const res = await fetch(`${origin}/api/data/contents`, { cache: 'no-store' });
-      if (res.ok) {
-        contents = await res.json();
-        // Blob 데이터를 메모리에도 동기화
-        if (Array.isArray(contents)) {
-          memoryStorage = [...contents];
-        }
-      } else {
-        contents = await loadContents();
-      }
-    } catch {
       contents = await loadContents();
+    } catch {
+      contents = [];
     }
     let filteredContents = contents;
 

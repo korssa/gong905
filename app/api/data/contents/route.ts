@@ -79,10 +79,9 @@ export async function GET() {
         return NextResponse.json(memoryContents);
       }
 
-      // 3) /api/content 메모리와 동기화 시도
-      const syncedContents = await syncWithContentMemory();
-      if (syncedContents.length > 0) {
-        return NextResponse.json(syncedContents);
+      // 3) 메모리 폴백 (무한 재귀 방지)
+      if (memoryContents.length > 0) {
+        return NextResponse.json(memoryContents);
       }
 
       // 4) 모든 소스에서 데이터가 없으면 빈 배열
