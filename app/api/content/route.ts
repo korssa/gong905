@@ -65,7 +65,7 @@ async function saveContents(contents: ContentItem[]) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') as 'app-story' | 'news' | null;
+    const type = searchParams.get('type') as 'appstory' | 'news' | null;
     const published = searchParams.get('published');
     
     // 프로덕션에서는 Blob 데이터를 우선 조회하여 영속 저장소 사용

@@ -240,11 +240,20 @@ export function NewsList({ type, onBack }: NewsListProps) {
         setIsDialogOpen(false);
         resetForm();
         clearMemoDraft('news');
-        // 콘텐츠 목록 다시 로드
-        const res = await fetch(`/api/content?type=${type}`);
-        const data = await res.json();
-        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
-        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
+        
+        // 콘텐츠 목록 다시 로드 (타입별로 정확히 필터링)
+        try {
+          const res = await fetch(`/api/content?type=${type}`);
+          if (res.ok) {
+            const data = await res.json();
+            // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+            setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
+          }
+        } catch (error) {
+          console.error('목록 새로고침 실패:', error);
+        }
+        
+        alert(editingContent ? 'News가 수정되었습니다.' : 'News가 저장되었습니다.');
       } else {
         let message = 'News 저장에 실패했습니다.';
         try {
@@ -269,10 +278,19 @@ export function NewsList({ type, onBack }: NewsListProps) {
       });
 
       if (response.ok) {
-        const res = await fetch(`/api/content?type=${type}`);
-        const data = await res.json();
-        // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
-        setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
+        // 콘텐츠 목록 다시 로드 (타입별로 정확히 필터링)
+        try {
+          const res = await fetch(`/api/content?type=${type}`);
+          if (res.ok) {
+            const data = await res.json();
+            // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
+            setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
+          }
+        } catch (error) {
+          console.error('삭제 후 목록 새로고침 실패:', error);
+        }
+        
+        alert('News가 삭제되었습니다.');
       }
     } catch {
       // 삭제 실패
