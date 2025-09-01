@@ -8,7 +8,27 @@ const CONTENTS_FILE_NAME = 'contents.json';
 const LOCAL_CONTENTS_PATH = path.join(process.cwd(), 'data', CONTENTS_FILE_NAME);
 
 // Vercel 환경에서의 임시 메모리 저장소 (Blob 실패 시 폴백)
+// /api/content의 메모리와 동기화하기 위한 공유 저장소
 let memoryContents: ContentItem[] = [];
+
+// /api/content의 메모리와 동기화하는 함수
+async function syncWithContentMemory(): Promise<ContentItem[]> {
+  try {
+    // /api/content에서 현재 메모리 상태 조회
+    const origin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+    const res = await fetch(`${origin}/api/content`, { cache: 'no-store' });
+    if (res.ok) {
+      const contentMemory = await res.json();
+      if (Array.isArray(contentMemory)) {
+        memoryContents = [...contentMemory];
+        return memoryContents;
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to sync with /api/content memory:', error);
+  }
+  return memoryContents;
+}
 
 async function ensureLocalFile() {
   const dir = path.dirname(LOCAL_CONTENTS_PATH);
@@ -53,12 +73,18 @@ export async function GET() {
         // Blob 조회 실패 시 무시하고 폴백 진행
       }
 
-      // 2) 메모리 폴백
+      // 2) 메모리 폴백 - /api/content와 동기화
       if (memoryContents.length > 0) {
         return NextResponse.json(memoryContents);
       }
 
-      // 3) Blob/메모리 모두 없으면 빈 배열
+      // 3) /api/content 메모리와 동기화 시도
+      const syncedContents = await syncWithContentMemory();
+      if (syncedContents.length > 0) {
+        return NextResponse.json(syncedContents);
+      }
+
+      // 4) 모든 소스에서 데이터가 없으면 빈 배열
       return NextResponse.json([]);
     }
 

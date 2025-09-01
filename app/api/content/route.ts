@@ -139,15 +139,32 @@ export async function POST(request: NextRequest) {
     contents.push(newContent);
     await saveContents(contents);
 
-    // Blob 동기화 (영속 저장)
-    try {
-      const origin = new URL(request.url).origin;
-      await fetch(`${origin}/api/data/contents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contents),
-      });
-    } catch {}
+    // Blob 동기화 (영속 저장) - 실패 시 재시도
+    let blobSyncSuccess = false;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const origin = new URL(request.url).origin;
+        const response = await fetch(`${origin}/api/data/contents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(contents),
+        });
+        
+        if (response.ok) {
+          blobSyncSuccess = true;
+          break;
+        }
+      } catch (error) {
+        console.warn(`Blob sync attempt ${attempt} failed:`, error);
+        if (attempt < 3) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 지수 백오프
+        }
+      }
+    }
+    
+    if (!blobSyncSuccess) {
+      console.error('All Blob sync attempts failed for content creation');
+    }
 
     return NextResponse.json(newContent, { status: 201 });
   } catch (error) {
@@ -199,15 +216,32 @@ export async function PUT(request: NextRequest) {
 
     await saveContents(contents);
 
-    // Blob 동기화 (영속 저장)
-    try {
-      const origin = new URL(request.url).origin;
-      await fetch(`${origin}/api/data/contents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contents),
-      });
-    } catch {}
+    // Blob 동기화 (영속 저장) - 실패 시 재시도
+    let blobSyncSuccess = false;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const origin = new URL(request.url).origin;
+        const response = await fetch(`${origin}/api/data/contents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(contents),
+        });
+        
+        if (response.ok) {
+          blobSyncSuccess = true;
+          break;
+        }
+      } catch (error) {
+        console.warn(`Blob sync attempt ${attempt} failed:`, error);
+        if (attempt < 3) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 지수 백오프
+        }
+      }
+    }
+    
+    if (!blobSyncSuccess) {
+      console.error('All Blob sync attempts failed for content update');
+    }
 
     return NextResponse.json(contents[contentIndex]);
   } catch (error) {
@@ -240,15 +274,32 @@ export async function DELETE(request: NextRequest) {
     contents.splice(contentIndex, 1);
     await saveContents(contents);
 
-    // Blob 동기화 (영속 저장)
-    try {
-      const origin = new URL(request.url).origin;
-      await fetch(`${origin}/api/data/contents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contents),
-      });
-    } catch {}
+    // Blob 동기화 (영속 저장) - 실패 시 재시도
+    let blobSyncSuccess = false;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const origin = new URL(request.url).origin;
+        const response = await fetch(`${origin}/api/data/contents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(contents),
+        });
+        
+        if (response.ok) {
+          blobSyncSuccess = true;
+          break;
+        }
+      } catch (error) {
+        console.warn(`Blob sync attempt ${attempt} failed:`, error);
+        if (attempt < 3) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 지수 백오프
+        }
+      }
+    }
+    
+    if (!blobSyncSuccess) {
+      console.error('All Blob sync attempts failed for content deletion');
+    }
 
     return NextResponse.json({ message: '콘텐츠가 삭제되었습니다.' });
   } catch (error) {
