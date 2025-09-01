@@ -109,8 +109,8 @@ export function NewsList({ type, onBack }: NewsListProps) {
           setContents(isAuthenticated ? filteredBlobContents : filteredBlobContents.filter((c: ContentItem) => c.isPublished));
         } else {
           // Blob에 데이터가 없으면 기존 API 사용
-          const res = await fetch(`/api/content?type=${type}`);
-          const data = await res.json();
+        const res = await fetch(`/api/content?type=${type}`);
+        const data = await res.json();
           // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
           setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
         }
@@ -121,7 +121,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
       }
     };
     load();
-
+    
     // 번역 피드백 차단 함수
     const blockTranslationFeedback = () => {
       try {
@@ -157,7 +157,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
 
     // 최초 실행
     blockTranslationFeedback();
-
+    
     return () => observer.disconnect();
   }, [type, isAuthenticated]);
 
@@ -199,6 +199,20 @@ export function NewsList({ type, onBack }: NewsListProps) {
   // 콘텐츠 저장
   const handleSubmit = async () => {
     try {
+      // 필수 필드 검증
+      if (!formData.title.trim()) {
+        alert('제목을 입력해주세요.');
+        return;
+      }
+      if (!formData.author.trim()) {
+        alert('작성자를 입력해주세요.');
+        return;
+      }
+      if (!formData.content.trim()) {
+        alert('내용을 입력해주세요.');
+        return;
+      }
+
       let imageUrl = null;
 
       // 이미지가 선택된 경우 업로드
@@ -319,9 +333,9 @@ export function NewsList({ type, onBack }: NewsListProps) {
             <div className="text-white border-b border-gray-600 pb-4 mb-6" onMouseEnter={blockTranslationFeedback}>
                              <h1 className="text-3xl font-bold mb-2" translate="no">{selected.title}</h1>
               <div className="flex gap-4 text-sm text-gray-400">
-                                 <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1">
                    <User className="w-4 h-4" /> <span translate="no">{selected.author}</span>
-                 </span>
+                </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
                   {new Date(selected.publishDate).toLocaleDateString()}
@@ -346,7 +360,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
                 </div>
               )}
 
-                             {/* 본문 텍스트 */}
+              {/* 본문 텍스트 */}
                <pre
                  className="whitespace-pre-wrap font-mono preserve-format"
                  style={{
@@ -419,7 +433,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
             <div className="mt-6">
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={resetForm} className="gap-2">
+                  <Button onClick={() => { resetForm(); setIsDialogOpen(true); }} className="gap-2">
                     <Plus className="h-4 w-4" />
                     새 News 작성
                   </Button>
@@ -436,8 +450,10 @@ export function NewsList({ type, onBack }: NewsListProps) {
                   
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">제목 *</label>
+                      <label htmlFor="news-title" className="block text-sm font-medium mb-2">제목 *</label>
                       <Input
+                        id="news-title"
+                        name="title"
                         value={formData.title}
                         onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                         placeholder="제목을 입력하세요"
@@ -445,8 +461,10 @@ export function NewsList({ type, onBack }: NewsListProps) {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">작성자 *</label>
+                      <label htmlFor="news-author" className="block text-sm font-medium mb-2">작성자 *</label>
                       <Input
+                        id="news-author"
+                        name="author"
                         value={formData.author}
                         onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
                         placeholder="작성자명을 입력하세요"
@@ -454,8 +472,10 @@ export function NewsList({ type, onBack }: NewsListProps) {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">내용 *</label>
+                      <label htmlFor="news-content" className="block text-sm font-medium mb-2">내용 *</label>
                       <Textarea
+                        id="news-content"
+                        name="content"
                         value={formData.content}
                         onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                         placeholder="내용을 입력하세요 (마크다운 지원)"
@@ -464,8 +484,10 @@ export function NewsList({ type, onBack }: NewsListProps) {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">태그</label>
+                      <label htmlFor="news-tags" className="block text-sm font-medium mb-2">태그</label>
                       <Input
+                        id="news-tags"
+                        name="tags"
                         value={formData.tags}
                         onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
                         placeholder="태그를 쉼표로 구분하여 입력하세요"
@@ -564,7 +586,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
           <div className="mt-4">
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={resetForm} className="gap-2">
+                <Button onClick={() => { resetForm(); setIsDialogOpen(true); }} className="gap-2">
                   <Plus className="h-4 w-4" />
                   새 News 작성
                 </Button>
@@ -705,15 +727,15 @@ export function NewsList({ type, onBack }: NewsListProps) {
                 </div>
               )}
                                <CardTitle className="text-lg font-semibold text-white group-hover:text-amber-300 transition-colors line-clamp-2" translate="no">
-                   {content.title}
-                 </CardTitle>
+                {content.title}
+              </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex items-center justify-between text-sm text-gray-400">
-                                   <span className="flex items-center gap-1">
-                     <User className="w-3 h-3" />
+                <span className="flex items-center gap-1">
+                  <User className="w-3 h-3" />
                      <span translate="no">{content.author}</span>
-                   </span>
+                </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {new Date(content.publishDate).toLocaleDateString()}
@@ -749,7 +771,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                </div>
+              </div>
               )}
             </CardContent>
           </Card>
