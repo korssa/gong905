@@ -245,6 +245,14 @@ export function NewsList({ type, onBack }: NewsListProps) {
         const data = await res.json();
         // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
         setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
+      } else {
+        let message = 'News 저장에 실패했습니다.';
+        try {
+          const err = await response.json();
+          if (err?.error) message = `News 저장 실패: ${err.error}`;
+          if (err?.details) message += `\n상세: ${err.details}`;
+        } catch {}
+        alert(message);
       }
     } catch {
       alert('News 저장에 실패했습니다.');
