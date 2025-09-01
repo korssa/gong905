@@ -26,8 +26,25 @@ async function ensureDataFile() {
 // 콘텐츠 로드
 async function loadContents(): Promise<ContentItem[]> {
   try {
-    // Vercel 환경에서는 메모리 저장소 사용
+    // Vercel 환경에서는 Blob 데이터를 먼저 시도
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      try {
+        // Blob에서 기존 데이터 로드 시도
+        const origin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+        const res = await fetch(`${origin}/api/data/contents`, { cache: 'no-store' });
+        if (res.ok) {
+          const blobData = await res.json();
+          if (Array.isArray(blobData) && blobData.length > 0) {
+            // Blob 데이터가 있으면 메모리 업데이트 후 반환
+            memoryStorage = [...blobData];
+            return blobData;
+          }
+        }
+      } catch (error) {
+        console.warn('Blob 데이터 로드 실패, 메모리 사용:', error);
+      }
+      
+      // Blob 실패 시 메모리 저장소 사용
       return memoryStorage;
     }
     
@@ -75,6 +92,10 @@ export async function GET(request: NextRequest) {
       const res = await fetch(`${origin}/api/data/contents`, { cache: 'no-store' });
       if (res.ok) {
         contents = await res.json();
+        // Blob 데이터를 메모리에도 동기화
+        if (Array.isArray(contents)) {
+          memoryStorage = [...contents];
+        }
       } else {
         contents = await loadContents();
       }
@@ -139,7 +160,10 @@ export async function POST(request: NextRequest) {
     contents.push(newContent);
     await saveContents(contents);
 
-    // Blob 동기화 (영속 저장) - 타입별로 분리해서 저장
+    // 디버깅: 현재 콘텐츠 상태 로그
+    console.log(`[POST] 새 콘텐츠 생성 후 총 ${contents.length}개 콘텐츠:`, contents.map(c => ({ id: c.id, type: c.type, title: c.title })));
+
+    // Blob 동기화 (영속 저장) - 전체 콘텐츠 저장
     let blobSyncSuccess = false;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
