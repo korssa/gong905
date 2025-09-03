@@ -3,6 +3,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* 폰트 로딩 최적화 */
+@layer base {
+  html {
+    font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  code, pre {
+    font-family: var(--font-mono), 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  }
+}
+
+/* 폰트 렌더링 최적화 */
+body {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Dialog 관련 DOM 조작 에러 방지 */
 [data-radix-dialog-portal] {
   position: fixed !important;
