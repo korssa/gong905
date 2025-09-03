@@ -403,8 +403,8 @@ export default function Home() {
            if (blobResult) {
              const refreshedApps = await loadAppsByTypeFromBlob('gallery');
              if (refreshedApps.length === 0) {
-               // 삭제가 반영된 경우
-               setApps([]);
+               // 삭제가 반영된 경우 - 빈 배열로 설정하지 않고 기존 상태 유지
+               console.log('⚠️ Blob 동기화 후 앱이 0개 - 기존 상태 유지');
                localStorage.setItem('gallery-apps', JSON.stringify([]));
              }
            }
@@ -428,10 +428,10 @@ export default function Home() {
               
               if (updatedBlobApps && updatedBlobApps.length === 0) {
                 // Blob 동기화 완료
+                console.log('✅ Blob 동기화 완료 - 앱 삭제 반영됨');
               } else {
-                // Blob 동기화 지연, 강제로 빈 배열 설정
-                setApps([]);
-                localStorage.setItem('gallery-apps', JSON.stringify([]));
+                // Blob 동기화 지연 - 기존 상태 유지
+                console.log('⚠️ Blob 동기화 지연 - 기존 상태 유지');
               }
             } catch (error) {
               // Blob 재확인 실패 무시
