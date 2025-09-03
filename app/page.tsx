@@ -505,25 +505,9 @@ export default function Home() {
             setApps(appsWithType);
             localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
           } else {
-            console.log('⚠️ Blob에도 데이터 없음, localStorage 캐시 시도...');
-            // localStorage 캐시 시도
-            const savedApps = localStorage.getItem('gallery-apps');
-            if (savedApps) {
-              console.log('📱 localStorage에서 캐시된 앱 로드:', savedApps.length, '개');
-              const parsedApps = JSON.parse(savedApps) as AppItem[];
-              const validatedApps = await validateAppsImages(parsedApps);
-              
-              if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
-              
-              // 기존 앱들에 type 속성 추가
-              const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-              setApps(appsWithType);
-              console.log('✅ localStorage 캐시에서 앱 로드 완료');
-            } else {
-              console.log('❌ localStorage에도 데이터 없음, 빈 배열 설정');
-              setApps([]);
-              localStorage.setItem('gallery-apps', JSON.stringify([]));
-            }
+            console.log('❌ localStorage에도 데이터 없음, 기존 상태 유지');
+            // setApps([]) 호출 제거 - 기존 상태 유지
+            localStorage.setItem('gallery-apps', JSON.stringify([]));
           }
         }
 
