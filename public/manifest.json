@@ -1,7 +1,7 @@
 {
   "name": "Gongmyung's App Gallery",
   "short_name": "Gongmyung Apps",
-  "description": "Gongmyung이 직접 제작하고 큐레이션한 독창적인 앱들의 갤러리",
+  "description": "Gongmyung",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
@@ -22,6 +22,6 @@
     }
   ],
   "categories": ["productivity", "utilities", "entertainment"],
-  "lang": "ko",
+  "lang": "en",
   "dir": "ltr"
 }
