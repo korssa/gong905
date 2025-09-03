@@ -55,36 +55,29 @@ export function AdminCardActionsDialog({
     setIsSaving(true);
     
     try {
-      console.log('💾 저장 시작:', {
-        appId: app.id,
-        appName: app.name,
-        localFeatured,
-        isFeatured,
-        localEvent,
-        isEvent,
-        hasToggleFeatured: !!onToggleFeatured,
-        hasToggleEvent: !!onToggleEvent
-      });
+      let hasChanges = false;
       
       // Featured 상태 변경이 있는 경우
       if (localFeatured !== isFeatured && onToggleFeatured) {
-        console.log('🔄 Featured 상태 변경:', isFeatured, '→', localFeatured);
         await onToggleFeatured(app.id);
-        console.log('✅ Featured 상태 변경 완료');
+        hasChanges = true;
       }
       
       // Event 상태 변경이 있는 경우
       if (localEvent !== isEvent && onToggleEvent) {
-        console.log('🔄 Event 상태 변경:', isEvent, '→', localEvent);
         await onToggleEvent(app.id);
-        console.log('✅ Event 상태 변경 완료');
+        hasChanges = true;
       }
       
-      // 성공적으로 저장된 경우 다이얼로그 닫기
-      console.log('🎉 모든 변경사항 저장 완료');
+      // 변경사항이 있는 경우 성공 알림
+      if (hasChanges) {
+        alert('변경사항이 성공적으로 저장되었습니다.');
+      }
+      
+      // 다이얼로그 닫기
       onClose();
     } catch (error) {
-      console.error('❌ 저장 중 오류 발생:', error);
+      alert('저장 중 오류가 발생했습니다.');
     } finally {
       setIsSaving(false);
     }
