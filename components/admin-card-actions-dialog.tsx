@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, Star, Edit, Trash2, Save } from "lucide-react";
 import { AppItem } from "@/types";
 import React, { useState, useEffect } from "react";
+import { blockTranslationFeedback } from "@/lib/translation-utils";
 
 interface AdminCardActionsDialogProps {
   app: AppItem;
@@ -109,7 +110,7 @@ export function AdminCardActionsDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2" onMouseEnter={blockTranslationFeedback}>
             <span>관리자 모드 - {app.name}</span>
             <Badge variant="secondary">{app.status}</Badge>
           </DialogTitle>
@@ -117,7 +118,7 @@ export function AdminCardActionsDialog({
         
         <div className="space-y-4">
           {/* 앱 정보 표시 */}
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-gray-50 rounded-lg" onMouseEnter={blockTranslationFeedback}>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
                 📱
@@ -136,6 +137,7 @@ export function AdminCardActionsDialog({
               variant={localFeatured ? "destructive" : "secondary"}
               onClick={handleToggleFeatured}
               className={`h-12 flex flex-col items-center gap-1 ${localFeatured ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+              onMouseEnter={blockTranslationFeedback}
             >
               <Heart className={`h-5 w-5 ${localFeatured ? 'fill-current text-white' : ''}`} />
               <span className="text-xs text-white">
@@ -147,6 +149,7 @@ export function AdminCardActionsDialog({
               variant={localEvent ? "destructive" : "secondary"}
               onClick={handleToggleEvent}
               className={`h-12 flex flex-col items-center gap-1 ${localEvent ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+              onMouseEnter={blockTranslationFeedback}
             >
               <Star className={`h-5 w-5 ${localEvent ? 'fill-current text-white' : ''}`} />
               <span className="text-xs text-white">
@@ -161,6 +164,7 @@ export function AdminCardActionsDialog({
               variant="outline"
               onClick={handleEdit}
               className="flex-1"
+              onMouseEnter={blockTranslationFeedback}
             >
               <Edit className="h-4 w-4 mr-2" />
               편집
@@ -170,6 +174,7 @@ export function AdminCardActionsDialog({
               variant="destructive"
               onClick={handleDelete}
               className="flex-1"
+              onMouseEnter={blockTranslationFeedback}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               삭제
@@ -181,6 +186,7 @@ export function AdminCardActionsDialog({
             onClick={handleSave}
             disabled={isSaving}
             className="w-full bg-blue-600 hover:bg-blue-700"
+            onMouseEnter={blockTranslationFeedback}
           >
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? '저장 중...' : '변경사항 저장'}
