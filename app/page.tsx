@@ -28,6 +28,7 @@ import { uploadFile, deleteFile } from "@/lib/storage-adapter";
 import { loadAppsFromBlob, saveAppsToBlob, loadFeaturedAppsFromBlob, saveFeaturedAppsToBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, saveAppsByTypeToBlob } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 const isBlobUrl = (url?: string) => {
   return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
@@ -324,26 +325,29 @@ export default function Home() {
       const updatedApps = [newApp, ...apps];
       setApps(updatedApps);
       
-             // 메모장 방식: 타입별 분리된 Blob Storage에 저장
-       try {
-         await saveAppsByTypeToBlob('gallery', updatedApps);
-         
-         // 저장 후 즉시 Blob에서 다시 로드 (메모장 방식)
-         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
-         if (refreshedApps.length > 0) {
-           setApps(refreshedApps);
-           localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
-         }
-       } catch {}
-       
-       // 캐시용 localStorage 업데이트
-       localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
+      // 메모장 방식: 타입별 분리된 Blob Storage에 저장
+      try {
+        await saveAppsByTypeToBlob('gallery', updatedApps);
+        
+        // 저장 후 즉시 Blob에서 다시 로드 (메모장 방식)
+        const refreshedApps = await loadAppsByTypeFromBlob('gallery');
+        if (refreshedApps.length > 0) {
+          setApps(refreshedApps);
+          localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
+        }
+      } catch {}
       
-             // 앱 업로드 및 저장 완료
-       alert("✅ App uploaded successfully!");
-     } catch {
-       
-       alert("❌ App upload failed. Please try again.");
+      // 캐시용 localStorage 업데이트
+      localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
+      
+      // 앱 업로드 및 저장 완료
+      alert("✅ App uploaded successfully!");
+      
+      // 갤러리 강제 새로고침 (리프레시 없이도 최신 데이터 표시)
+      await forceRefreshGallery();
+      
+    } catch {
+      alert("❌ App upload failed. Please try again.");
     }
   };
 
@@ -462,62 +466,48 @@ export default function Home() {
         // 메모장과 동일하게 타입별 분리된 Blob Storage에서 로드 시도
         const typeApps = await loadAppsByTypeFromBlob('gallery');
         
-                 if (typeApps.length > 0) {
-           // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
-           const validatedApps = await validateAppsImages(typeApps);
-           // 기존 앱들에 type 속성 추가
-           const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-           setApps(appsWithType);
-           localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
-         } else {
-           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
-           const blobApps = await loadAppsFromBlob();
-           
-           if (blobApps && blobApps.length > 0) {
-             const validatedApps = await validateAppsImages(blobApps);
-             // 기존 앱들에 type 속성 추가
-             const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-             setApps(appsWithType);
-             localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
-           } else {
-             // localStorage 캐시 시도
-             const savedApps = localStorage.getItem('gallery-apps');
-             if (savedApps) {
-               const parsedApps = JSON.parse(savedApps) as AppItem[];
-               const validatedApps = await validateAppsImages(parsedApps);
-               // 기존 앱들에 type 속성 추가
-               const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-               setApps(appsWithType);
-             } else {
-               setApps([]);
-               localStorage.setItem('gallery-apps', JSON.stringify([]));
-             }
-           }
-         }
+        if (typeApps.length > 0) {
+          // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
+          const validatedApps = await validateAppsImages(typeApps);
+          // 기존 앱들에 type 속성 추가
+          const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+          setApps(appsWithType);
+          localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
+        } else {
+          // 타입별 분리 API에 데이터가 없으면 기존 API 사용
+          const blobApps = await loadAppsFromBlob();
+          
+          if (blobApps && blobApps.length > 0) {
+            const validatedApps = await validateAppsImages(blobApps);
+            // 기존 앱들에 type 속성 추가
+            const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+            setApps(appsWithType);
+            localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
+          } else {
+            // localStorage 캐시 시도
+            const savedApps = localStorage.getItem('gallery-apps');
+            if (savedApps) {
+              const parsedApps = JSON.parse(savedApps) as AppItem[];
+              const validatedApps = await validateAppsImages(parsedApps);
+              // 기존 앱들에 type 속성 추가
+              const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+              setApps(appsWithType);
+            } else {
+              setApps([]);
+              localStorage.setItem('gallery-apps', JSON.stringify([]));
+            }
+          }
+        }
 
-                 // Featured Apps 로드 (Blob 우선, localStorage 폴백)
-         try {
-           const blobFeatured = await loadFeaturedAppsFromBlob();
-           if (blobFeatured.featured.length > 0 || blobFeatured.events.length > 0) {
-             setFeaturedApps(blobFeatured.featured);
-             setEventApps(blobFeatured.events);
-             // Blob에서 Featured/Events 앱 로드됨
-           } else {
-             // Blob에 데이터가 없으면 localStorage 폴백
-             const savedFeaturedApps = localStorage.getItem('featured-apps');
-             if (savedFeaturedApps) {
-               const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
-               setFeaturedApps(parsedFeaturedApps);
-             }
-             
-             const savedEventApps = localStorage.getItem('event-apps');
-             if (savedEventApps) {
-               const parsedEventApps = JSON.parse(savedEventApps);
-               setEventApps(parsedEventApps);
-             }
-           }
-                   } catch (error) {
-            // localStorage 폴백
+        // Featured Apps 로드 (Blob 우선, localStorage 폴백)
+        try {
+          const blobFeatured = await loadFeaturedAppsFromBlob();
+          if (blobFeatured.featured.length > 0 || blobFeatured.events.length > 0) {
+            setFeaturedApps(blobFeatured.featured);
+            setEventApps(blobFeatured.events);
+            // Blob에서 Featured/Events 앱 로드됨
+          } else {
+            // Blob에 데이터가 없으면 localStorage 폴백
             const savedFeaturedApps = localStorage.getItem('featured-apps');
             if (savedFeaturedApps) {
               const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
@@ -530,6 +520,20 @@ export default function Home() {
               setEventApps(parsedEventApps);
             }
           }
+        } catch (error) {
+          // localStorage 폴백
+          const savedFeaturedApps = localStorage.getItem('featured-apps');
+          if (savedFeaturedApps) {
+            const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
+            setFeaturedApps(parsedFeaturedApps);
+          }
+          
+          const savedEventApps = localStorage.getItem('event-apps');
+          if (savedEventApps) {
+            const parsedEventApps = JSON.parse(savedEventApps);
+            setEventApps(parsedEventApps);
+          }
+        }
       } catch {
         // 앱 로드 실패
         // 실패시 샘플 데이터 사용
@@ -538,7 +542,23 @@ export default function Home() {
     };
 
     loadApps();
-  }, []);
+  }, [isAuthenticated]); // 관리자 인증 상태 변경 시 재로드
+
+  // 강제 데이터 새로고침 함수
+  const forceRefreshGallery = async () => {
+    try {
+      // Blob에서 최신 데이터 강제 로드
+      const typeApps = await loadAppsByTypeFromBlob('gallery');
+      if (typeApps.length > 0) {
+        const validatedApps = await validateAppsImages(typeApps);
+        const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+        setApps(appsWithType);
+        localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
+      }
+    } catch (error) {
+      // 새로고침 실패 시 기존 데이터 유지
+    }
+  };
 
   const handleUpdateApp = async (appId: string, data: AppFormData, files?: { icon?: File; screenshots?: File[] }) => {
     try {
@@ -874,6 +894,34 @@ export default function Home() {
                    ) : (
                      // 일반 갤러리 모드
                      <>
+                       {/* 갤러리 상단 컨트롤 */}
+                       <div className="flex justify-between items-center mb-6">
+                         <div className="flex items-center gap-4">
+                           <h2 className="text-2xl font-bold text-white">
+                             {currentFilter === "all" && "All Apps"}
+                             {currentFilter === "latest" && "New Releases"}
+                             {currentFilter === "featured" && "Featured Apps"}
+                             {currentFilter === "events" && "Events"}
+                           </h2>
+                           <span className="text-gray-400 text-sm">
+                             {getFilteredAndSortedApps().length} apps
+                           </span>
+                         </div>
+                         
+                         {/* 수동 새로고침 버튼 */}
+                         <Button
+                           onClick={forceRefreshGallery}
+                           variant="outline"
+                           size="sm"
+                           className="gap-2 text-gray-300 hover:text-white border-gray-600 hover:border-gray-400"
+                         >
+                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                           </svg>
+                           Refresh
+                         </Button>
+                       </div>
+                       
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
                        {currentFilter !== "latest" && (
                          <>
