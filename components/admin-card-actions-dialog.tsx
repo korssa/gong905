@@ -99,10 +99,21 @@ export function AdminCardActionsDialog({
   };
 
   // 삭제 버튼 클릭
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (onDelete && confirm(`"${app.name}"을(를) 삭제하시겠습니까?`)) {
-      onDelete(app.id);
-      onClose();
+      try {
+        // 삭제 실행
+        onDelete(app.id);
+        
+        // 성공 알러트
+        alert(`"${app.name}"이(가) 성공적으로 삭제되었습니다.`);
+        
+        // 다이얼로그 닫기
+        onClose();
+      } catch (error) {
+        // 실패 알러트
+        alert(`"${app.name}" 삭제 중 오류가 발생했습니다.`);
+      }
     }
   };
 
