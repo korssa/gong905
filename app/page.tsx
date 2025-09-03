@@ -25,7 +25,7 @@ import { useAdmin } from "@/hooks/use-admin";
 import { saveFileToLocal, generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
 import { uploadFile, deleteFile } from "@/lib/storage-adapter";
-import { loadAppsFromBlob, saveAppsToBlob, loadFeaturedAppsFromBlob, saveFeaturedAppsToBlob, toggleFeaturedAppStatus } from "@/lib/data-loader";
+import { loadAppsFromBlob, saveAppsToBlob, loadFeaturedAppsFromBlob, saveFeaturedAppsToBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, saveAppsByTypeToBlob } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import Image from "next/image";
 
@@ -323,10 +323,11 @@ export default function Home() {
       const updatedApps = [newApp, ...apps];
       setApps(updatedApps);
       
-      // Blob JSON에 동기화
+      // 메모장 방식: 타입별 분리된 Blob Storage에 저장
       try {
-        await saveAppsToBlob(updatedApps);
+        await saveAppsByTypeToBlob('gallery', updatedApps);
       } catch {}
+      
       // 캐시용 localStorage 업데이트
       localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
       
@@ -380,10 +381,10 @@ export default function Home() {
          }
        }
 
-       // 6. Blob JSON 동기화 (항상 최신 newApps로 동기화)
+       // 6. 메모장 방식: 타입별 분리된 Blob Storage에 저장
        let blobSyncSuccess = false;
        try {
-         const blobResult = await saveAppsToBlob(newApps);
+         const blobResult = await saveAppsByTypeToBlob('gallery', newApps);
          blobSyncSuccess = blobResult;
        } catch (error) {
          // Blob 동기화 실패 무시
@@ -436,53 +437,39 @@ export default function Home() {
     setEditingApp(app);
   };
 
-  // 앱 목록 로드 및 동기화
+    // 앱 목록 로드 및 동기화 (메모장 방식으로 수정)
   useEffect(() => {
     const loadApps = async () => {
       try {
-                 // 1) Vercel Blob에서 앱 JSON 우선 로드
-         const blobApps = await loadAppsFromBlob();
-         
-                  if (blobApps && blobApps.length > 0) {
+        // 메모장과 동일하게 타입별 분리된 Blob Storage에서 로드 시도
+        const typeApps = await loadAppsByTypeFromBlob('gallery');
+        
+        if (typeApps.length > 0) {
+          // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
+          const validatedApps = await validateAppsImages(typeApps);
+          setApps(validatedApps);
+          localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
+        } else {
+          // 타입별 분리 API에 데이터가 없으면 기존 API 사용
+          const blobApps = await loadAppsFromBlob();
+          
+          if (blobApps && blobApps.length > 0) {
             const validatedApps = await validateAppsImages(blobApps);
-            
-            // Blob 데이터가 localStorage보다 최신인 경우에만 업데이트
+            setApps(validatedApps);
+            localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
+          } else {
+            // localStorage 캐시 시도
             const savedApps = localStorage.getItem('gallery-apps');
             if (savedApps) {
-              const parsedSavedApps = JSON.parse(savedApps) as AppItem[];
-              
-              // 삭제된 앱이 다시 나타나는 것을 방지하는 로직 강화
-              if (validatedApps.length >= parsedSavedApps.length && validatedApps.length > 0) {
-                setApps(validatedApps);
-                localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
-              } else {
-                // Blob이 localStorage보다 적거나 0개면 localStorage 사용
-                if (parsedSavedApps.length > 0) {
-                  setApps(parsedSavedApps);
-                } else {
-                  setApps([]);
-                }
-              }
-            } else {
+              const parsedApps = JSON.parse(savedApps) as AppItem[];
+              const validatedApps = await validateAppsImages(parsedApps);
               setApps(validatedApps);
-              localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
+            } else {
+              setApps([]);
+              localStorage.setItem('gallery-apps', JSON.stringify([]));
             }
-         } else {
-           // 2) Blob 비어있으면 localStorage 캐시 시도
-           const savedApps = localStorage.getItem('gallery-apps');
-           if (savedApps) {
-             const parsedApps = JSON.parse(savedApps) as AppItem[];
-             const validatedApps = await validateAppsImages(parsedApps);
-             if (JSON.stringify(validatedApps) !== JSON.stringify(parsedApps)) {
-               localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
-             }
-             setApps(validatedApps);
-           } else {
-             // 3) 아무것도 없으면 빈 배열 (샘플 제거 정책)
-             setApps(sampleApps);
-             localStorage.setItem('gallery-apps', JSON.stringify(sampleApps));
-           }
-         }
+          }
+        }
 
                  // Featured Apps 로드 (Blob 우선, localStorage 폴백)
          try {
@@ -571,9 +558,9 @@ export default function Home() {
       // localStorage에 저장
       localStorage.setItem('gallery-apps', JSON.stringify(newApps));
 
-             // Blob Storage에 동기화 (중요!)
+             // 메모장 방식: 타입별 분리된 Blob Storage에 저장
        try {
-         await saveAppsToBlob(newApps);
+         await saveAppsByTypeToBlob('gallery', newApps);
        } catch (error) {
          alert("⚠️ App updated but cloud synchronization failed.");
        }

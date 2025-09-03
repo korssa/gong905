@@ -129,6 +129,50 @@ export async function loadContentsByTypeFromBlob(type: 'appstory' | 'news'): Pro
 }
 
 /**
+ * 타입별로 갤러리 앱을 분리해서 로드
+ */
+export async function loadAppsByTypeFromBlob(type: 'gallery'): Promise<AppItem[]> {
+  try {
+    const response = await fetch(`/api/apps/type?type=${type}`);
+    if (!response.ok) {
+      // Failed to load type apps from blob
+      return [];
+    }
+    
+    const data = await response.json();
+    return data.apps || [];
+  } catch (error) {
+    // Error loading type apps from blob
+    return [];
+  }
+}
+
+/**
+ * 타입별로 갤러리 앱을 분리해서 저장
+ */
+export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[]): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/apps/type?type=${type}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ apps }),
+    });
+    
+    if (!response.ok) {
+      // Failed to save type apps to blob
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    // Error saving type apps to blob
+    return false;
+  }
+}
+
+/**
  * Featured/Events 앱 정보를 Blob에서 로드 (메모장 방식과 동일)
  */
 export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; events: string[] }> {
