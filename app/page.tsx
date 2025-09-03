@@ -290,41 +290,88 @@ export default function Home() {
       // 1. 삭제할 앱 정보 찾기
       const appToDelete = apps.find(app => app.id === id);
       if (!appToDelete) {
-        // 삭제할 앱을 찾을 수 없습니다
+        console.warn('삭제할 앱을 찾을 수 없습니다:', id);
         return;
       }
 
-      // 앱 삭제 시작
+      console.log('앱 삭제 시작:', appToDelete.name, 'ID:', id);
 
-      // 2. 현재 상태에서 새로운 리스트 계산 후 즉시 반영 (UI 반응성 및 일관성)
+      // 2. Featured/Events 앱에서도 제거
+      const newFeaturedApps = featuredApps.filter(appId => appId !== id);
+      const newEventApps = eventApps.filter(appId => appId !== id);
+      
+      // Featured/Events 상태 업데이트
+      setFeaturedApps(newFeaturedApps);
+      setEventApps(newEventApps);
+      
+      // Featured/Events localStorage 업데이트
+      localStorage.setItem('featured-apps', JSON.stringify(newFeaturedApps));
+      localStorage.setItem('event-apps', JSON.stringify(newEventApps));
+
+      // 3. 현재 상태에서 새로운 리스트 계산 후 즉시 반영 (UI 반응성 및 일관성)
       const newApps = apps.filter(app => app.id !== id);
       setApps(newApps);
 
-      // 3. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
+      // 4. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
       if (appToDelete.iconUrl) {
-        await deleteFile(appToDelete.iconUrl);
+        try {
+          await deleteFile(appToDelete.iconUrl);
+          console.log('아이콘 파일 삭제 완료:', appToDelete.iconUrl);
+        } catch (error) {
+          console.warn('아이콘 파일 삭제 실패:', error);
+        }
       }
+      
       if (appToDelete.screenshotUrls && appToDelete.screenshotUrls.length > 0) {
-        await Promise.all(appToDelete.screenshotUrls.map(url => deleteFile(url)));
+        try {
+          await Promise.all(appToDelete.screenshotUrls.map(url => deleteFile(url)));
+          console.log('스크린샷 파일들 삭제 완료:', appToDelete.screenshotUrls.length, '개');
+        } catch (error) {
+          console.warn('스크린샷 파일들 삭제 실패:', error);
+        }
       }
 
-      // 4. localStorage 업데이트 (항상 최신 newApps로 저장)
+      // 5. localStorage 업데이트 (항상 최신 newApps로 저장)
       localStorage.setItem('gallery-apps', JSON.stringify(newApps));
 
-      // 5. Blob JSON 동기화 (항상 최신 newApps로 동기화)
+      // 6. Blob JSON 동기화 (항상 최신 newApps로 동기화)
+      let blobSyncSuccess = false;
       try {
-        await saveAppsToBlob(newApps);
-      } catch {}
-      // 앱 완전 삭제 완료
-      
-    } catch {
-      // 앱 삭제 실패
+        const blobResult = await saveAppsToBlob(newApps);
+        blobSyncSuccess = blobResult;
+        console.log('Blob 동기화 성공:', blobResult);
+      } catch (error) {
+        console.error('Blob 동기화 실패:', error);
+      }
 
+      // 7. Featured/Events Blob 동기화
+      try {
+        await saveFeaturedAppsToBlob(newFeaturedApps, newEventApps);
+        console.log('Featured/Events Blob 동기화 성공');
+      } catch (error) {
+        console.error('Featured/Events Blob 동기화 실패:', error);
+      }
+
+      // 8. 삭제 완료 확인
+      if (blobSyncSuccess) {
+        console.log('✅ 앱 완전 삭제 완료 (Blob 동기화 성공)');
+      } else {
+        console.warn('⚠️ 앱 삭제 완료 (Blob 동기화 실패, 로컬만 업데이트)');
+      }
+      
+    } catch (error) {
+      console.error('앱 삭제 중 치명적 오류:', error);
+      
       // 실패시 UI 상태 복원
       const savedAppsStr = localStorage.getItem('gallery-apps');
       if (savedAppsStr) {
-        const parsedApps = JSON.parse(savedAppsStr);
-        setApps(parsedApps);
+        try {
+          const parsedApps = JSON.parse(savedAppsStr);
+          setApps(parsedApps);
+          console.log('UI 상태 복원 완료');
+        } catch (parseError) {
+          console.error('localStorage 파싱 실패:', parseError);
+        }
       }
 
       alert('앱 삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -341,10 +388,30 @@ export default function Home() {
       try {
         // 1) Vercel Blob에서 앱 JSON 우선 로드
         const blobApps = await loadAppsFromBlob();
+        console.log('Blob에서 로드된 앱 수:', blobApps?.length || 0);
+        
         if (blobApps && blobApps.length > 0) {
           const validatedApps = await validateAppsImages(blobApps);
-          setApps(validatedApps);
-          localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
+          console.log('Blob 앱 검증 완료:', validatedApps.length, '개');
+          
+          // Blob 데이터가 localStorage보다 최신인 경우에만 업데이트
+          const savedApps = localStorage.getItem('gallery-apps');
+          if (savedApps) {
+            const parsedSavedApps = JSON.parse(savedApps) as AppItem[];
+            if (validatedApps.length >= parsedSavedApps.length) {
+              setApps(validatedApps);
+              localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
+              console.log('Blob 데이터로 앱 목록 업데이트');
+            } else {
+              // Blob이 localStorage보다 적으면 localStorage 사용 (삭제된 앱이 다시 나타나는 것 방지)
+              console.log('Blob 데이터가 localStorage보다 적음, localStorage 사용');
+              setApps(parsedSavedApps);
+            }
+          } else {
+            setApps(validatedApps);
+            localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
+            console.log('Blob 데이터로 초기 앱 목록 설정');
+          }
         } else {
           // 2) Blob 비어있으면 localStorage 캐시 시도
           const savedApps = localStorage.getItem('gallery-apps');
@@ -355,10 +422,12 @@ export default function Home() {
               localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
             }
             setApps(validatedApps);
+            console.log('localStorage에서 앱 목록 로드:', validatedApps.length, '개');
           } else {
             // 3) 아무것도 없으면 빈 배열 (샘플 제거 정책)
             setApps(sampleApps);
             localStorage.setItem('gallery-apps', JSON.stringify(sampleApps));
+            console.log('샘플 앱으로 초기화');
           }
         }
 
