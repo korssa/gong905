@@ -5,3 +5,8 @@
 # 문제: manifest.json 401 오류, /api/apps/featured 404 오류
 # 추가 문제: Featured/Events API 404 오류, Dialog 접근성 경고
 # 해결: middleware.ts 설정 및 Dialog 접근성 개선
+
+# 🚨 새로운 문제: Blob 동기화 실패
+# 편집, Featured, New Release, Delete가 리플레시 후 원위치로 복원
+# 원인: BLOB_READ_WRITE_TOKEN 환경 변수 설정 후 재배포 누락
+# 해결: Vercel 재배포 필요!
