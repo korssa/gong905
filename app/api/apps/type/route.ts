@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AppItem } from '@/types';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { list } from '@vercel/blob';
 
 // 로컬 파일 경로
 const APPS_FILE_PATH = path.join(process.cwd(), 'data', 'apps.json');
@@ -31,12 +32,29 @@ async function ensureDataFile() {
   }
 }
 
-// 앱 로드
+// 앱 로드 (메모장 방식: Blob에서 직접 읽기)
 async function loadApps(): Promise<AppItem[]> {
   try {
-    // Vercel 환경에서는 메모리 저장소만 사용
+    // Vercel 환경에서는 Blob에서 직접 읽기 (메모장 방식)
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-      return memoryStorage;
+      try {
+        const { blobs } = await list({ prefix: 'apps.json', limit: 1 });
+        if (blobs && blobs.length > 0) {
+          const latest = blobs[0];
+          const response = await fetch(latest.url, { cache: 'no-store' });
+          if (response.ok) {
+            const data = await response.json();
+            // 메모리도 업데이트 (동기화)
+            memoryStorage = data;
+            return data;
+          }
+        }
+        // Blob에서 읽기 실패시 메모리 사용
+        return memoryStorage;
+      } catch (blobError) {
+        // Blob 에러시 메모리 사용
+        return memoryStorage;
+      }
     }
     
     // 로컬 환경에서는 파일에서 로드
@@ -136,6 +154,25 @@ export async function POST(request: NextRequest) {
     if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
       await ensureDataFile();
       await fs.writeFile(APPS_FILE_PATH, JSON.stringify(validApps, null, 2));
+    }
+
+    // Vercel 환경에서는 Blob 동기화 확인 (메모장 방식)
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      try {
+        // Blob에 저장 후 즉시 다시 읽어서 동기화 확인
+        const { blobs } = await list({ prefix: 'apps.json', limit: 1 });
+        if (blobs && blobs.length > 0) {
+          const latest = blobs[0];
+          const response = await fetch(latest.url, { cache: 'no-store' });
+          if (response.ok) {
+            const savedData = await response.json();
+            // 저장된 데이터와 메모리 동기화
+            memoryStorage = savedData;
+          }
+        }
+      } catch (blobError) {
+        // Blob 동기화 실패시 무시 (메모리는 이미 업데이트됨)
+      }
     }
 
     return NextResponse.json({

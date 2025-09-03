@@ -324,13 +324,20 @@ export default function Home() {
       const updatedApps = [newApp, ...apps];
       setApps(updatedApps);
       
-      // 메모장 방식: 타입별 분리된 Blob Storage에 저장
-      try {
-        await saveAppsByTypeToBlob('gallery', updatedApps);
-      } catch {}
-      
-      // 캐시용 localStorage 업데이트
-      localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
+             // 메모장 방식: 타입별 분리된 Blob Storage에 저장
+       try {
+         await saveAppsByTypeToBlob('gallery', updatedApps);
+         
+         // 저장 후 즉시 Blob에서 다시 로드 (메모장 방식)
+         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
+         if (refreshedApps.length > 0) {
+           setApps(refreshedApps);
+           localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
+         }
+       } catch {}
+       
+       // 캐시용 localStorage 업데이트
+       localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
       
              // 앱 업로드 및 저장 완료
        alert("✅ App uploaded successfully!");
@@ -382,14 +389,24 @@ export default function Home() {
          }
        }
 
-       // 6. 메모장 방식: 타입별 분리된 Blob Storage에 저장
-       let blobSyncSuccess = false;
-       try {
-         const blobResult = await saveAppsByTypeToBlob('gallery', newApps);
-         blobSyncSuccess = blobResult;
-       } catch (error) {
-         // Blob 동기화 실패 무시
-       }
+                // 6. 메모장 방식: 타입별 분리된 Blob Storage에 저장
+         let blobSyncSuccess = false;
+         try {
+           const blobResult = await saveAppsByTypeToBlob('gallery', newApps);
+           blobSyncSuccess = blobResult;
+           
+           // 저장 후 즉시 Blob에서 다시 로드 (메모장 방식)
+           if (blobResult) {
+             const refreshedApps = await loadAppsByTypeFromBlob('gallery');
+             if (refreshedApps.length === 0) {
+               // 삭제가 반영된 경우
+               setApps([]);
+               localStorage.setItem('gallery-apps', JSON.stringify([]));
+             }
+           }
+         } catch (error) {
+           // Blob 동기화 실패 무시
+         }
 
        // 7. Featured/Events Blob 동기화
        try {
@@ -565,12 +582,19 @@ export default function Home() {
       // localStorage에 저장
       localStorage.setItem('gallery-apps', JSON.stringify(newApps));
 
-             // 메모장 방식: 타입별 분리된 Blob Storage에 저장
-       try {
-         await saveAppsByTypeToBlob('gallery', newApps);
-       } catch (error) {
-         alert("⚠️ App updated but cloud synchronization failed.");
-       }
+                           // 메모장 방식: 타입별 분리된 Blob Storage에 저장
+        try {
+          await saveAppsByTypeToBlob('gallery', newApps);
+          
+          // 저장 후 즉시 Blob에서 다시 로드 (메모장 방식)
+          const refreshedApps = await loadAppsByTypeFromBlob('gallery');
+          if (refreshedApps.length > 0) {
+            setApps(refreshedApps);
+            localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
+          }
+        } catch (error) {
+          alert("⚠️ App updated but cloud synchronization failed.");
+        }
 
              setEditingApp(null);
        // 앱 업데이트 및 저장 완료
