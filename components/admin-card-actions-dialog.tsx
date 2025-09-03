@@ -18,6 +18,7 @@ interface AdminCardActionsDialogProps {
   onToggleEvent?: (id: string) => void;
   isFeatured?: boolean;
   isEvent?: boolean;
+  onRefreshData?: () => Promise<void>; // 추가: 데이터 리로드 콜백
 }
 
 export function AdminCardActionsDialog({
@@ -29,7 +30,8 @@ export function AdminCardActionsDialog({
   onToggleFeatured,
   onToggleEvent,
   isFeatured = false,
-  isEvent = false
+  isEvent = false,
+  onRefreshData
 }: AdminCardActionsDialogProps) {
   const [localFeatured, setLocalFeatured] = useState(isFeatured);
   const [localEvent, setLocalEvent] = useState(isEvent);
@@ -67,6 +69,15 @@ export function AdminCardActionsDialog({
       if (localEvent !== isEvent && onToggleEvent) {
         await onToggleEvent(app.id);
         hasChanges = true;
+      }
+      
+      // 변경사항이 있는 경우 서버에서 최신 데이터 리로드
+      if (hasChanges && onRefreshData) {
+        try {
+          await onRefreshData(); // 서버에서 최신 데이터 가져오기
+        } catch (refreshError) {
+          console.warn('데이터 리로드 실패:', refreshError);
+        }
       }
       
       // 변경사항이 있는 경우 성공 알림

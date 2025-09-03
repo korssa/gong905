@@ -104,6 +104,39 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // 데이터 리로드 핸들러 (Featured/Events 상태 변경 후 서버에서 최신 데이터 가져오기)
+  const handleRefreshData = async () => {
+    try {
+      // 서버에서 최신 Featured/Events 데이터 가져오기
+      const response = await fetch('/api/apps/featured', { 
+        method: 'GET',
+        cache: 'no-store' // 캐시 무시하고 최신 데이터 요청
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // React 상태 업데이트
+          setFeaturedApps(data.featured || []);
+          setEventApps(data.events || []);
+          
+          // localStorage 백업 업데이트
+          localStorage.setItem('featured-apps', JSON.stringify(data.featured || []));
+          localStorage.setItem('event-apps', JSON.stringify(data.events || []));
+          
+          console.log('✅ Featured/Events 데이터 리로드 성공:', {
+            featured: data.featured,
+            events: data.events
+          });
+        }
+      } else {
+        console.warn('⚠️ Featured/Events 데이터 리로드 실패:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Featured/Events 데이터 리로드 오류:', error);
+    }
+  };
+
     // Featured 앱 토글 핸들러
   const handleToggleFeatured = async (appId: string) => {
     const isCurrentlyFeatured = featuredApps.includes(appId);
@@ -836,6 +869,7 @@ export default function Home() {
                              featuredApps={featuredApps}
                              eventApps={eventApps}
                              showNumbering={currentFilter === "events"}
+                             onRefreshData={handleRefreshData}
                            />
                            
                            {/* Events 모드일 때 설명문구와 메일폼 추가 */}

@@ -21,6 +21,7 @@ interface AppCardProps {
   onToggleEvent?: (id: string) => void;
   isFeatured?: boolean;
   isEvent?: boolean;
+  onRefreshData?: () => Promise<void>; // 추가: 데이터 리로드 콜백
 }
 
 const getStatusColor = (status: string) => {
@@ -36,7 +37,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onToggleEvent, isFeatured = false, isEvent = false }: AppCardProps) {
+export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onToggleEvent, isFeatured = false, isEvent = false, onRefreshData }: AppCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const { t } = useLanguage();
@@ -208,6 +209,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
           onToggleEvent={onToggleEvent}
           isFeatured={isFeatured}
           isEvent={isEvent}
+          onRefreshData={onRefreshData}
         />
       </>
     );

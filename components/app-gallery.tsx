@@ -16,9 +16,10 @@ interface AppGalleryProps {
   featuredApps?: string[];
   eventApps?: string[];
   showNumbering?: boolean;
+  onRefreshData?: () => Promise<void>; // 추가: 데이터 리로드 콜백
 }
 
-export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp, onToggleFeatured, onToggleEvent, featuredApps = [], eventApps = [], showNumbering = false }: AppGalleryProps) {
+export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp, onToggleFeatured, onToggleEvent, featuredApps = [], eventApps = [], showNumbering = false, onRefreshData }: AppGalleryProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<AppStore>("google-play");
   const [apps, setApps] = useState<AppItem[]>(initialApps);
@@ -82,6 +83,7 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
                 onToggleEvent={onToggleEvent}
                 isFeatured={featuredApps.includes(app.id)}
                 isEvent={eventApps.includes(app.id)}
+                onRefreshData={onRefreshData}
               />
             </div>
           ))}
@@ -107,6 +109,7 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
               onToggleEvent={onToggleEvent}
               isFeatured={featuredApps.includes(app.id)}
               isEvent={eventApps.includes(app.id)}
+              onRefreshData={onRefreshData}
             />
           </div>
         ))}
