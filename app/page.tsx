@@ -461,6 +461,8 @@ export default function Home() {
 
     // 앱 목록 로드 및 동기화 (메모장 방식으로 수정)
   useEffect(() => {
+    let isMounted = true; // 컴포넌트 마운트 상태 추적
+    
     const loadApps = async () => {
       try {
         console.log('🔄 앱 로드 시작...');
@@ -469,11 +471,16 @@ export default function Home() {
         const typeApps = await loadAppsByTypeFromBlob('gallery');
         console.log('📦 Blob에서 타입별 앱 로드 결과:', typeApps.length, '개');
         
+        if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
+        
         if (typeApps.length > 0) {
           console.log('✅ Blob에서 앱 데이터 로드 성공');
           // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
           const validatedApps = await validateAppsImages(typeApps);
           console.log('🔍 이미지 검증 후 앱:', validatedApps.length, '개');
+          
+          if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
+          
           // 기존 앱들에 type 속성 추가
           const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
           setApps(appsWithType);
@@ -485,9 +492,14 @@ export default function Home() {
           const blobApps = await loadAppsFromBlob();
           console.log('📦 기존 Blob API 결과:', blobApps?.length || 0, '개');
           
+          if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
+          
           if (blobApps && blobApps.length > 0) {
             console.log('✅ 기존 Blob API에서 데이터 로드 성공');
             const validatedApps = await validateAppsImages(blobApps);
+            
+            if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
+            
             // 기존 앱들에 type 속성 추가
             const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
             setApps(appsWithType);
@@ -500,6 +512,9 @@ export default function Home() {
               console.log('📱 localStorage에서 캐시된 앱 로드:', savedApps.length, '개');
               const parsedApps = JSON.parse(savedApps) as AppItem[];
               const validatedApps = await validateAppsImages(parsedApps);
+              
+              if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
+              
               // 기존 앱들에 type 속성 추가
               const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
               setApps(appsWithType);
@@ -513,14 +528,29 @@ export default function Home() {
         }
 
         // Featured Apps 로드 (Blob 우선, localStorage 폴백)
-        try {
-          const blobFeatured = await loadFeaturedAppsFromBlob();
-          if (blobFeatured.featured.length > 0 || blobFeatured.events.length > 0) {
-            setFeaturedApps(blobFeatured.featured);
-            setEventApps(blobFeatured.events);
-            // Blob에서 Featured/Events 앱 로드됨
-          } else {
-            // Blob에 데이터가 없으면 localStorage 폴백
+        if (isMounted) {
+          try {
+            const blobFeatured = await loadFeaturedAppsFromBlob();
+            if (blobFeatured.featured.length > 0 || blobFeatured.events.length > 0) {
+              setFeaturedApps(blobFeatured.featured);
+              setEventApps(blobFeatured.events);
+              // Blob에서 Featured/Events 앱 로드됨
+            } else {
+              // Blob에 데이터가 없으면 localStorage 폴백
+              const savedFeaturedApps = localStorage.getItem('featured-apps');
+              if (savedFeaturedApps) {
+                const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
+                setFeaturedApps(parsedFeaturedApps);
+              }
+              
+              const savedEventApps = localStorage.getItem('event-apps');
+              if (savedEventApps) {
+                const parsedEventApps = JSON.parse(savedEventApps);
+                setEventApps(parsedEventApps);
+              }
+            }
+          } catch (error) {
+            // localStorage 폴백
             const savedFeaturedApps = localStorage.getItem('featured-apps');
             if (savedFeaturedApps) {
               const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
@@ -533,32 +563,28 @@ export default function Home() {
               setEventApps(parsedEventApps);
             }
           }
-        } catch (error) {
-          // localStorage 폴백
-          const savedFeaturedApps = localStorage.getItem('featured-apps');
-          if (savedFeaturedApps) {
-            const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
-            setFeaturedApps(parsedFeaturedApps);
-          }
-          
-          const savedEventApps = localStorage.getItem('event-apps');
-          if (savedEventApps) {
-            const parsedEventApps = JSON.parse(savedEventApps);
-            setEventApps(parsedEventApps);
-          }
         }
         
-        console.log('🎯 최종 앱 상태:', apps.length, '개');
+        if (isMounted) {
+          console.log('🎯 최종 앱 상태:', apps.length, '개');
+        }
       } catch (error) {
         console.error('❌ 앱 로드 실패:', error);
-        // 앱 로드 실패
-        // 실패시 샘플 데이터 사용
-        setApps(sampleApps);
+        if (isMounted) {
+          // 앱 로드 실패
+          // 실패시 샘플 데이터 사용
+          setApps(sampleApps);
+        }
       }
     };
 
     loadApps();
-  }, [isAuthenticated]); // 관리자 인증 상태 변경 시 재로드
+    
+    // 클린업 함수
+    return () => {
+      isMounted = false;
+    };
+  }, []); // 의존성 배열을 빈 배열로 변경하여 한 번만 실행
 
   // 강제 데이터 새로고침 함수
   const forceRefreshGallery = async () => {
