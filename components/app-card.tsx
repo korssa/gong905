@@ -68,17 +68,9 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
     }
   });
 
-  const handleToggleFeatured = createAdminButtonHandler(() => {
-    if (onToggleFeatured) {
-      onToggleFeatured(app.id);
-    }
-  });
-
-  const handleToggleEvent = createAdminButtonHandler(() => {
-    if (onToggleEvent) {
-      onToggleEvent(app.id);
-    }
-  });
+  // 직접 함수 전달 (createAdminButtonHandler 제거)
+  const handleToggleFeatured = onToggleFeatured ? () => onToggleFeatured(app.id) : undefined;
+  const handleToggleEvent = onToggleEvent ? () => onToggleEvent(app.id) : undefined;
 
   // 호버 심볼 클릭 시 관리자 다이얼로그 열기
   const handleAdminActions = () => {
