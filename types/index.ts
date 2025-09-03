@@ -21,6 +21,7 @@ export interface AppItem {
   version?: string;
   size?: string;
   category?: string;
+  type?: 'gallery'; // 갤러리 앱 타입 구분을 위한 속성
 }
 
 export interface AppFormData {

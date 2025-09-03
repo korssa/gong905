@@ -317,6 +317,7 @@ export default function Home() {
         version: data.version,
         size: data.size,
         category: data.category,
+        type: 'gallery', // 갤러리 앱 타입 명시
       };
 
       // 앱 목록에 추가
@@ -444,32 +445,38 @@ export default function Home() {
         // 메모장과 동일하게 타입별 분리된 Blob Storage에서 로드 시도
         const typeApps = await loadAppsByTypeFromBlob('gallery');
         
-        if (typeApps.length > 0) {
-          // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
-          const validatedApps = await validateAppsImages(typeApps);
-          setApps(validatedApps);
-          localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
-        } else {
-          // 타입별 분리 API에 데이터가 없으면 기존 API 사용
-          const blobApps = await loadAppsFromBlob();
-          
-          if (blobApps && blobApps.length > 0) {
-            const validatedApps = await validateAppsImages(blobApps);
-            setApps(validatedApps);
-            localStorage.setItem('gallery-apps', JSON.stringify(validatedApps));
-          } else {
-            // localStorage 캐시 시도
-            const savedApps = localStorage.getItem('gallery-apps');
-            if (savedApps) {
-              const parsedApps = JSON.parse(savedApps) as AppItem[];
-              const validatedApps = await validateAppsImages(parsedApps);
-              setApps(validatedApps);
-            } else {
-              setApps([]);
-              localStorage.setItem('gallery-apps', JSON.stringify([]));
-            }
-          }
-        }
+                 if (typeApps.length > 0) {
+           // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
+           const validatedApps = await validateAppsImages(typeApps);
+           // 기존 앱들에 type 속성 추가
+           const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+           setApps(appsWithType);
+           localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
+         } else {
+           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
+           const blobApps = await loadAppsFromBlob();
+           
+           if (blobApps && blobApps.length > 0) {
+             const validatedApps = await validateAppsImages(blobApps);
+             // 기존 앱들에 type 속성 추가
+             const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+             setApps(appsWithType);
+             localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
+           } else {
+             // localStorage 캐시 시도
+             const savedApps = localStorage.getItem('gallery-apps');
+             if (savedApps) {
+               const parsedApps = JSON.parse(savedApps) as AppItem[];
+               const validatedApps = await validateAppsImages(parsedApps);
+               // 기존 앱들에 type 속성 추가
+               const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+               setApps(appsWithType);
+             } else {
+               setApps([]);
+               localStorage.setItem('gallery-apps', JSON.stringify([]));
+             }
+           }
+         }
 
                  // Featured Apps 로드 (Blob 우선, localStorage 폴백)
          try {
