@@ -127,3 +127,75 @@ export async function loadContentsByTypeFromBlob(type: 'appstory' | 'news'): Pro
     return [];
   }
 }
+
+/**
+ * Featured/Events 앱 정보를 Blob에서 로드
+ */
+export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; events: string[] }> {
+  try {
+    const response = await fetch('/api/data/featured-apps');
+    if (!response.ok) {
+      console.error('Failed to load featured apps from blob:', response.statusText);
+      return { featured: [], events: [] };
+    }
+    
+    const data = await response.json();
+    return {
+      featured: data.featured || [],
+      events: data.events || []
+    };
+  } catch (error) {
+    console.error('Error loading featured apps from blob:', error);
+    return { featured: [], events: [] };
+  }
+}
+
+/**
+ * Featured/Events 앱 정보를 Blob에 저장
+ */
+export async function saveFeaturedAppsToBlob(featured: string[], events: string[]): Promise<boolean> {
+  try {
+    const response = await fetch('/api/data/featured-apps', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ featured, events }),
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to save featured apps to blob:', response.statusText);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error saving featured apps to blob:', error);
+    return false;
+  }
+}
+
+/**
+ * 특정 앱의 Featured/Events 상태를 토글
+ */
+export async function toggleFeaturedAppStatus(appId: string, type: 'featured' | 'events', action: 'add' | 'remove'): Promise<boolean> {
+  try {
+    const response = await fetch('/api/apps/featured', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ appId, type, action }),
+    });
+    
+    if (!response.ok) {
+      console.error(`Failed to toggle ${type} status for app ${appId}:`, response.statusText);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Error toggling ${type} status for app ${appId}:`, error);
+    return false;
+  }
+}

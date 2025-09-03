@@ -25,7 +25,7 @@ import { useAdmin } from "@/hooks/use-admin";
 import { saveFileToLocal, generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
 import { uploadFile, deleteFile } from "@/lib/storage-adapter";
-import { loadAppsFromBlob, saveAppsToBlob } from "@/lib/data-loader";
+import { loadAppsFromBlob, saveAppsToBlob, loadFeaturedAppsFromBlob, saveFeaturedAppsToBlob, toggleFeaturedAppStatus } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import Image from "next/image";
 
@@ -105,29 +105,81 @@ export default function Home() {
   };
 
   // Featured 앱 토글 핸들러
-  const handleToggleFeatured = (appId: string) => {
-    setFeaturedApps(prev => {
-      const newFeatured = prev.includes(appId) 
-        ? prev.filter(id => id !== appId)
-        : [...prev, appId];
+  const handleToggleFeatured = async (appId: string) => {
+    const isCurrentlyFeatured = featuredApps.includes(appId);
+    const action = isCurrentlyFeatured ? 'remove' : 'add';
+    
+    try {
+      // API 호출로 상태 토글
+      const success = await toggleFeaturedAppStatus(appId, 'featured', action);
       
-      // localStorage에 저장
-      localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
-      return newFeatured;
-    });
+      if (success) {
+        setFeaturedApps(prev => {
+          const newFeatured = isCurrentlyFeatured 
+            ? prev.filter(id => id !== appId)
+            : [...prev, appId];
+          
+          // Blob에 동기화
+          saveFeaturedAppsToBlob(newFeatured, eventApps).catch(console.error);
+          
+          // localStorage에도 백업 저장 (오프라인 지원)
+          localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
+          
+          return newFeatured;
+        });
+      } else {
+        console.error('Featured 앱 상태 토글 실패');
+      }
+    } catch (error) {
+      console.error('Featured 앱 상태 토글 중 오류:', error);
+      // 실패 시 로컬 상태만 업데이트 (사용자 경험 개선)
+      setFeaturedApps(prev => {
+        const newFeatured = isCurrentlyFeatured 
+          ? prev.filter(id => id !== appId)
+          : [...prev, appId];
+        localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
+        return newFeatured;
+      });
+    }
   };
 
   // Event 앱 토글 핸들러
-  const handleToggleEvent = (appId: string) => {
-    setEventApps(prev => {
-      const newEvents = prev.includes(appId) 
-        ? prev.filter(id => id !== appId)
-        : [...prev, appId];
+  const handleToggleEvent = async (appId: string) => {
+    const isCurrentlyEvent = eventApps.includes(appId);
+    const action = isCurrentlyEvent ? 'remove' : 'add';
+    
+    try {
+      // API 호출로 상태 토글
+      const success = await toggleFeaturedAppStatus(appId, 'events', action);
       
-      // localStorage에 저장
-      localStorage.setItem('event-apps', JSON.stringify(newEvents));
-      return newEvents;
-    });
+      if (success) {
+        setEventApps(prev => {
+          const newEvents = isCurrentlyEvent 
+            ? prev.filter(id => id !== appId)
+            : [...prev, appId];
+          
+          // Blob에 동기화
+          saveFeaturedAppsToBlob(featuredApps, newEvents).catch(console.error);
+          
+          // localStorage에도 백업 저장 (오프라인 지원)
+          localStorage.setItem('event-apps', JSON.stringify(newEvents));
+          
+          return newEvents;
+        });
+      } else {
+        console.error('Event 앱 상태 토글 실패');
+      }
+    } catch (error) {
+      console.error('Event 앱 상태 토글 중 오류:', error);
+      // 실패 시 로컬 상태만 업데이트 (사용자 경험 개선)
+      setEventApps(prev => {
+        const newEvents = isCurrentlyEvent 
+          ? prev.filter(id => id !== appId)
+          : [...prev, appId];
+        localStorage.setItem('event-apps', JSON.stringify(newEvents));
+        return newEvents;
+      });
+    }
   };
 
   // 푸터 호버 시 번역 피드백 차단 핸들러
@@ -310,20 +362,41 @@ export default function Home() {
           }
         }
 
-                 // Featured Apps 로드
-         const savedFeaturedApps = localStorage.getItem('featured-apps');
-         if (savedFeaturedApps) {
-           const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
-           setFeaturedApps(parsedFeaturedApps);
-           // Featured Apps 로드됨
-         }
-
-         // Event Apps 로드
-         const savedEventApps = localStorage.getItem('event-apps');
-         if (savedEventApps) {
-           const parsedEventApps = JSON.parse(savedEventApps);
-           setEventApps(parsedEventApps);
-           // Event Apps 로드됨
+                 // Featured Apps 로드 (Blob 우선, localStorage 폴백)
+         try {
+           const blobFeatured = await loadFeaturedAppsFromBlob();
+           if (blobFeatured.featured.length > 0 || blobFeatured.events.length > 0) {
+             setFeaturedApps(blobFeatured.featured);
+             setEventApps(blobFeatured.events);
+             // Blob에서 Featured/Events 앱 로드됨
+           } else {
+             // Blob에 데이터가 없으면 localStorage 폴백
+             const savedFeaturedApps = localStorage.getItem('featured-apps');
+             if (savedFeaturedApps) {
+               const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
+               setFeaturedApps(parsedFeaturedApps);
+             }
+             
+             const savedEventApps = localStorage.getItem('event-apps');
+             if (savedEventApps) {
+               const parsedEventApps = JSON.parse(savedEventApps);
+               setEventApps(parsedEventApps);
+             }
+           }
+         } catch (error) {
+           console.error('Featured 앱 로드 실패, localStorage 폴백 사용:', error);
+           // localStorage 폴백
+           const savedFeaturedApps = localStorage.getItem('featured-apps');
+           if (savedFeaturedApps) {
+             const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
+             setFeaturedApps(parsedFeaturedApps);
+           }
+           
+           const savedEventApps = localStorage.getItem('event-apps');
+           if (savedEventApps) {
+             const parsedEventApps = JSON.parse(savedEventApps);
+             setEventApps(parsedEventApps);
+           }
          }
       } catch {
         // 앱 로드 실패
