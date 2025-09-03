@@ -287,6 +287,12 @@ export default function Home() {
 
   const handleDeleteApp = async (id: string) => {
     try {
+      console.log('=== 앱 삭제 시작 ===');
+      console.log('삭제 요청 ID:', id);
+      console.log('현재 앱 목록:', apps);
+      console.log('현재 Featured 앱:', featuredApps);
+      console.log('현재 Events 앱:', eventApps);
+      
       // 1. 삭제할 앱 정보 찾기
       const appToDelete = apps.find(app => app.id === id);
       if (!appToDelete) {
@@ -294,11 +300,14 @@ export default function Home() {
         return;
       }
 
-      console.log('앱 삭제 시작:', appToDelete.name, 'ID:', id);
+      console.log('삭제할 앱 정보:', appToDelete);
 
       // 2. Featured/Events 앱에서도 제거
       const newFeaturedApps = featuredApps.filter(appId => appId !== id);
       const newEventApps = eventApps.filter(appId => appId !== id);
+      
+      console.log('Featured 앱 업데이트:', featuredApps, '→', newFeaturedApps);
+      console.log('Events 앱 업데이트:', eventApps, '→', newEventApps);
       
       // Featured/Events 상태 업데이트
       setFeaturedApps(newFeaturedApps);
@@ -307,10 +316,15 @@ export default function Home() {
       // Featured/Events localStorage 업데이트
       localStorage.setItem('featured-apps', JSON.stringify(newFeaturedApps));
       localStorage.setItem('event-apps', JSON.stringify(newEventApps));
+      console.log('Featured/Events localStorage 업데이트 완료');
 
       // 3. 현재 상태에서 새로운 리스트 계산 후 즉시 반영 (UI 반응성 및 일관성)
       const newApps = apps.filter(app => app.id !== id);
+      console.log('앱 목록 업데이트:', apps.length, '개 →', newApps.length, '개');
+      console.log('새로운 앱 목록:', newApps);
+      
       setApps(newApps);
+      console.log('React 상태 업데이트 완료');
 
       // 4. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
       if (appToDelete.iconUrl) {
