@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Star, Edit, Trash2, Save } from "lucide-react";
 import { AppItem } from "@/types";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface AdminCardActionsDialogProps {
   app: AppItem;
@@ -34,7 +34,13 @@ export function AdminCardActionsDialog({
   const [localEvent, setLocalEvent] = useState(isEvent);
   const [isSaving, setIsSaving] = useState(false);
 
-  // 로컬 상태 동기화
+  // props가 변경될 때마다 로컬 상태 동기화
+  useEffect(() => {
+    setLocalFeatured(isFeatured);
+    setLocalEvent(isEvent);
+  }, [isFeatured, isEvent]);
+
+  // 로컬 상태 동기화 - 현재 상태와 반대로 토글
   const handleToggleFeatured = () => {
     setLocalFeatured(!localFeatured);
   };
@@ -113,10 +119,10 @@ export function AdminCardActionsDialog({
             <Button
               variant={localFeatured ? "destructive" : "secondary"}
               onClick={handleToggleFeatured}
-              className="h-12 flex flex-col items-center gap-1"
+              className={`h-12 flex flex-col items-center gap-1 ${localFeatured ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-500 hover:bg-gray-600'}`}
             >
-              <Heart className={`h-5 w-5 ${localFeatured ? 'fill-current' : ''}`} />
-              <span className="text-xs">
+              <Heart className={`h-5 w-5 ${localFeatured ? 'fill-current text-white' : ''}`} />
+              <span className="text-xs text-white">
                 {localFeatured ? 'Featured 해제' : 'Featured 설정'}
               </span>
             </Button>
@@ -124,10 +130,10 @@ export function AdminCardActionsDialog({
             <Button
               variant={localEvent ? "destructive" : "secondary"}
               onClick={handleToggleEvent}
-              className="h-12 flex flex-col items-center gap-1"
+              className={`h-12 flex flex-col items-center gap-1 ${localEvent ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-500 hover:bg-gray-600'}`}
             >
-              <Star className={`h-5 w-5 ${localEvent ? 'fill-current' : ''}`} />
-              <span className="text-xs">
+              <Star className={`h-5 w-5 ${localEvent ? 'fill-current text-white' : ''}`} />
+              <span className="text-xs text-white">
                 {localEvent ? 'Event 해제' : 'Event 설정'}
               </span>
             </Button>
