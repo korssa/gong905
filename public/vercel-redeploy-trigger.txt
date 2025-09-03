@@ -1,3 +1,5 @@
-# Vercel 재배포 트리거
+# Vercel 재배포 트리거 - 강제 재배포
 # 이 파일을 수정하면 Vercel이 자동으로 재배포를 시작합니다
 # 생성 시간: 2024-12-XX
+# 수정 시간: 2024-12-XX (강제 재배포)
+# 문제: manifest.json 401 오류, /api/apps/featured 404 오류
