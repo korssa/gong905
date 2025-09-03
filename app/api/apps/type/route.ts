@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     const typeApps = separated[type] || [];
     
     // 최신순 정렬
-    typeApps.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    typeApps.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
 
     return NextResponse.json({
       type,
