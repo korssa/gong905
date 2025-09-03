@@ -25,7 +25,7 @@ import { ContentItem, ContentFormData, ContentType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
 import { uploadFile } from "@/lib/storage-adapter";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
-import { loadContentsFromBlob } from "@/lib/data-loader";
+import { loadContentsFromBlob, loadContentsByTypeFromBlob } from "@/lib/data-loader";
 import { loadMemoDraft, saveMemoDraft, clearMemoDraft } from "@/lib/memo-storage";
 
 interface AppStoryListProps {
@@ -43,7 +43,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     title: "",
     content: "",
     author: "",
-    type: 'appstory' as ContentType,
+    type: type as ContentType, // props로 받은 type 사용
     tags: "",
     isPublished: true, // 기본값을 true로 설정하여 게시되도록 함
   });
@@ -57,7 +57,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
   // 위젯 토글 시 메모 저장 브로드캐스트 수신
   useEffect(() => {
     const handler = () => {
-      saveMemoDraft('appstory', {
+      saveMemoDraft(type, {
         title: formData.title,
         content: formData.content,
         author: formData.author,
@@ -67,11 +67,11 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
     };
     window.addEventListener('memo:save-draft', handler);
     return () => window.removeEventListener('memo:save-draft', handler);
-  }, [formData.title, formData.content, formData.author, formData.tags, formData.isPublished]);
+  }, [type, formData.title, formData.content, formData.author, formData.tags, formData.isPublished]);
 
   // 폼 로컬 캐시 복원
   useEffect(() => {
-    const draft = loadMemoDraft('app-story');
+    const draft = loadMemoDraft(type);
     if (draft) {
       setFormData(prev => ({
         ...prev,
@@ -83,18 +83,18 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [type]);
 
       // 폼 변경 즉시 저장
     useEffect(() => {
-      saveMemoDraft('appstory', {
+      saveMemoDraft(type, {
         title: formData.title,
         content: formData.content,
         author: formData.author,
         tags: formData.tags,
         isPublished: formData.isPublished,
       });
-    }, [formData.title, formData.content, formData.author, formData.tags, formData.isPublished]);
+    }, [type, formData.title, formData.content, formData.author, formData.tags, formData.isPublished]);
 
   // Load content list
   useEffect(() => {
@@ -102,15 +102,14 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       try {
         setLoading(true);
         
-        // 먼저 Vercel Blob Storage에서 로드 시도
-        const blobContents = await loadContentsFromBlob();
-        const filteredBlobContents = blobContents.filter((c: ContentItem) => c.type === type);
+        // 먼저 타입별 분리된 Blob Storage에서 로드 시도
+        const typeContents = await loadContentsByTypeFromBlob(type as 'appstory' | 'news');
         
-        if (filteredBlobContents.length > 0) {
+        if (typeContents.length > 0) {
           // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
-          setContents(isAuthenticated ? filteredBlobContents : filteredBlobContents.filter((c: ContentItem) => c.isPublished));
+          setContents(isAuthenticated ? typeContents : typeContents.filter((c: ContentItem) => c.isPublished));
         } else {
-          // Blob에 데이터가 없으면 기존 API 사용
+          // 타입별 분리 API에 데이터가 없으면 기존 API 사용
           const res = await fetch(`/api/content?type=${type}`);
           const data = await res.json();
           // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
@@ -169,14 +168,14 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
       title: "",
       content: "",
       author: "",
-      type: 'appstory' as ContentType,
+      type: type as ContentType, // props로 받은 type 사용
       tags: "",
       isPublished: true, // 기본값을 true로 설정
     });
     setEditingContent(null);
     setSelectedImage(null);
     setImagePreview(null);
-    clearMemoDraft('appstory');
+    clearMemoDraft(type); // 동적으로 메모 키 사용
   };
 
   // 이미지 선택 핸들러
@@ -242,7 +241,7 @@ export function AppStoryList({ type, onBack }: AppStoryListProps) {
         const result = await response.json();
         
         setIsDialogOpen(false);
-        clearMemoDraft('appstory');
+        clearMemoDraft(type);
         resetForm();
         
         // 콘텐츠 목록 다시 로드 (타입별로 정확히 필터링)

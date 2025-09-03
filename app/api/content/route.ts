@@ -118,10 +118,31 @@ export async function POST(request: NextRequest) {
     
     const contents = await loadContents();
     
-    // ID 범위 분리: App Story (1-10000), News (10001-20000)
-    const baseId = body.type === 'appstory' ? 1 : 10001;
-    const timestamp = Date.now();
-    const id = (baseId + (timestamp % 10000)).toString();
+    // ID 범위 분리: App Story (1-9999), News (10000-19999)
+    const baseId = body.type === 'appstory' ? 1 : 10000;
+    const maxId = body.type === 'appstory' ? 9999 : 19999;
+    
+    // 기존 ID와 겹치지 않는 고유 ID 생성
+    let id: string;
+    let attempts = 0;
+    const maxAttempts = 100;
+    
+    do {
+      const timestamp = Date.now() + attempts;
+      const randomOffset = Math.floor(Math.random() * (maxId - baseId + 1));
+      id = (baseId + randomOffset).toString();
+      attempts++;
+      
+      // 이미 존재하는 ID인지 확인
+      const existingContent = contents.find(c => c.id === id);
+      if (!existingContent) break;
+      
+      if (attempts >= maxAttempts) {
+        // 최대 시도 횟수 초과 시 타임스탬프 기반 ID 생성
+        id = (baseId + (Date.now() % (maxId - baseId + 1))).toString();
+        break;
+      }
+    } while (true);
     
     const newContent: ContentItem = {
       id,
