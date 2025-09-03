@@ -104,7 +104,7 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Featured 앱 토글 핸들러
+    // Featured 앱 토글 핸들러
   const handleToggleFeatured = async (appId: string) => {
     const isCurrentlyFeatured = featuredApps.includes(appId);
     const action = isCurrentlyFeatured ? 'remove' : 'add';
@@ -114,32 +114,42 @@ export default function Home() {
       const success = await toggleFeaturedAppStatus(appId, 'featured', action);
       
       if (success) {
-        setFeaturedApps(prev => {
-          const newFeatured = isCurrentlyFeatured 
-            ? prev.filter(id => id !== appId)
-            : [...prev, appId];
-          
-                     // Blob에 동기화
-           saveFeaturedAppsToBlob(newFeatured, eventApps).catch(() => {});
-          
-          // localStorage에도 백업 저장 (오프라인 지원)
-          localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
-          
-          return newFeatured;
-        });
-             } else {
-         // Featured 앱 상태 토글 실패
-       }
-     } catch (error) {
-       // Featured 앱 상태 토글 중 오류
-      // 실패 시 로컬 상태만 업데이트 (사용자 경험 개선)
-      setFeaturedApps(prev => {
+        // 1. 새로운 상태 계산 (명확한 트리거)
         const newFeatured = isCurrentlyFeatured 
-          ? prev.filter(id => id !== appId)
-          : [...prev, appId];
+          ? featuredApps.filter(id => id !== appId)
+          : [...featuredApps, appId];
+        
+        // 2. React 상태 업데이트
+        setFeaturedApps(newFeatured);
+        
+        // 3. localStorage 백업 저장
         localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
-        return newFeatured;
-      });
+        
+        // 4. Vercel Blob에 명시적 동기화 (트리거)
+        try {
+          console.log('🔄 Featured Blob 동기화 시작:', { newFeatured, eventApps });
+          const blobResult = await saveFeaturedAppsToBlob(newFeatured, eventApps);
+          if (blobResult) {
+            console.log('✅ Featured Blob 동기화 성공:', newFeatured);
+          } else {
+            console.warn('⚠️ Featured Blob 동기화 실패 (반환값 false)');
+          }
+        } catch (blobError) {
+          console.error('❌ Featured Blob 동기화 오류 (Vercel):', blobError);
+        }
+      } else {
+        // Featured 앱 상태 토글 실패
+        console.warn('❌ Featured 토글 API 실패');
+      }
+    } catch (error) {
+      // Featured 앱 상태 토글 중 오류
+      console.error('❌ Featured 토글 중 오류:', error);
+      // 실패 시 로컬 상태만 업데이트 (사용자 경험 개선)
+      const newFeatured = isCurrentlyFeatured 
+        ? featuredApps.filter(id => id !== appId)
+        : [...featuredApps, appId];
+      setFeaturedApps(newFeatured);
+      localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
     }
   };
 
@@ -153,32 +163,42 @@ export default function Home() {
       const success = await toggleFeaturedAppStatus(appId, 'events', action);
       
       if (success) {
-        setEventApps(prev => {
-          const newEvents = isCurrentlyEvent 
-            ? prev.filter(id => id !== appId)
-            : [...prev, appId];
-          
-                     // Blob에 동기화
-           saveFeaturedAppsToBlob(featuredApps, newEvents).catch(() => {});
-          
-          // localStorage에도 백업 저장 (오프라인 지원)
-          localStorage.setItem('event-apps', JSON.stringify(newEvents));
-          
-          return newEvents;
-        });
-             } else {
-         // Event 앱 상태 토글 실패
-       }
-     } catch (error) {
-       // Event 앱 상태 토글 중 오류
-      // 실패 시 로컬 상태만 업데이트 (사용자 경험 개선)
-      setEventApps(prev => {
+        // 1. 새로운 상태 계산 (명확한 트리거)
         const newEvents = isCurrentlyEvent 
-          ? prev.filter(id => id !== appId)
-          : [...prev, appId];
+          ? eventApps.filter(id => id !== appId)
+          : [...eventApps, appId];
+        
+        // 2. React 상태 업데이트
+        setEventApps(newEvents);
+        
+        // 3. localStorage 백업 저장
         localStorage.setItem('event-apps', JSON.stringify(newEvents));
-        return newEvents;
-      });
+        
+        // 4. Vercel Blob에 명시적 동기화 (트리거)
+        try {
+          console.log('🔄 Events Blob 동기화 시작:', { featuredApps, newEvents });
+          const blobResult = await saveFeaturedAppsToBlob(featuredApps, newEvents);
+          if (blobResult) {
+            console.log('✅ Events Blob 동기화 성공:', newEvents);
+          } else {
+            console.warn('⚠️ Events Blob 동기화 실패 (반환값 false)');
+          }
+        } catch (blobError) {
+          console.error('❌ Events Blob 동기화 오류 (Vercel):', blobError);
+        }
+                   } else {
+        // Event 앱 상태 토글 실패
+        console.warn('❌ Events 토글 API 실패');
+      }
+    } catch (error) {
+      // Event 앱 상태 토글 중 오류
+      console.error('❌ Events 토글 중 오류:', error);
+      // 실패 시 로컬 상태만 업데이트 (사용자 경험 개선)
+      const newEvents = isCurrentlyEvent 
+        ? eventApps.filter(id => id !== appId)
+        : [...eventApps, appId];
+      setEventApps(newEvents);
+      localStorage.setItem('event-apps', JSON.stringify(newEvents));
     }
   };
 
