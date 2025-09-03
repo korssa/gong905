@@ -5,13 +5,18 @@ import { AppItem, ContentItem } from '@/types';
  */
 export async function loadAppsFromBlob(): Promise<AppItem[]> {
   try {
+    console.log('🔄 [loadAppsFromBlob] 기존 Blob API 호출 시작...');
     const response = await fetch('/api/data/apps');
     if (!response.ok) {
+      console.log('❌ [loadAppsFromBlob] 기존 Blob API 응답 실패:', response.status);
       // Failed to load apps from blob
       return [];
     }
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ [loadAppsFromBlob] 기존 Blob API에서 앱 로드 성공:', data.length, '개');
+    return data;
   } catch (error) {
+    console.error('❌ [loadAppsFromBlob] 기존 Blob API 오류:', error);
     // Error loading apps from blob
     return [];
   }
@@ -133,17 +138,29 @@ export async function loadContentsByTypeFromBlob(type: 'appstory' | 'news'): Pro
  */
 export async function loadAppsByTypeFromBlob(type: 'gallery'): Promise<AppItem[]> {
   try {
+    // 타입별 API가 실패하면 기존 API로 폴백
     const response = await fetch(`/api/apps/type?type=${type}`);
     if (!response.ok) {
-      // Failed to load type apps from blob
-      return [];
+      // Failed to load type apps from blob, fallback to existing API
+      console.log('⚠️ [loadAppsByTypeFromBlob] 타입별 API 실패, 기존 API로 폴백');
+      return await loadAppsFromBlob();
     }
     
     const data = await response.json();
-    return data.apps || [];
+    const typeApps = data.apps || [];
+    
+    // 타입별 API에서 앱이 없으면 기존 API로 폴백
+    if (typeApps.length === 0) {
+      console.log('⚠️ [loadAppsByTypeFromBlob] 타입별 API에서 앱 없음, 기존 API로 폴백');
+      return await loadAppsFromBlob();
+    }
+    
+    console.log(`✅ [loadAppsByTypeFromBlob] ${type} 타입 앱 로드 성공:`, typeApps.length, '개');
+    return typeApps;
   } catch (error) {
-    // Error loading type apps from blob
-    return [];
+    // Error loading type apps from blob, fallback to existing API
+    console.log('⚠️ [loadAppsByTypeFromBlob] 타입별 API 오류, 기존 API로 폴백');
+    return await loadAppsFromBlob();
   }
 }
 
