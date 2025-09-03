@@ -463,36 +463,49 @@ export default function Home() {
   useEffect(() => {
     const loadApps = async () => {
       try {
+        console.log('🔄 앱 로드 시작...');
+        
         // 메모장과 동일하게 타입별 분리된 Blob Storage에서 로드 시도
         const typeApps = await loadAppsByTypeFromBlob('gallery');
+        console.log('📦 Blob에서 타입별 앱 로드 결과:', typeApps.length, '개');
         
         if (typeApps.length > 0) {
+          console.log('✅ Blob에서 앱 데이터 로드 성공');
           // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
           const validatedApps = await validateAppsImages(typeApps);
+          console.log('🔍 이미지 검증 후 앱:', validatedApps.length, '개');
           // 기존 앱들에 type 속성 추가
           const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
           setApps(appsWithType);
           localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
+          console.log('💾 Blob 데이터를 localStorage에 저장 완료');
         } else {
+          console.log('⚠️ Blob에 타입별 데이터 없음, 기존 API 시도...');
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
           const blobApps = await loadAppsFromBlob();
+          console.log('📦 기존 Blob API 결과:', blobApps?.length || 0, '개');
           
           if (blobApps && blobApps.length > 0) {
+            console.log('✅ 기존 Blob API에서 데이터 로드 성공');
             const validatedApps = await validateAppsImages(blobApps);
             // 기존 앱들에 type 속성 추가
             const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
             setApps(appsWithType);
             localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
           } else {
+            console.log('⚠️ Blob에도 데이터 없음, localStorage 캐시 시도...');
             // localStorage 캐시 시도
             const savedApps = localStorage.getItem('gallery-apps');
             if (savedApps) {
+              console.log('📱 localStorage에서 캐시된 앱 로드:', savedApps.length, '개');
               const parsedApps = JSON.parse(savedApps) as AppItem[];
               const validatedApps = await validateAppsImages(parsedApps);
               // 기존 앱들에 type 속성 추가
               const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
               setApps(appsWithType);
+              console.log('✅ localStorage 캐시에서 앱 로드 완료');
             } else {
+              console.log('❌ localStorage에도 데이터 없음, 빈 배열 설정');
               setApps([]);
               localStorage.setItem('gallery-apps', JSON.stringify([]));
             }
@@ -534,7 +547,10 @@ export default function Home() {
             setEventApps(parsedEventApps);
           }
         }
-      } catch {
+        
+        console.log('🎯 최종 앱 상태:', apps.length, '개');
+      } catch (error) {
+        console.error('❌ 앱 로드 실패:', error);
         // 앱 로드 실패
         // 실패시 샘플 데이터 사용
         setApps(sampleApps);
@@ -894,34 +910,6 @@ export default function Home() {
                    ) : (
                      // 일반 갤러리 모드
                      <>
-                       {/* 갤러리 상단 컨트롤 */}
-                       <div className="flex justify-between items-center mb-6">
-                         <div className="flex items-center gap-4">
-                           <h2 className="text-2xl font-bold text-white">
-                             {currentFilter === "all" && "All Apps"}
-                             {currentFilter === "latest" && "New Releases"}
-                             {currentFilter === "featured" && "Featured Apps"}
-                             {currentFilter === "events" && "Events"}
-                           </h2>
-                           <span className="text-gray-400 text-sm">
-                             {getFilteredAndSortedApps().length} apps
-                           </span>
-                         </div>
-                         
-                         {/* 수동 새로고침 버튼 */}
-                         <Button
-                           onClick={forceRefreshGallery}
-                           variant="outline"
-                           size="sm"
-                           className="gap-2 text-gray-300 hover:text-white border-gray-600 hover:border-gray-400"
-                         >
-                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                           </svg>
-                           Refresh
-                         </Button>
-                       </div>
-                       
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
                        {currentFilter !== "latest" && (
                          <>

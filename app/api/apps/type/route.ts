@@ -68,6 +68,8 @@ async function loadApps(): Promise<AppItem[]> {
 
 // 타입별 앱 분리
 function separateAppsByType(apps: AppItem[]) {
+  console.log('🔄 [separateAppsByType] 앱 분리 시작:', apps.length, '개');
+  
   const separated: Record<string, AppItem[]> = {
     gallery: []
   };
@@ -78,22 +80,38 @@ function separateAppsByType(apps: AppItem[]) {
     }
   });
 
+  console.log('📊 [separateAppsByType] 타입별 분리 결과:', {
+    gallery: separated.gallery.length
+  });
+
   // 각 타입별로 ID 범위 검증 및 정리 (문자열 ID 지원)
   Object.entries(separated).forEach(([type, typeApps]) => {
     const range = TYPE_RANGES[type as keyof typeof TYPE_RANGES];
+    console.log(`🔍 [separateAppsByType] ${type} 타입 ID 검증 시작:`, typeApps.length, '개');
+    
+    const beforeFilter = typeApps.length;
     separated[type] = typeApps.filter(app => {
       // ID가 숫자인 경우 범위 검증
       if (/^\d+$/.test(app.id)) {
         const id = parseInt(app.id);
-        return id >= range.min && id <= range.max;
+        const isValid = id >= range.min && id <= range.max;
+        if (!isValid) {
+          console.log(`⚠️ [separateAppsByType] 숫자 ID 범위 초과:`, app.id, '범위:', range.min, '-', range.max);
+        }
+        return isValid;
       }
       // ID가 문자열인 경우 (Date.now_ 형태) 허용
       if (app.id.includes('_')) {
+        console.log(`✅ [separateAppsByType] 문자열 ID 허용:`, app.id);
         return true;
       }
       // 기타 형태의 ID도 허용
+      console.log(`✅ [separateAppsByType] 기타 ID 허용:`, app.id);
       return true;
     });
+    
+    const afterFilter = separated[type].length;
+    console.log(`🎯 [separateAppsByType] ${type} 타입 ID 검증 완료:`, beforeFilter, '→', afterFilter, '개');
   });
 
   return separated;
