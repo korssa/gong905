@@ -1,3 +1,7 @@
-# Vercel 재배포 트리거
-# 이 파일은 Vercel에서 public 폴더의 모든 파일을 제대로 배포하도록 합니다.
-# 배포 후 이 파일을 삭제할 수 있습니다.
+# Vercel 재배포 트리거 - 강제 재배포
+# 이 파일을 수정하면 Vercel이 자동으로 재배포를 시작합니다
+# 생성 시간: 2024-12-XX
+# 수정 시간: 2024-12-XX (강제 재배포)
+# 문제: manifest.json 401 오류, /api/apps/featured 404 오류
+# 추가 문제: Featured/Events API 404 오류, Dialog 접근성 경고
+# 해결: middleware.ts 설정 및 Dialog 접근성 개선

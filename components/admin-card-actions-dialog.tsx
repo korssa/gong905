@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Star, Edit, Trash2, Save } from "lucide-react";
@@ -107,6 +107,9 @@ export function AdminCardActionsDialog({
             <span>관리자 모드 - {app.name}</span>
             <Badge variant="secondary">{app.status}</Badge>
           </DialogTitle>
+          <DialogDescription onMouseEnter={blockTranslationFeedback}>
+            앱의 Featured 및 Event 상태를 관리하고 편집/삭제할 수 있습니다.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
