@@ -7,6 +7,7 @@ import { Heart, Star, Edit, Trash2, Save } from "lucide-react";
 import { AppItem } from "@/types";
 import React, { useState, useEffect } from "react";
 import { blockTranslationFeedback } from "@/lib/translation-utils";
+import { loadFeaturedAppsFromBlob } from "@/lib/data-loader";
 
 interface AdminCardActionsDialogProps {
   app: AppItem;
@@ -52,7 +53,7 @@ export function AdminCardActionsDialog({
     setLocalEvent(!localEvent);
   };
 
-  // 저장 버튼 클릭 시 트리거 실행
+  // 저장 버튼 클릭 시 트리거 실행 (메모장 방식과 동일)
   const handleSave = async () => {
     setIsSaving(true);
     
@@ -71,12 +72,18 @@ export function AdminCardActionsDialog({
         hasChanges = true;
       }
       
-      // 변경사항이 있는 경우 서버에서 최신 데이터 리로드
-      if (hasChanges && onRefreshData) {
+      // 변경사항이 있는 경우 즉시 Blob에서 리로드 (메모장과 동일한 방식)
+      if (hasChanges) {
         try {
-          await onRefreshData(); // 서버에서 최신 데이터 가져오기
+          // 메모장처럼 직접 loadFeaturedAppsFromBlob() 사용
+          const updatedData = await loadFeaturedAppsFromBlob();
+          
+          // 부모 컴포넌트에 즉시 업데이트 요청
+          if (onRefreshData) {
+            await onRefreshData();
+          }
         } catch (refreshError) {
-          console.warn('데이터 리로드 실패:', refreshError);
+          console.warn('즉시 리로드 실패:', refreshError);
         }
       }
       

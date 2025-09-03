@@ -129,21 +129,30 @@ export async function loadContentsByTypeFromBlob(type: 'appstory' | 'news'): Pro
 }
 
 /**
- * Featured/Events 앱 정보를 Blob에서 로드
+ * Featured/Events 앱 정보를 Blob에서 로드 (메모장 방식과 동일)
  */
 export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; events: string[] }> {
   try {
-    const response = await fetch('/api/data/featured-apps');
+    // 메모장과 동일하게 직접 Blob에서 로드
+    const response = await fetch('/api/apps/featured', { 
+      method: 'GET',
+      cache: 'no-store' // 캐시 무시하고 최신 데이터
+    });
+    
     if (!response.ok) {
       // Failed to load featured apps from blob
       return { featured: [], events: [] };
     }
     
     const data = await response.json();
-    return {
-      featured: data.featured || [],
-      events: data.events || []
-    };
+    if (data.success) {
+      return {
+        featured: data.featured || [],
+        events: data.events || []
+      };
+    }
+    
+    return { featured: [], events: [] };
   } catch (error) {
     // Error loading featured apps from blob
     return { featured: [], events: [] };
