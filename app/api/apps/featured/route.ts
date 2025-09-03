@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { AppItem } from '@/types';
 
 // 로컬 파일 경로
 const APPS_FILE_PATH = path.join(process.cwd(), 'data', 'apps.json');
 const FEATURED_FILE_PATH = path.join(process.cwd(), 'data', 'featured-apps.json');
 
 // 메모리 기반 저장소 (Vercel 환경에서 사용)
-let memoryApps: any[] = [];
+const memoryApps: AppItem[] = [];
 let memoryFeatured: { featured: string[]; events: string[] } = { featured: [], events: [] };
 
 // 데이터 디렉토리 생성 및 파일 초기화
@@ -44,7 +45,7 @@ async function ensureFeaturedFile() {
 }
 
 // 앱 데이터 로드
-async function loadApps(): Promise<any[]> {
+async function loadApps(): Promise<AppItem[]> {
   try {
     // Vercel 환경에서는 메모리 저장소만 사용
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
@@ -55,7 +56,7 @@ async function loadApps(): Promise<any[]> {
     await ensureDataFile();
     const data = await fs.readFile(APPS_FILE_PATH, 'utf-8');
     return JSON.parse(data);
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -72,7 +73,7 @@ async function loadFeatured(): Promise<{ featured: string[]; events: string[] }>
     await ensureFeaturedFile();
     const data = await fs.readFile(FEATURED_FILE_PATH, 'utf-8');
     return JSON.parse(data);
-  } catch (error) {
+  } catch {
     return { featured: [], events: [] };
   }
 }
