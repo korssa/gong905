@@ -293,7 +293,7 @@ export default function Home() {
       console.log('현재 Featured 앱:', featuredApps);
       console.log('현재 Events 앱:', eventApps);
       
-      // 1. 삭제할 앱 정보 찾기
+      // 1. 삭제할 앱 정보 찾기 (원본 배열에서 찾기)
       const appToDelete = apps.find(app => app.id === id);
       if (!appToDelete) {
         console.warn('삭제할 앱을 찾을 수 없습니다:', id);
@@ -302,31 +302,32 @@ export default function Home() {
 
       console.log('삭제할 앱 정보:', appToDelete);
 
-      // 2. Featured/Events 앱에서도 제거
+      // 2. 새로운 앱 목록 계산 (원본 배열 기반)
+      const newApps = apps.filter(app => app.id !== id);
+      console.log('앱 목록 업데이트:', apps.length, '개 →', newApps.length, '개');
+      console.log('새로운 앱 목록:', newApps);
+      
+      // 3. Featured/Events 앱에서도 제거 (원본 배열 기반)
       const newFeaturedApps = featuredApps.filter(appId => appId !== id);
       const newEventApps = eventApps.filter(appId => appId !== id);
       
       console.log('Featured 앱 업데이트:', featuredApps, '→', newFeaturedApps);
       console.log('Events 앱 업데이트:', eventApps, '→', newEventApps);
       
-      // Featured/Events 상태 업데이트
-      setFeaturedApps(newFeaturedApps);
-      setEventApps(newEventApps);
+      // 4. React 상태 업데이트 (순서 중요!)
+      setApps(newApps);  // 먼저 앱 목록 업데이트
+      setFeaturedApps(newFeaturedApps);  // 그 다음 Featured 업데이트
+      setEventApps(newEventApps);  // 마지막 Events 업데이트
       
-      // Featured/Events localStorage 업데이트
-      localStorage.setItem('featured-apps', JSON.stringify(newFeaturedApps));
-      localStorage.setItem('event-apps', JSON.stringify(newEventApps));
-      console.log('Featured/Events localStorage 업데이트 완료');
-
-      // 3. 현재 상태에서 새로운 리스트 계산 후 즉시 반영 (UI 반응성 및 일관성)
-      const newApps = apps.filter(app => app.id !== id);
-      console.log('앱 목록 업데이트:', apps.length, '개 →', newApps.length, '개');
-      console.log('새로운 앱 목록:', newApps);
-      
-      setApps(newApps);
       console.log('React 상태 업데이트 완료');
 
-      // 4. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
+      // 4. localStorage 업데이트 (순서 중요!)
+      localStorage.setItem('gallery-apps', JSON.stringify(newApps));
+      localStorage.setItem('featured-apps', JSON.stringify(newFeaturedApps));
+      localStorage.setItem('event-apps', JSON.stringify(newEventApps));
+      console.log('localStorage 업데이트 완료');
+
+      // 5. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
       if (appToDelete.iconUrl) {
         try {
           await deleteFile(appToDelete.iconUrl);
@@ -344,9 +345,6 @@ export default function Home() {
           console.warn('스크린샷 파일들 삭제 실패:', error);
         }
       }
-
-      // 5. localStorage 업데이트 (항상 최신 newApps로 저장)
-      localStorage.setItem('gallery-apps', JSON.stringify(newApps));
 
       // 6. Blob JSON 동기화 (항상 최신 newApps로 동기화)
       let blobSyncSuccess = false;
