@@ -115,7 +115,7 @@ export function NewsList({ type, onBack }: NewsListProps) {
           setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
         }
       } catch (err) {
-        console.error('Failed to load contents:', err);
+        // Failed to load contents
       } finally {
         setLoading(false);
       }
@@ -249,9 +249,9 @@ export function NewsList({ type, onBack }: NewsListProps) {
             // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
             setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
           }
-        } catch (error) {
-          console.error('목록 새로고침 실패:', error);
-        }
+              } catch (error) {
+        // 목록 새로고침 실패
+      }
         
         alert(editingContent ? 'News가 수정되었습니다.' : 'News가 저장되었습니다.');
       } else {
@@ -286,9 +286,9 @@ export function NewsList({ type, onBack }: NewsListProps) {
             // 관리자일 경우 전체 콘텐츠, 일반 사용자는 게시된 콘텐츠만 표시
             setContents(isAuthenticated ? data : data.filter((c: ContentItem) => c.isPublished));
           }
-        } catch (error) {
-          console.error('삭제 후 목록 새로고침 실패:', error);
-        }
+              } catch (error) {
+        // 삭제 후 목록 새로고침 실패
+      }
         
         alert('News가 삭제되었습니다.');
       }
@@ -594,20 +594,19 @@ export function NewsList({ type, onBack }: NewsListProps) {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 px-4" onMouseEnter={blockTranslationFeedback}>
              {onBack && (
-         <Button 
-           onClick={onBack} 
+                  <Button
+           onClick={onBack}
            variant="ghost" 
            className="text-white hover:text-amber-400 transition-colors"
-           onMouseEnter={blockTranslationFeedback}
          >
            <ArrowLeft className="w-4 h-4 mr-2" />
-           뒤로 가기
+           Back
          </Button>
        )}
 
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">News</h2>
-        <p className="text-gray-400">최신 업데이트와 소식을 확인해보세요</p>
+        <h2 className="text-3xl font-bold text-white mb-2" onMouseEnter={blockTranslationFeedback}>News</h2>
+        <p className="text-gray-400">Stay updated with the latest news and updates</p>
         {isAuthenticated && (
           <div className="mt-4">
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

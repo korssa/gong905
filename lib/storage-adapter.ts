@@ -110,7 +110,7 @@ export const uploadFile = async (file: File, prefix: string = ""): Promise<strin
   const isVercelEnvironment = typeof window !== 'undefined' && 
     (window.location.hostname.includes('vercel.app') || 
      window.location.hostname.includes('vercel-storage.com') ||
-     window.location.hostname.includes('gong88-tlwx9pkko-gongmyung.vercel.app'));
+     window.location.hostname.includes('gongmyung.com'));
 
   // 강제 로컬 업로드 플래그: 배포 환경에서 로컬(public/uploads)에 파일을 저장하고
   // 수동으로 레포지토리에 커밋/리디플로이하려는 경우 사용합니다.

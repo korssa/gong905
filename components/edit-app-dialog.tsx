@@ -249,9 +249,9 @@ export function EditAppDialog({ app, isOpen, onClose, onUpdate }: EditAppDialogP
                     const nextIndex = (currentIndex + 1) % stores.length;
                     const newStore = stores[nextIndex];
                     setFormData(prev => ({ ...prev, store: newStore }));
-                  } catch (error) {
-                    console.error('Store change error:', error);
-                  }
+                        } catch (error) {
+        // Store change error
+      }
                 }}
                 onMouseEnter={blockTranslationFeedback}
               >
@@ -277,9 +277,9 @@ export function EditAppDialog({ app, isOpen, onClose, onUpdate }: EditAppDialogP
                     const nextIndex = (currentIndex + 1) % statuses.length;
                     const newStatus = statuses[nextIndex];
                     setFormData(prev => ({ ...prev, status: newStatus }));
-                  } catch (error) {
-                    console.error('Status change error:', error);
-                  }
+                        } catch (error) {
+        // Status change error
+      }
                 }}
                 onMouseEnter={blockTranslationFeedback}
               >

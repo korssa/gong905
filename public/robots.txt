@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://gongmyung.vercel.app/sitemap.xml
+Sitemap: https://gongmyung.com/sitemap.xml
 
 # Crawl-delay
 Crawl-delay: 1

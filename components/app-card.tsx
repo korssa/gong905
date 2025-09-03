@@ -59,15 +59,8 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
   };
 
   const handleDelete = createAdminButtonHandler(() => {
-    console.log('=== 앱 카드에서 삭제 버튼 클릭 ===');
-    console.log('앱 정보:', app);
-    console.log('onDelete 함수 존재 여부:', !!onDelete);
-    
     if (onDelete && confirm(`Delete "${app.name}"?`)) {
-      console.log('삭제 확인됨, onDelete 호출:', app.id);
       onDelete(app.id);
-    } else {
-      console.log('삭제 취소됨 또는 onDelete 함수 없음');
     }
   });
 

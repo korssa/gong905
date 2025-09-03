@@ -7,12 +7,12 @@ export async function loadAppsFromBlob(): Promise<AppItem[]> {
   try {
     const response = await fetch('/api/data/apps');
     if (!response.ok) {
-      console.error('Failed to load apps from blob:', response.statusText);
+      // Failed to load apps from blob
       return [];
     }
     return await response.json();
   } catch (error) {
-    console.error('Error loading apps from blob:', error);
+    // Error loading apps from blob
     return [];
   }
 }
@@ -24,12 +24,12 @@ export async function loadContentsFromBlob(): Promise<ContentItem[]> {
   try {
     const response = await fetch('/api/data/contents');
     if (!response.ok) {
-      console.error('Failed to load contents from blob:', response.statusText);
+      // Failed to load contents from blob
       return [];
     }
     return await response.json();
   } catch (error) {
-    console.error('Error loading contents from blob:', error);
+    // Error loading contents from blob
     return [];
   }
 }
@@ -48,13 +48,13 @@ export async function saveAppsToBlob(apps: AppItem[]): Promise<boolean> {
     });
     
     if (!response.ok) {
-      console.error('Failed to save apps to blob:', response.statusText);
+      // Failed to save apps to blob
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error('Error saving apps to blob:', error);
+    // Error saving apps to blob
     return false;
   }
 }
@@ -73,13 +73,13 @@ export async function saveContentsToBlob(contents: ContentItem[]): Promise<boole
     });
     
     if (!response.ok) {
-      console.error('Failed to save contents to blob:', response.statusText);
+      // Failed to save contents to blob
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error('Error saving contents to blob:', error);
+    // Error saving contents to blob
     return false;
   }
 }
@@ -98,13 +98,13 @@ export async function saveContentsByTypeToBlob(type: 'appstory' | 'news', conten
     });
     
     if (!response.ok) {
-      console.error(`Failed to save ${type} contents to blob:`, response.statusText);
+      // Failed to save type contents to blob
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error(`Error saving ${type} contents to blob:`, error);
+    // Error saving type contents to blob
     return false;
   }
 }
@@ -116,14 +116,14 @@ export async function loadContentsByTypeFromBlob(type: 'appstory' | 'news'): Pro
   try {
     const response = await fetch(`/api/content/type?type=${type}`);
     if (!response.ok) {
-      console.error(`Failed to load ${type} contents from blob:`, response.statusText);
+      // Failed to load type contents from blob
       return [];
     }
     
     const data = await response.json();
     return data.contents || [];
   } catch (error) {
-    console.error(`Error loading ${type} contents from blob:`, error);
+    // Error loading type contents from blob
     return [];
   }
 }
@@ -135,7 +135,7 @@ export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; 
   try {
     const response = await fetch('/api/data/featured-apps');
     if (!response.ok) {
-      console.error('Failed to load featured apps from blob:', response.statusText);
+      // Failed to load featured apps from blob
       return { featured: [], events: [] };
     }
     
@@ -145,7 +145,7 @@ export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; 
       events: data.events || []
     };
   } catch (error) {
-    console.error('Error loading featured apps from blob:', error);
+    // Error loading featured apps from blob
     return { featured: [], events: [] };
   }
 }
@@ -164,13 +164,13 @@ export async function saveFeaturedAppsToBlob(featured: string[], events: string[
     });
     
     if (!response.ok) {
-      console.error('Failed to save featured apps to blob:', response.statusText);
+      // Failed to save featured apps to blob
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error('Error saving featured apps to blob:', error);
+    // Error saving featured apps to blob
     return false;
   }
 }
@@ -189,13 +189,13 @@ export async function toggleFeaturedAppStatus(appId: string, type: 'featured' | 
     });
     
     if (!response.ok) {
-      console.error(`Failed to toggle ${type} status for app ${appId}:`, response.statusText);
+      // Failed to toggle type status for app
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error(`Error toggling ${type} status for app ${appId}:`, error);
+    // Error toggling type status for app
     return false;
   }
 }

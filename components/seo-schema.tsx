@@ -4,7 +4,7 @@ export function WebsiteSchema() {
     "@type": "WebSite",
     "name": "Gongmyung's App Gallery",
     "description": "Gongmyung이 직접 제작하고 큐레이션한 독창적인 앱들의 갤러리입니다.",
-    "url": "https://gongmyung.vercel.app",
+    "url": "https://gongmyung.com",
     "author": {
       "@type": "Person",
       "name": "Gongmyung"
@@ -15,7 +15,7 @@ export function WebsiteSchema() {
     },
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://gongmyung.vercel.app?search={search_term_string}",
+      "target": "https://gongmyung.com?search={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   };
@@ -33,8 +33,8 @@ export function OrganizationSchema() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Gongmyung's App Gallery",
-    "url": "https://gongmyung.vercel.app",
-    "logo": "https://gongmyung.vercel.app/logo.png",
+    "url": "https://gongmyung.com",
+    "logo": "https://gongmyung.com/logo.png",
     "description": "독창적인 앱 개발과 큐레이션을 전문으로 하는 Gongmyung의 앱 갤러리",
     "sameAs": [
       // 소셜 미디어 링크가 있다면 여기에 추가
@@ -58,13 +58,13 @@ export function BreadcrumbSchema() {
         "@type": "ListItem",
         "position": 1,
         "name": "홈",
-        "item": "https://gongmyung.vercel.app"
+        "item": "https://gongmyung.com"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "앱 갤러리",
-        "item": "https://gongmyung.vercel.app/#all-apps"
+        "item": "https://gongmyung.com/#all-apps"
       }
     ]
   };

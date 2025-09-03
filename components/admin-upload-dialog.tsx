@@ -153,7 +153,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
          try {
            window.adminModeChange(true);
          } catch (error) {
-           console.warn('adminModeChange 호출 실패:', error);
+           // adminModeChange 호출 실패
          }
        }
     } else {
@@ -354,7 +354,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                       // store 변경 시 번역 피드백 방지
                       blockTranslationFeedback();
                     } catch (error) {
-                      console.error('Store change error:', error);
+                      // Store change error
                     }
                   })}
                   onMouseEnter={blockTranslationFeedback}
@@ -382,7 +382,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                       const newStatus = statuses[nextIndex];
                       setFormData(prev => ({ ...prev, status: newStatus }));
                     } catch (error) {
-                      console.error('Status change error:', error);
+                      // Status change error
                     }
                   }}
                   onMouseEnter={blockTranslationFeedback}
@@ -578,7 +578,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                  try {
                    window.adminModeChange(false);
                  } catch (error) {
-                   console.warn('adminModeChange 호출 실패:', error);
+                   // adminModeChange 호출 실패
                  }
                }
              }}

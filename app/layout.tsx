@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gongmyung's App Gallery - 독창적인 앱 컬렉션",
-  description: "Gongmyung이 직접 제작하고 큐레이션한 독창적인 앱들의 갤러리입니다. 창의성과 목적을 조화롭게 담은 다양한 앱들을 만나보세요.",
-  keywords: "앱 갤러리, 모바일 앱, 앱 개발, Gongmyung, 앱 컬렉션, 독창적인 앱, 앱 스토리",
+  title: "Gongmyung's App Gallery - Creative App Collection",
+  description: "Discover a curated collection of innovative apps created by Gongmyung. Experience apps that harmoniously blend creativity and purpose.",
+  keywords: "app gallery, mobile apps, app development, Gongmyung, app collection, innovative apps, app stories",
   authors: [{ name: "Gongmyung" }],
   creator: "Gongmyung",
   publisher: "Gongmyung",
@@ -25,14 +25,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://gongmyung.vercel.app'),
+  metadataBase: new URL('https://gongmyung.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: "Gongmyung's App Gallery - 독창적인 앱 컬렉션",
-    description: "Gongmyung이 직접 제작하고 큐레이션한 독창적인 앱들의 갤러리입니다. 창의성과 목적을 조화롭게 담은 다양한 앱들을 만나보세요.",
-    url: 'https://gongmyung.vercel.app',
+    title: "Gongmyung's App Gallery - Creative App Collection",
+    description: "Discover a curated collection of innovative apps created by Gongmyung. Experience apps that harmoniously blend creativity and purpose.",
+    url: 'https://gongmyung.com',
     siteName: "Gongmyung's App Gallery",
     images: [
       {
@@ -42,13 +42,13 @@ export const metadata: Metadata = {
         alt: "Gongmyung's App Gallery",
       },
     ],
-    locale: 'ko_KR',
+    locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Gongmyung's App Gallery - 독창적인 앱 컬렉션",
-    description: "Gongmyung이 직접 제작하고 큐레이션한 독창적인 앱들의 갤러리입니다.",
+    title: "Gongmyung's App Gallery - Creative App Collection",
+    description: "Discover a curated collection of innovative apps created by Gongmyung. Experience apps that harmoniously blend creativity and purpose.",
     images: ['/logo.png'],
   },
   robots: {
@@ -80,7 +80,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="en">
       <head>
         <WebsiteSchema />
         <OrganizationSchema />
