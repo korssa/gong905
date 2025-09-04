@@ -208,13 +208,11 @@ export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; 
     const data = await response.json();
     console.log('📊 Featured/Events Blob 응답:', data);
     
-    // 응답 데이터 구조 확인 - boolean 체크 필드 추가
+    // 응답 데이터 구조 확인 - boolean 체크로 간단하게
     if (data && typeof data === 'object') {
       return {
         featured: data.featured ? (Array.isArray(data.featured) ? data.featured : []) : [],
-        events: data.events ? (Array.isArray(data.events) ? data.events : []) : [],
-        hasFeatured: !!data.featured && data.featured.length > 0,
-        hasEvents: !!data.events && data.events.length > 0
+        events: data.events ? (Array.isArray(data.events) ? data.events : []) : []
       };
     }
     
