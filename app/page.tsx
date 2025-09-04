@@ -1119,6 +1119,16 @@ export default function Home() {
                 className="h-64 w-auto object-contain"
               />
             </div>
+            
+            {/* 이미지 바로 밑 슬로건 및 Since 2025 */}
+            <div className="text-center mt-4">
+              <p className="text-lg font-medium text-amber-400 mb-2 notranslate" translate="no" style={{translate: 'no'}}>
+                &quot;We&apos;re just. that kind of group!&quot;
+              </p>
+              <p className="text-sm text-gray-400 notranslate" translate="no" style={{translate: 'no'}}>
+                — Since 2025
+              </p>
+            </div>
            
            <div className="border-t border-gray-600 pt-6 mt-6 text-center">
             <span 
@@ -1209,17 +1219,6 @@ export default function Home() {
           </div>
         </div>
         
-        {/* 풋터 하단 슬로건 및 Since 2025 */}
-        <div className="mt-8 pt-8 border-t border-gray-700">
-          <div className="text-center">
-            <p className="text-lg font-medium text-amber-400 mb-2" translate="yes">
-              &quot;We&apos;re just. that kind of group!&quot;
-            </p>
-            <p className="text-sm text-gray-400">
-              — Since 2025
-            </p>
-          </div>
-        </div>
       </footer>
 
       {/* 숨겨진 관리자 접근 다이얼로그 */}

@@ -1700,3 +1700,37 @@ button[type="reset"] * {
   pointer-events: none;
   user-select: none;
 }
+
+/* 풋터 슬로건 및 Since 2025 번역 피드백 방지 */
+.notranslate {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.notranslate * {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* 강력한 번역 방지 */
+[translate="no"] {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+[translate="no"] * {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
