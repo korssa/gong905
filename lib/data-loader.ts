@@ -251,3 +251,73 @@ export async function toggleFeaturedAppStatus(
     return null;
   }
 }
+
+// ===== 새로운 분리된 함수들 =====
+
+/**
+ * Featured 앱 ID 목록만 로드
+ */
+export async function loadFeaturedIds(): Promise<string[]> {
+  try {
+    const res = await fetch('/api/data/featured', { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('❌ [loadFeaturedIds] 오류:', error);
+    return [];
+  }
+}
+
+/**
+ * Events 앱 ID 목록만 로드
+ */
+export async function loadEventIds(): Promise<string[]> {
+  try {
+    const res = await fetch('/api/data/events', { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('❌ [loadEventIds] 오류:', error);
+    return [];
+  }
+}
+
+/**
+ * Featured 앱 ID 목록만 저장
+ */
+export async function saveFeaturedIds(ids: string[]): Promise<boolean> {
+  try {
+    console.log('📤 saveFeaturedIds 호출:', ids);
+    const res = await fetch('/api/data/featured', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ids),
+    });
+    console.log('📤 saveFeaturedIds 응답:', { ok: res.ok, status: res.status });
+    return res.ok;
+  } catch (error) {
+    console.error('❌ saveFeaturedIds 오류:', error);
+    return false;
+  }
+}
+
+/**
+ * Events 앱 ID 목록만 저장
+ */
+export async function saveEventIds(ids: string[]): Promise<boolean> {
+  try {
+    console.log('📤 saveEventIds 호출:', ids);
+    const res = await fetch('/api/data/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ids),
+    });
+    console.log('📤 saveEventIds 응답:', { ok: res.ok, status: res.status });
+    return res.ok;
+  } catch (error) {
+    console.error('❌ saveEventIds 오류:', error);
+    return false;
+  }
+}

@@ -25,7 +25,7 @@ import { useAdmin } from "@/hooks/use-admin";
 import { generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
 import { uploadFile, deleteFile } from "@/lib/storage-adapter";
-import { loadAppsFromBlob, loadFeaturedAppsFromBlob, saveFeaturedAppsToBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, saveAppsByTypeToBlob } from "@/lib/data-loader";
+import { loadAppsFromBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, saveAppsByTypeToBlob, loadFeaturedIds, loadEventIds, saveFeaturedIds, saveEventIds } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import Image from "next/image";
 
@@ -143,7 +143,7 @@ export default function Home() {
       const firstId = allApps[0].id;
       const nextF = Array.from(new Set([...featuredApps, firstId]));
       try {
-        await saveFeaturedAppsToBlob(nextF, eventApps);
+        await saveFeaturedIds(nextF);
         setFeaturedApps(nextF);
         setAllApps(prev => applyFeaturedFlags(prev, nextF, eventApps));
       } catch (e) {
@@ -164,7 +164,7 @@ export default function Home() {
     if (eventApps.length === 0 && candidateId) {
       const nextE = Array.from(new Set([...eventApps, candidateId]));
       try {
-        await saveFeaturedAppsToBlob(featuredApps, nextE);
+        await saveEventIds(nextE);
         setEventApps(nextE);
         setAllApps(prev => applyFeaturedFlags(prev, featuredApps, nextE));
       } catch (e) {
@@ -180,14 +180,10 @@ export default function Home() {
   // 데이터 리로드 핸들러 (Featured/Events 상태 변경 후 서버에서 최신 데이터 가져오기)
   const handleRefreshData = async () => {
     try {
-      const res = await fetch('/api/apps/featured', { method: 'GET', cache: 'no-store' });
-      if (!res.ok) {
-        console.warn('⚠️ Featured/Events 데이터 리로드 실패:', res.status);
-        return;
-      }
-      const data = await res.json(); // { featured: string[], events: string[] }
-      const f = Array.isArray(data.featured) ? data.featured : [];
-      const e = Array.isArray(data.events) ? data.events : [];
+      const [f, e] = await Promise.all([
+        loadFeaturedIds(),
+        loadEventIds()
+      ]);
       setFeaturedApps(f);
       setEventApps(e);
       // 🔑 allApps에도 즉시 주입
@@ -327,24 +323,24 @@ export default function Home() {
       if (data.appCategory === 'featured' || data.appCategory === 'events') {
         try {
           // 서버에서 최신 Featured/Events 세트 가져오기
-          const latestSets = await loadFeaturedAppsFromBlob();
-          console.log('📥 서버에서 최신 세트 가져옴:', latestSets);
+          const [currentFeatured, currentEvents] = await Promise.all([
+            loadFeaturedIds(),
+            loadEventIds()
+          ]);
+          console.log('📥 서버에서 최신 세트 가져옴:', { featured: currentFeatured, events: currentEvents });
           
-          let updatedFeatured = [...latestSets.featured];
-          let updatedEvents = [...latestSets.events];
+          let updatedFeatured = [...currentFeatured];
+          let updatedEvents = [...currentEvents];
           
           if (data.appCategory === 'featured') {
             updatedFeatured.push(newApp.id);
             console.log('⭐ Featured 배열에 추가:', updatedFeatured);
+            await saveFeaturedIds(updatedFeatured);
           } else if (data.appCategory === 'events') {
             updatedEvents.push(newApp.id);
             console.log('🎉 Events 배열에 추가:', updatedEvents);
+            await saveEventIds(updatedEvents);
           }
-          
-          // Featured/Events 세트 저장
-          console.log('💾 저장할 세트:', { featured: updatedFeatured, events: updatedEvents });
-          const saveResult = await saveFeaturedAppsToBlob(updatedFeatured, updatedEvents);
-          console.log('💾 저장 결과:', saveResult);
           
           // 상태 업데이트
           setFeaturedApps(updatedFeatured);
@@ -430,7 +426,10 @@ export default function Home() {
 
        // 6. Featured/Events Blob 동기화
        try {
-         await saveFeaturedAppsToBlob(newFeaturedApps, newEventApps);
+         await Promise.all([
+           saveFeaturedIds(newFeaturedApps),
+           saveEventIds(newEventApps)
+         ]);
        } catch (error) {
          // Featured/Events Blob 동기화 실패 무시
        }
@@ -511,13 +510,14 @@ export default function Home() {
           }
         }
 
-        // Featured Apps 로드 (Blob 우선, localStorage 폴백)
+        // Featured Apps 로드 (새로운 분리된 함수들 사용)
         if (isMounted) {
           try {
-            const sets = await loadFeaturedAppsFromBlob(); // { featured, events }
+            const [f, e] = await Promise.all([
+              loadFeaturedIds(),
+              loadEventIds()
+            ]);
             if (isMounted && myId === reqIdRef.current) {
-              const f = sets.featured ?? [];
-              const e = sets.events ?? [];
               setFeaturedApps(f);
               setEventApps(e);
               // 🔑 allApps에 플래그 주입 (allApps가 로드된 후에 실행됨)
@@ -525,7 +525,6 @@ export default function Home() {
             }
           } catch (error) {
             console.error('❌ Featured/Events 로드 오류:', error);
-            // (로컬 스토리지 폴백은 원래 로직대로 두셔도 됩니다)
             // localStorage 폴백
             const savedFeaturedApps = localStorage.getItem('featured-apps');
             if (savedFeaturedApps) {
