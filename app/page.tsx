@@ -622,8 +622,13 @@ export default function Home() {
           // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
           const validatedApps = await validateAppsImages(typeApps);
           console.log('🔍 이미지 검증 후 앱:', validatedApps.length, '개');
+          console.log('🔍 validateAppsImages 완료, isMounted:', isMounted);
           
-          if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
+          console.log('🔍 isMounted 상태 확인:', isMounted);
+          if (!isMounted) {
+            console.log('❌ 컴포넌트가 언마운트됨, setApps 중단');
+            return; // 컴포넌트가 언마운트되었으면 중단
+          }
           
           // 기존 앱들에 type 속성 추가
           const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
