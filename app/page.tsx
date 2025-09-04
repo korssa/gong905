@@ -292,15 +292,19 @@ export default function Home() {
         type: 'gallery', // 갤러리 앱 타입 명시
       };
 
-      // 앱 목록에 추가
-      const updatedApps = [newApp, ...allApps];
-      
-      // 통합된 저장 및 상태 업데이트 (비동기 경합 방지)
+      // 통합된 저장 및 상태 업데이트 (기존 데이터 보존)
       try {
-        const sanitizedApps = updatedApps.map(({ isFeatured: _, isEvent: __, ...rest }) => rest);
+        // 1. 기존 앱 데이터 로드 (오버라이트 방지)
+        const existingApps = await loadAppsByTypeFromBlob('gallery');
+        console.log('📥 기존 앱 데이터 로드:', existingApps.length);
         
-        // 1. 앱 저장
-        const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
+        // 2. 새 앱을 기존 데이터에 추가 (중복 방지)
+        const sanitizedNewApp = { ...newApp, isFeatured: undefined, isEvent: undefined };
+        const updatedApps = [sanitizedNewApp, ...existingApps];
+        console.log('➕ 새 앱 추가 후 총 앱 수:', updatedApps.length);
+        
+        // 3. 앱 저장 (기존 데이터 + 새 앱)
+        const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps);
         
         // 2. Featured/Events 저장 (카테고리가 있는 경우)
         let finalFeaturedApps = featuredApps;
@@ -381,9 +385,16 @@ export default function Home() {
        const newFeaturedApps = featuredApps.filter(appId => appId !== id);
        const newEventApps = eventApps.filter(appId => appId !== id);
        
-       // 4. 통합된 저장 및 상태 업데이트 (비동기 경합 방지)
+       // 4. 통합된 저장 및 상태 업데이트 (기존 데이터 보존)
        try {
-         const sanitizedApps = newApps.map(({ isFeatured, isEvent, ...rest }) => rest);
+         // 기존 앱 데이터 로드 (오버라이트 방지)
+         const existingApps = await loadAppsByTypeFromBlob('gallery');
+         console.log('📥 기존 앱 데이터 로드:', existingApps.length);
+         
+         // 삭제할 앱을 제외한 새 배열 생성
+         const sanitizedApps = existingApps.filter(app => app.id !== id);
+         console.log('🗑️ 앱 삭제 후 총 앱 수:', sanitizedApps.length);
+         
          const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
          
          // 5. 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
@@ -662,9 +673,19 @@ export default function Home() {
       const newApps = [...allApps];
       newApps[appIndex] = updatedApp;
 
-      // 통합된 저장 및 상태 업데이트 (비동기 경합 방지)
+      // 통합된 저장 및 상태 업데이트 (기존 데이터 보존)
       try {
-        const sanitizedApps = newApps.map(({ isFeatured, isEvent, ...rest }) => rest);
+        // 기존 앱 데이터 로드 (오버라이트 방지)
+        const existingApps = await loadAppsByTypeFromBlob('gallery');
+        console.log('📥 기존 앱 데이터 로드:', existingApps.length);
+        
+        // 수정된 앱으로 업데이트
+        const sanitizedUpdatedApp = { ...updatedApp, isFeatured: undefined, isEvent: undefined };
+        const sanitizedApps = existingApps.map(app => 
+          app.id === updatedApp.id ? sanitizedUpdatedApp : app
+        );
+        console.log('✏️ 앱 수정 후 총 앱 수:', sanitizedApps.length);
+        
         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
         
         // 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
