@@ -187,31 +187,17 @@ export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[]): Pr
  */
 export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; events: string[] }> {
   try {
-    // Vercel Blob에서 직접 로드
-    const response = await fetch('/api/data/featured-apps', { 
+    const response = await fetch('/api/apps/featured', {
       method: 'GET',
-      cache: 'no-store' // 캐시 무시하고 최신 데이터
+      cache: 'no-store',
     });
-    
-    if (!response.ok) {
-      console.error('❌ Featured/Events Blob 로드 실패:', response.status, response.statusText);
-      return { featured: [], events: [] };
-    }
-    
+    if (!response.ok) return { featured: [], events: [] };
     const data = await response.json();
-    
-    // 응답 데이터 구조 확인 - boolean 체크로 간단하게
-    if (data && typeof data === 'object') {
-      return {
-        featured: data.featured ? (Array.isArray(data.featured) ? data.featured : []) : [],
-        events: data.events ? (Array.isArray(data.events) ? data.events : []) : []
-      };
-    }
-    
-    console.warn('⚠️ Featured/Events Blob 응답 형식 오류:', data);
-    return { featured: [], events: [] };
-  } catch (error) {
-    console.error('❌ Featured/Events Blob 로드 오류:', error);
+    return {
+      featured: Array.isArray(data.featured) ? data.featured : [],
+      events: Array.isArray(data.events) ? data.events : [],
+    };
+  } catch {
     return { featured: [], events: [] };
   }
 }
@@ -221,27 +207,14 @@ export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; 
  */
 export async function saveFeaturedAppsToBlob(featured: string[], events: string[]): Promise<boolean> {
   try {
-    const response = await fetch('/api/data/featured-apps', {
+    const response = await fetch('/api/apps/featured', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        featured, 
-        events,
-        hasFeatured: featured.length > 0,
-        hasEvents: events.length > 0
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ featured, events }),
+      cache: 'no-store',
     });
-    
-    if (!response.ok) {
-      // Failed to save featured apps to blob
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    // Error saving featured apps to blob
+    return response.ok;
+  } catch {
     return false;
   }
 }
@@ -249,24 +222,25 @@ export async function saveFeaturedAppsToBlob(featured: string[], events: string[
 /**
  * 특정 앱의 Featured/Events 상태를 토글
  */
-export async function toggleFeaturedAppStatus(appId: string, type: 'featured' | 'events', action: 'add' | 'remove'): Promise<boolean> {
+export async function toggleFeaturedAppStatus(
+  appId: string,
+  type: 'featured' | 'events',
+  action: 'add' | 'remove'
+): Promise<{ featured: string[]; events: string[] } | null> {
   try {
     const response = await fetch('/api/apps/featured', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ appId, type, action }),
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ list: type, op: action, id: appId }),
+      cache: 'no-store',
     });
-    
-    if (!response.ok) {
-      // Failed to toggle type status for app
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    // Error toggling type status for app
-    return false;
+    if (!response.ok) return null;
+    const data = await response.json();
+    return {
+      featured: Array.isArray(data.featured) ? data.featured : [],
+      events: Array.isArray(data.events) ? data.events : [],
+    };
+  } catch {
+    return null;
   }
 }

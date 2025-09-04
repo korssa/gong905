@@ -1,109 +1,171 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { loadFeaturedAppsFromBlob, saveFeaturedAppsToBlob } from '@/lib/data-loader';
+import { put, list } from '@vercel/blob';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+// 런타임/캐시 설정
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
+// 상수
+const FEATURED_FILE_NAME = 'featured-apps.json';
+const LOCAL_FEATURED_PATH = path.join(process.cwd(), 'data', 'featured-apps.json');
+
+// 메모리 폴백
+let memoryFeatured: { featured: string[]; events: string[] } = { featured: [], events: [] };
+
+// 헬퍼 함수들
+type FeaturedSets = { featured: string[]; events: string[] };
+
+async function readFromBlobLatest(): Promise<FeaturedSets | null> {
+  const { blobs } = await list({ prefix: FEATURED_FILE_NAME, limit: 100 });
+  if (!blobs || blobs.length === 0) return null;
+
+  blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+  const latest = blobs[0];
+  const res = await fetch(latest.url, { cache: 'no-store' });
+  if (!res.ok) return null;
+
+  const json = await res.json();
+  const data: FeaturedSets = {
+    featured: Array.isArray(json?.featured) ? json.featured : [],
+    events: Array.isArray(json?.events) ? json.events : [],
+  };
+  return data;
+}
+
+async function writeBlobSets(sets: FeaturedSets): Promise<"blob" | "memory" | "local"> {
+  const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+  if (isProd) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await put(FEATURED_FILE_NAME, JSON.stringify(sets, null, 2), {
+          access: 'public',
+          contentType: 'application/json; charset=utf-8',
+          addRandomSuffix: false,
+        });
+        memoryFeatured = { ...sets };
+        return "blob";
+      } catch (e) {
+        if (attempt === 3) {
+          memoryFeatured = { ...sets };
+          return "memory";
+        }
+      }
+    }
+  }
+  
+  // 로컬 파일 저장
+  const dir = path.dirname(LOCAL_FEATURED_PATH);
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(LOCAL_FEATURED_PATH, JSON.stringify(sets, null, 2));
+  return "local";
+}
+
+async function readFromLocal(): Promise<FeaturedSets> {
+  try {
+    const data = await fs.readFile(LOCAL_FEATURED_PATH, 'utf-8');
+    return JSON.parse(data || '{"featured": [], "events": []}');
+  } catch {
+    return { featured: [], events: [] };
+  }
+}
 
 // GET: Featured/Events 앱 정보 조회
 export async function GET() {
   try {
-    const featured = await loadFeaturedAppsFromBlob();
-    
-    return NextResponse.json({
-      success: true,
-      featured: featured.featured,
-      events: featured.events,
-      count: {
-        featured: featured.featured.length,
-        events: featured.events.length
+    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+
+    if (isProd) {
+      try {
+        const data = await readFromBlobLatest();
+        if (data) {
+          memoryFeatured = { ...data };
+          return NextResponse.json(data, { headers: { 'Cache-Control': 'no-store' } });
+        }
+      } catch (error) {
+        console.warn('[Featured Blob] 조회 실패:', error);
       }
-    });
-  } catch (error) {
-    return NextResponse.json({ 
-      error: 'Featured 앱 정보 조회에 실패했습니다.',
-      details: error instanceof Error ? error.message : '알 수 없는 오류'
-    }, { status: 500 });
+      if (memoryFeatured.featured.length > 0 || memoryFeatured.events.length > 0) {
+        return NextResponse.json(memoryFeatured, { headers: { 'Cache-Control': 'no-store' } });
+      }
+      return NextResponse.json({ featured: [], events: [] }, { headers: { 'Cache-Control': 'no-store' } });
+    }
+
+    const local = await readFromLocal();
+    return NextResponse.json(local, { headers: { 'Cache-Control': 'no-store' } });
+  } catch {
+    return NextResponse.json({ featured: [], events: [] }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
   }
 }
 
-// POST: Featured/Events 앱 정보 업데이트
+// POST: 완전 세트 저장 전용
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { featured, events } = body;
-    
-    if (!Array.isArray(featured) || !Array.isArray(events)) {
-      return NextResponse.json({ error: 'featured와 events는 배열이어야 합니다.' }, { status: 400 });
+    const featured = Array.isArray(body?.featured) ? body.featured : null;
+    const events = Array.isArray(body?.events) ? body.events : null;
+
+    if (!featured || !events) {
+      return NextResponse.json(
+        { success: false, error: "Body must be { featured: string[], events: string[] }" },
+        { status: 400 }
+      );
     }
-    
-    const newFeatured = {
-      featured: featured,
-      events: events
-    };
-    
-    await saveFeaturedAppsToBlob(newFeatured.featured, newFeatured.events);
-    
-    return NextResponse.json({
-      success: true,
-      featured: featured,
-      events: events,
-      count: {
-        featured: featured.length,
-        events: events.length
-      }
-    });
+
+    const storage = await writeBlobSets({ featured, events });
+    return NextResponse.json({ success: true, storage }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-    return NextResponse.json({ 
-      error: 'Featured 앱 정보 업데이트에 실패했습니다.',
-      details: errorMessage
-    }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to save featured apps' }, { status: 500 });
   }
 }
 
-// PUT: 특정 앱의 Featured/Events 상태 토글
-export async function PUT(request: NextRequest) {
+// PATCH: 토글 지원 - add/remove 처리
+/** PATCH body: { list: 'featured' | 'events', op: 'add' | 'remove', id: string } */
+export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { appId, type, action } = body;
-    
-    if (!appId || !type || !action) {
-      return NextResponse.json({ error: 'appId, type, action이 필요합니다.' }, { status: 400 });
+    const list: 'featured' | 'events' = body?.list;
+    const op: 'add' | 'remove' = body?.op;
+    const id: string = body?.id;
+
+    if (!['featured', 'events'].includes(list) || !['add', 'remove'].includes(op) || !id) {
+      return NextResponse.json(
+        { success: false, error: "Body must be { list: 'featured'|'events', op: 'add'|'remove', id: string }" },
+        { status: 400 }
+      );
     }
-    
-    if (!['featured', 'events'].includes(type)) {
-      return NextResponse.json({ error: 'type은 featured 또는 events여야 합니다.' }, { status: 400 });
-    }
-    
-    if (!['add', 'remove'].includes(action)) {
-      return NextResponse.json({ error: 'action은 add 또는 remove여야 합니다.' }, { status: 400 });
-    }
-    
-    const currentFeatured = await loadFeaturedAppsFromBlob();
-    let updatedList: string[];
-    
-    if (action === 'add') {
-      updatedList = currentFeatured[type as keyof typeof currentFeatured].includes(appId) 
-        ? currentFeatured[type as keyof typeof currentFeatured]
-        : [...currentFeatured[type as keyof typeof currentFeatured], appId];
+
+    // 최신 세트 로드 (prod/blob → memory → local)
+    let sets: FeaturedSets | null = null;
+    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+    if (isProd) {
+      sets = await readFromBlobLatest();
+      if (!sets) sets = { ...memoryFeatured };
     } else {
-      updatedList = currentFeatured[type as keyof typeof currentFeatured].filter(id => id !== appId);
+      sets = await readFromLocal();
     }
-    
-    const newFeatured = {
-      ...currentFeatured,
-      [type]: updatedList
+    if (!sets) sets = { featured: [], events: [] };
+
+    const next: FeaturedSets = {
+      featured: Array.from(new Set(sets.featured)),
+      events: Array.from(new Set(sets.events)),
     };
-    
-    await saveFeaturedAppsToBlob(newFeatured.featured, newFeatured.events);
-    
-    return NextResponse.json({
-      success: true,
-      [type]: updatedList,
-      count: updatedList.length
-    });
+
+    const target = list === 'featured' ? next.featured : next.events;
+
+    if (op === 'add') {
+      if (!target.includes(id)) target.push(id);
+    } else {
+      const idx = target.indexOf(id);
+      if (idx >= 0) target.splice(idx, 1);
+    }
+
+    const storage = await writeBlobSets(next);
+    return NextResponse.json({ success: true, storage, ...next }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-    return NextResponse.json({ 
-      error: 'Featured 앱 상태 토글에 실패했습니다.',
-      details: errorMessage
-    }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to toggle featured/events' }, { status: 500 });
   }
 }

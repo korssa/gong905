@@ -199,26 +199,15 @@ export default function Home() {
     const isOn = featuredApps.includes(appId);
     const action = isOn ? 'remove' : 'add';
     try {
-      const ok = await toggleFeaturedAppStatus(appId, 'featured', action);
-      const next = isOn ? featuredApps.filter(id => id !== appId) : [...featuredApps, appId];
-
-      setFeaturedApps(next);
-      // 🔑 주입
-      setAllApps(prev => applyFeaturedFlags(prev, next, eventApps));
-
-      if (ok) {
-        const refreshed = await loadFeaturedAppsFromBlob();
-        const f = refreshed.featured ?? [];
-        const e = refreshed.events ?? [];
-        setFeaturedApps(f);
-        setEventApps(e);
-        setAllApps(prev => applyFeaturedFlags(prev, f, e));
+      const res = await toggleFeaturedAppStatus(appId, 'featured', action);
+      if (res) {
+        // 최신 세트 반영
+        setFeaturedApps(res.featured);
+        setEventApps(res.events);
+        setAllApps(prev => applyFeaturedFlags(prev, res.featured, res.events));
       }
     } catch (e) {
       console.error('❌ Featured 토글 오류:', e);
-      const next = isOn ? featuredApps.filter(id => id !== appId) : [...featuredApps, appId];
-      setFeaturedApps(next);
-      setAllApps(prev => applyFeaturedFlags(prev, next, eventApps));
     }
   };
 
@@ -227,26 +216,15 @@ export default function Home() {
     const isOn = eventApps.includes(appId);
     const action = isOn ? 'remove' : 'add';
     try {
-      const ok = await toggleFeaturedAppStatus(appId, 'events', action);
-      const next = isOn ? eventApps.filter(id => id !== appId) : [...eventApps, appId];
-
-      setEventApps(next);
-      // 🔑 주입
-      setAllApps(prev => applyFeaturedFlags(prev, featuredApps, next));
-
-      if (ok) {
-        const refreshed = await loadFeaturedAppsFromBlob();
-        const f = refreshed.featured ?? [];
-        const e = refreshed.events ?? [];
-        setFeaturedApps(f);
-        setEventApps(e);
-        setAllApps(prev => applyFeaturedFlags(prev, f, e));
+      const res = await toggleFeaturedAppStatus(appId, 'events', action);
+      if (res) {
+        // 최신 세트 반영
+        setFeaturedApps(res.featured);
+        setEventApps(res.events);
+        setAllApps(prev => applyFeaturedFlags(prev, res.featured, res.events));
       }
     } catch (e) {
       console.error('❌ Events 토글 오류:', e);
-      const next = isOn ? eventApps.filter(id => id !== appId) : [...eventApps, appId];
-      setEventApps(next);
-      setAllApps(prev => applyFeaturedFlags(prev, featuredApps, next));
     }
   };
 
