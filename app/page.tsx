@@ -461,8 +461,8 @@ export default function Home() {
               const e = sets.events ?? [];
               setFeaturedApps(f);
               setEventApps(e);
-              // 🔑 이미 setAllApps가 한 번 세팅되었다면, 거기에 플래그 주입
-              setAllApps(prev => (prev.length ? applyFeaturedFlags(prev, f, e) : prev));
+              // 🔑 allApps에 플래그 주입 (allApps가 로드된 후에 실행됨)
+              setAllApps(prev => applyFeaturedFlags(prev, f, e));
             }
           } catch (error) {
             console.error('❌ Featured/Events 로드 오류:', error);
@@ -500,6 +500,12 @@ export default function Home() {
     };
   }, []); // 의존성 배열을 빈 배열로 변경하여 한 번만 실행
 
+  // allApps가 로드된 후 Featured/Events 플래그 주입
+  useEffect(() => {
+    if (allApps.length > 0 && (featuredApps.length > 0 || eventApps.length > 0)) {
+      setAllApps(prev => applyFeaturedFlags(prev, featuredApps, eventApps));
+    }
+  }, [allApps.length, featuredApps, eventApps]);
 
   // 강제 데이터 새로고침 함수
   const forceRefreshGallery = async () => {
