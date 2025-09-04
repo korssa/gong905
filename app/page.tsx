@@ -369,14 +369,14 @@ export default function Home() {
         console.log(`✅ 새 앱 업로드 완료:`, newApp.id);
         console.log('🔄 최종 상태:', { 
           apps: saveResult.success ? saveResult.data?.length : updatedApps.length,
-          featured: finalFeaturedApps.length, 
-          events: finalEventApps.length 
+          featured: getFeaturedApps().length, 
+          events: getEventApps().length 
         });
         
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
         // 저장 실패시 로컬 상태만 업데이트
-        setAllApps(updatedApps);
+        setApps(updatedApps);
       }
       
       // 앱 업로드 및 저장 완료
