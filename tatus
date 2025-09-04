@@ -1,5 +1,5 @@
-[33m1070ab5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mkorssa/gongmyung[m[33m, [m[1;31morigin/korssa/gongmyung[m[33m)[m 뉴스 메모장 수정: isPublished 기본값 true로 설정, 관리자 권한별 콘텐츠 필터링 적용
-[33m74a893b[m 메모장 원본 형식 보존: 줄바꿈, 공백 등 원본 그대로 유지하도록 수정
-[33m7c5ed84[m app-story-viewer.tsx에 blockTranslationFeedback 함수 추가하여 빌드 오류 수정
-[33me2d70b5[m 메모장 콘텐츠에 번역 피드백 방지 추가
-[33m5746213[m 메모장 모든 뒤로가기 버튼들에 번역 피드백 방지 추가
+[33m0974a39[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31mgong448/main[m[33m)[m fix: Resolve all critical errors and add test data
+[33ma8efab1[m fix: Resolve TypeScript build errors
+[33m360bffd[m cleanup: Remove all console.log statements from entire project
+[33md37d212[m[33m ([m[1;31mgong444/main[m[33m)[m debug: Featured/Events 필터링 로그 상세 출력 추가
+[33m869e10d[m fix: TypeScript 에러 수정 - 불필요한 hasFeatured/hasEvents 필드 제거
