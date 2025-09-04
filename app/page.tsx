@@ -143,41 +143,17 @@ export default function Home() {
      window.scrollTo({ top: 0, behavior: 'smooth' });
    };
 
-  // Featured Apps 버튼 클릭 핸들러
-  const handleFeaturedAppsClick = async () => {
-    if (featuredApps.length === 0 && allApps.length > 0) {
-      const firstId = allApps[0].id;
-      const nextF = Array.from(new Set([...featuredApps, firstId]));
-      try {
-        await saveFeaturedIds(nextF);
-        setFeaturedApps(nextF);
-        // 플래그 주입은 통합된 useEffect에서 처리
-      } catch (e) {
-        console.error('❌ Featured 세트 저장 실패:', e);
-      }
-    }
+  // Featured Apps 버튼 클릭 핸들러 (자동 생성 제거)
+  const handleFeaturedAppsClick = () => {
+    // ❌ 자동 생성 로직 제거: featured가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("featured");
     setCurrentContentType(null);
     document.querySelector('main')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Events 버튼 클릭 핸들러
-  const handleEventsClick = async () => {
-    // 앱이 2개 미만이면 첫 번째라도 넣어주기 (안전가드)
-    const candidateId =
-      allApps[1]?.id ?? allApps[0]?.id; // 두 번째가 없으면 첫 번째
-
-    if (eventApps.length === 0 && candidateId) {
-      const nextE = Array.from(new Set([...eventApps, candidateId]));
-      try {
-        await saveEventIds(nextE);
-        setEventApps(nextE);
-        // 플래그 주입은 통합된 useEffect에서 처리
-      } catch (e) {
-        console.error('❌ Events 세트 저장 실패:', e);
-      }
-    }
-
+  // Events 버튼 클릭 핸들러 (자동 생성 제거)
+  const handleEventsClick = () => {
+    // ❌ 자동 생성 로직 제거: events가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("events");
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -188,6 +164,30 @@ export default function Home() {
     setCurrentFilter("normal");
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 수동 저장 핸들러 (관리자 전용)
+  const handleManualSave = async () => {
+    try {
+      console.log('🔒 수동 저장 시작:', { featured: featuredApps, events: eventApps });
+      
+      // Featured/Events 상태를 저장소에 저장
+      const [featuredResult, eventsResult] = await Promise.all([
+        saveFeaturedIds(featuredApps),
+        saveEventIds(eventApps)
+      ]);
+      
+      if (featuredResult.success && eventsResult.success) {
+        alert('✅ Featured/Events 상태가 저장되었습니다!');
+        console.log('🔒 수동 저장 완료');
+      } else {
+        alert('⚠️ 저장 중 일부 오류가 발생했습니다.');
+        console.error('❌ 수동 저장 실패:', { featured: featuredResult, events: eventsResult });
+      }
+    } catch (error) {
+      console.error('❌ 수동 저장 오류:', error);
+      alert('❌ 저장 중 오류가 발생했습니다.');
+    }
   };
 
   // 데이터 리로드 핸들러 (Featured/Events 상태 변경 후 서버에서 최신 데이터 가져오기)
@@ -327,33 +327,20 @@ export default function Home() {
         // 3. 앱 저장 (기존 데이터 + 새 앱)
         const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps);
         
-        // 2. Featured/Events 저장 (카테고리가 있는 경우)
+        // 2. Featured/Events 상태 업데이트 (로컬만, 자동 저장 제거)
         let finalFeaturedApps = featuredApps;
         let finalEventApps = eventApps;
         
         if (data.appCategory === 'featured' || data.appCategory === 'events') {
           console.log('🔍 카테고리 확인:', { appCategory: data.appCategory, appId: newApp.id });
           
-          // 서버에서 최신 Featured/Events 세트 가져오기
-          const [currentFeatured, currentEvents] = await Promise.all([
-            loadFeaturedIds(),
-            loadEventIds()
-          ]);
-          console.log('📥 서버에서 최신 세트 가져옴:', { featured: currentFeatured, events: currentEvents });
-          
-          const updatedFeatured = [...currentFeatured];
-          const updatedEvents = [...currentEvents];
-          
+          // ❌ 자동 저장 제거: 로컬 상태만 업데이트, 저장소에는 저장하지 않음
           if (data.appCategory === 'featured') {
-            updatedFeatured.push(newApp.id);
-            console.log('⭐ Featured 배열에 추가:', updatedFeatured);
-            const saveResult = await saveFeaturedIds(updatedFeatured);
-            finalFeaturedApps = saveResult.success && saveResult.data ? saveResult.data : updatedFeatured;
+            finalFeaturedApps = [...featuredApps, newApp.id];
+            console.log('⭐ Featured 로컬 상태에 추가 (저장 안함):', finalFeaturedApps);
           } else if (data.appCategory === 'events') {
-            updatedEvents.push(newApp.id);
-            console.log('🎉 Events 배열에 추가:', updatedEvents);
-            const saveResult = await saveEventIds(updatedEvents);
-            finalEventApps = saveResult.success && saveResult.data ? saveResult.data : updatedEvents;
+            finalEventApps = [...eventApps, newApp.id];
+            console.log('🎉 Events 로컬 상태에 추가 (저장 안함):', finalEventApps);
           }
         }
         
@@ -1191,6 +1178,17 @@ export default function Home() {
                      onMouseEnter={blockTranslationFeedback}
                    >
                      🎉 Events ({eventApps.length})
+                   </button>
+                 </div>
+                 
+                 {/* 수동 저장 버튼 */}
+                 <div className="flex justify-center">
+                   <button
+                     onClick={createAdminButtonHandler(handleManualSave)}
+                     className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 text-sm font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
+                     onMouseEnter={blockTranslationFeedback}
+                   >
+                     🔒 변경사항 저장
                    </button>
                  </div>
                  
