@@ -627,6 +627,7 @@ export default function Home() {
           
           // 기존 앱들에 type 속성 추가
           const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+          console.log('🔄 setApps 호출 전:', { appsWithType: appsWithType.length, currentApps: apps.length });
           setApps(appsWithType);
           localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
           console.log('💾 Blob 데이터를 localStorage에 저장 완료');
@@ -646,6 +647,7 @@ export default function Home() {
             
             // 기존 앱들에 type 속성 추가
             const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+            console.log('🔄 기존 API setApps 호출 전:', { appsWithType: appsWithType.length, currentApps: apps.length });
             setApps(appsWithType);
             localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
           } else {
@@ -724,6 +726,14 @@ export default function Home() {
       isMounted = false;
     };
   }, []); // 의존성 배열을 빈 배열로 변경하여 한 번만 실행
+
+  // apps 상태 변경 디버깅
+  useEffect(() => {
+    console.log('🔄 apps 상태 변경됨:', apps.length, '개');
+    if (apps.length > 0) {
+      console.log('📱 첫 번째 앱 정보:', { id: apps[0].id, name: apps[0].name });
+    }
+  }, [apps]);
 
   // 강제 데이터 새로고침 함수
   const forceRefreshGallery = async () => {
