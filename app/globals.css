@@ -1166,10 +1166,10 @@ body *[class*="goog-te-tooltip"]:not(.goog-te-combo):not(.goog-te-gadget):not(.g
 .shine-text {
   background-image: linear-gradient(
     110deg,
-    #fef3c7 0%,
-    #facc15 30%,
-    #fde68a 60%,
-    #fef3c7 100%
+    #ffffff 0%,
+    #f8fafc 30%,
+    #e2e8f0 60%,
+    #ffffff 100%
   );
   background-size: 200% auto;
   animation: shine 10s ease-in-out infinite;
