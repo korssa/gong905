@@ -821,7 +821,7 @@ export default function Home() {
            {/* 추가 번역 위젯 위치 옵션 - 타이틀 아래 */}
            {/* <div id="google_translate_element_main" className="mb-4"></div> */}
            
-           <p className="text-gray-300" onMouseEnter={blockTranslationFeedback}>
+           <p className="text-gray-300" translate="yes" onMouseEnter={blockTranslationFeedback}>
              {t("footerDescription")}
            </p>
          </div>
