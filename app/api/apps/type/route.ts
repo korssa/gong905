@@ -32,10 +32,23 @@ async function ensureDataFile() {
   }
 }
 
-// 앱 로드 (메모장 방식: Blob에서 직접 읽기)
+// 앱 로드 (로컬 파일 우선, Blob 폴백)
 async function loadApps(): Promise<AppItem[]> {
   try {
-    // Vercel 환경에서는 Blob에서 직접 읽기 (메모장 방식)
+    // 1) 먼저 로컬 파일에서 읽기 (개발/배포 환경 모두)
+    try {
+      await ensureDataFile();
+      const data = await fs.readFile(APPS_FILE_PATH, 'utf-8');
+      const apps = JSON.parse(data);
+      if (apps && apps.length > 0) {
+        console.log(`[Type API] 로컬 파일에서 ${apps.length}개 앱 로드`);
+        return apps;
+      }
+    } catch (error) {
+      console.log('[Type API] 로컬 파일 읽기 실패:', error);
+    }
+
+    // 2) Vercel 환경에서는 Blob에서 직접 읽기 (메모장 방식)
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       try {
         const { blobs } = await list({ prefix: 'apps.json', limit: 1 });
@@ -44,24 +57,31 @@ async function loadApps(): Promise<AppItem[]> {
           const response = await fetch(latest.url, { cache: 'no-store' });
           if (response.ok) {
             const data = await response.json();
+            console.log(`[Type API] Blob에서 ${data.length}개 앱 로드`);
             // 메모리도 업데이트 (동기화)
             memoryStorage = data;
             return data;
           }
         }
         // Blob에서 읽기 실패시 메모리 사용
-        return memoryStorage;
+        if (memoryStorage.length > 0) {
+          console.log(`[Type API] 메모리에서 ${memoryStorage.length}개 앱 로드`);
+          return memoryStorage;
+        }
       } catch (blobError) {
+        console.log('[Type API] Blob 에러:', blobError);
         // Blob 에러시 메모리 사용
-        return memoryStorage;
+        if (memoryStorage.length > 0) {
+          console.log(`[Type API] 메모리에서 ${memoryStorage.length}개 앱 로드`);
+          return memoryStorage;
+        }
       }
     }
     
-    // 로컬 환경에서는 파일에서 로드
-    await ensureDataFile();
-    const data = await fs.readFile(APPS_FILE_PATH, 'utf-8');
-    return JSON.parse(data);
+    console.log('[Type API] 모든 로드 방법 실패, 빈 배열 반환');
+    return [];
   } catch (error) {
+    console.error('[Type API] loadApps 오류:', error);
     return [];
   }
 }
