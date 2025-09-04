@@ -97,18 +97,27 @@ export async function POST(request: NextRequest) {
       memoryApps = [...apps];
       
       if (blobSaved) {
-        return NextResponse.json({ success: true, storage: 'blob' });
+        return NextResponse.json({ 
+          success: true, 
+          storage: 'blob',
+          data: apps // 최종 저장된 데이터 반환
+        });
       } else {
         return NextResponse.json({ 
           success: true, 
           storage: 'memory', 
+          data: apps, // 최종 저장된 데이터 반환
           warning: 'Blob save failed after 3 attempts; using in-memory fallback' 
         });
       }
     }
     // 로컬 파일 저장
     await writeToLocal(apps);
-    return NextResponse.json({ success: true, storage: 'local' });
+    return NextResponse.json({ 
+      success: true, 
+      storage: 'local',
+      data: apps // 최종 저장된 데이터 반환
+    });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to save apps' }, { status: 500 });
   }

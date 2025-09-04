@@ -145,7 +145,7 @@ export default function Home() {
       try {
         await saveFeaturedIds(nextF);
         setFeaturedApps(nextF);
-        setAllApps(prev => applyFeaturedFlags(prev, nextF, eventApps));
+        // 플래그 주입은 통합된 useEffect에서 처리
       } catch (e) {
         console.error('❌ Featured 세트 저장 실패:', e);
       }
@@ -166,7 +166,7 @@ export default function Home() {
       try {
         await saveEventIds(nextE);
         setEventApps(nextE);
-        setAllApps(prev => applyFeaturedFlags(prev, featuredApps, nextE));
+        // 플래그 주입은 통합된 useEffect에서 처리
       } catch (e) {
         console.error('❌ Events 세트 저장 실패:', e);
       }
@@ -186,8 +186,7 @@ export default function Home() {
       ]);
       setFeaturedApps(f);
       setEventApps(e);
-      // 🔑 allApps에도 즉시 주입
-      setAllApps(prev => applyFeaturedFlags(prev, f, e));
+      // 플래그 주입은 통합된 useEffect에서 처리
     } catch (error) {
       console.error('❌ Featured/Events 데이터 리로드 오류:', error);
     }
@@ -206,7 +205,7 @@ export default function Home() {
         // 최신 세트 반영
         setFeaturedApps(res.featured);
         setEventApps(res.events);
-        setAllApps(prev => applyFeaturedFlags(prev, res.featured, res.events));
+        // 플래그 주입은 통합된 useEffect에서 처리
         console.log(`[Client] Featured 상태 업데이트 완료:`, JSON.stringify({ featured: res.featured, events: res.events }, null, 2));
       } else {
         // 실패 시 최신 세트 다시 로드
@@ -231,7 +230,7 @@ export default function Home() {
         // 최신 세트 반영
         setFeaturedApps(res.featured);
         setEventApps(res.events);
-        setAllApps(prev => applyFeaturedFlags(prev, res.featured, res.events));
+        // 플래그 주입은 통합된 useEffect에서 처리
         console.log(`[Client] Events 상태 업데이트 완료:`, JSON.stringify({ featured: res.featured, events: res.events }, null, 2));
       } else {
         // 실패 시 최신 세트 다시 로드
@@ -299,16 +298,15 @@ export default function Home() {
       // 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
       try {
         const sanitizedApps = updatedApps.map(({ isFeatured: _, isEvent: __, ...rest }) => rest);
-        await saveAppsByTypeToBlob('gallery', sanitizedApps);
+        const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
         
-        // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
-        const refreshedApps = await loadAppsByTypeFromBlob('gallery');
-        if (refreshedApps.length > 0) {
-          setAllApps(refreshedApps); // Single source update
+        if (saveResult.success && saveResult.data) {
+          // API 응답에서 최종 저장된 데이터로 즉시 UI 업데이트
+          setAllApps(saveResult.data);
           // 앱 목록 동기화 완료
         } else {
-          // Blob에서 로드 실패시 로컬 상태만 업데이트
-          setAllApps(updatedApps); // Single source update
+          // 저장 실패시 로컬 상태만 업데이트
+          setAllApps(updatedApps);
           // 앱 목록 업데이트 완료
         }
       } catch (error) {
@@ -345,7 +343,7 @@ export default function Home() {
           // 상태 업데이트
           setFeaturedApps(updatedFeatured);
           setEventApps(updatedEvents);
-          setAllApps(prev => applyFeaturedFlags(prev, updatedFeatured, updatedEvents));
+          // 플래그 주입은 통합된 useEffect에서 처리
           
           console.log(`✅ 새 앱이 ${data.appCategory}에 자동 추가됨:`, newApp.id);
           console.log('🔄 상태 업데이트 완료:', { featured: updatedFeatured, events: updatedEvents });
@@ -383,16 +381,15 @@ export default function Home() {
        // 4. 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
        try {
          const sanitizedApps = newApps.map(({ isFeatured, isEvent, ...rest }) => rest);
-         await saveAppsByTypeToBlob('gallery', sanitizedApps);
+         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
          
-         // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
-         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
-         if (refreshedApps.length > 0) {
-           setAllApps(refreshedApps); // Single source update
+         if (saveResult.success && saveResult.data) {
+           // API 응답에서 최종 저장된 데이터로 즉시 UI 업데이트
+           setAllApps(saveResult.data);
            // 앱 목록 동기화 완료
          } else {
-           // Blob에서 로드 실패시 로컬 상태만 업데이트
-           setAllApps(newApps); // Single source update
+           // 저장 실패시 로컬 상태만 업데이트
+           setAllApps(newApps);
            // 앱 목록 업데이트 완료
          }
        } catch (error) {
@@ -520,8 +517,7 @@ export default function Home() {
             if (isMounted && myId === reqIdRef.current) {
               setFeaturedApps(f);
               setEventApps(e);
-              // 🔑 allApps에 플래그 주입 (allApps가 로드된 후에 실행됨)
-              setAllApps(prev => applyFeaturedFlags(prev, f, e));
+              // 플래그 주입은 통합된 useEffect에서 처리
             }
           } catch (error) {
             console.error('❌ Featured/Events 로드 오류:', error);
@@ -558,12 +554,18 @@ export default function Home() {
     };
   }, []); // 의존성 배열을 빈 배열로 변경하여 한 번만 실행
 
-  // allApps가 로드된 후 Featured/Events 플래그 주입
+  // 통합된 상태 동기화: allApps, featuredApps, eventApps가 모두 준비되면 한 번에 플래그 주입
   useEffect(() => {
-    if (allApps.length > 0 && (featuredApps.length > 0 || eventApps.length > 0)) {
-      setAllApps(prev => applyFeaturedFlags(prev, featuredApps, eventApps));
+    if (allApps.length > 0) {
+      // 플래그가 있는 경우에만 주입 (중복 호출 방지)
+      const hasFeaturedFlags = allApps.some(app => app.isFeatured !== undefined || app.isEvent !== undefined);
+      const needsFlagInjection = (featuredApps.length > 0 || eventApps.length > 0) && !hasFeaturedFlags;
+      
+      if (needsFlagInjection) {
+        setAllApps(prev => applyFeaturedFlags(prev, featuredApps, eventApps));
+      }
     }
-  }, [allApps.length, featuredApps, eventApps]);
+  }, [allApps, featuredApps, eventApps]);
 
   // Featured/Events 매핑 검증 (개발 모드에서만)
   useEffect(() => {
@@ -656,17 +658,17 @@ export default function Home() {
       // 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
       try {
         const sanitizedApps = newApps.map(({ isFeatured, isEvent, ...rest }) => rest);
-        await saveAppsByTypeToBlob('gallery', sanitizedApps);
+        const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
         
-        // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
-        const refreshedApps = await loadAppsByTypeFromBlob('gallery');
-        if (refreshedApps.length > 0) {
-          setAllApps(refreshedApps);
+        if (saveResult.success && saveResult.data) {
+          // API 응답에서 최종 저장된 데이터로 즉시 UI 업데이트
+          setAllApps(saveResult.data);
           // 앱 목록 동기화 완료
         } else {
-          // Blob에서 로드 실패시 로컬 상태만 업데이트
+          // 저장 실패시 로컬 상태만 업데이트
           setAllApps(newApps);
           // 앱 목록 업데이트 완료
+          alert("⚠️ App updated but cloud synchronization failed.");
         }
       } catch (error) {
         console.error('글로벌 저장 실패:', error);

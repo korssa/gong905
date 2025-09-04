@@ -160,7 +160,7 @@ export async function loadAppsByTypeFromBlob(type: 'gallery'): Promise<AppItem[]
 /**
  * 타입별로 갤러리 앱을 분리해서 저장
  */
-export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[]): Promise<boolean> {
+export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[]): Promise<{ success: boolean; data?: AppItem[] }> {
   try {
     const response = await fetch(`/api/apps/type?type=${type}`, {
       method: 'POST',
@@ -171,14 +171,16 @@ export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[]): Pr
     });
     
     if (!response.ok) {
-      // Failed to save type apps to blob
-      return false;
+      return { success: false };
     }
     
-    return true;
+    const result = await response.json();
+    return { 
+      success: true, 
+      data: result.data || apps // API 응답에서 최종 데이터 반환
+    };
   } catch (error) {
-    // Error saving type apps to blob
-    return false;
+    return { success: false };
   }
 }
 
