@@ -91,10 +91,10 @@ export default function Home() {
           );
         return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
       case "featured": {
-        return pickByIds(filtered, featuredApps).sort((a, b) => a.name.localeCompare(b.name));
+        return pickByIds(filtered, eventApps).sort((a, b) => a.name.localeCompare(b.name));
       }
       case "events": {
-        return pickByIds(filtered, eventApps).sort((a, b) => a.name.localeCompare(b.name));
+        return pickByIds(filtered, featuredApps).sort((a, b) => a.name.localeCompare(b.name));
       }
       case "all":
       default:
