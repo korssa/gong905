@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppCard } from "./app-card";
 import { AppItem, AppStore } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
+import { blockTranslationFeedback } from "@/lib/translation-utils";
 
 interface AppGalleryProps {
   apps: AppItem[];
@@ -125,10 +126,10 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AppStore)} className="w-full">
         <div className="flex justify-center mb-6">
           <TabsList className="grid grid-cols-2 w-96" style={{ backgroundColor: '#9EA5B1' }}>
-          <TabsTrigger value="google-play" className="flex items-center gap-2">
+          <TabsTrigger value="google-play" className="flex items-center gap-2" translate="yes" onMouseEnter={blockTranslationFeedback}>
             {t("googlePlay")} ({googlePlayApps.length})
           </TabsTrigger>
-          <TabsTrigger value="app-store" className="flex items-center gap-2">
+          <TabsTrigger value="app-store" className="flex items-center gap-2" translate="yes" onMouseEnter={blockTranslationFeedback}>
             {t("appStore")} ({appStoreApps.length})
           </TabsTrigger>
           </TabsList>
