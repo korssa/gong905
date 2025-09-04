@@ -208,11 +208,13 @@ export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; 
     const data = await response.json();
     console.log('📊 Featured/Events Blob 응답:', data);
     
-    // 응답 데이터 구조 확인
+    // 응답 데이터 구조 확인 - boolean 체크 필드 추가
     if (data && typeof data === 'object') {
       return {
-        featured: Array.isArray(data.featured) ? data.featured : [],
-        events: Array.isArray(data.events) ? data.events : []
+        featured: data.featured ? (Array.isArray(data.featured) ? data.featured : []) : [],
+        events: data.events ? (Array.isArray(data.events) ? data.events : []) : [],
+        hasFeatured: !!data.featured && data.featured.length > 0,
+        hasEvents: !!data.events && data.events.length > 0
       };
     }
     
@@ -234,7 +236,12 @@ export async function saveFeaturedAppsToBlob(featured: string[], events: string[
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ featured, events }),
+      body: JSON.stringify({ 
+        featured, 
+        events,
+        hasFeatured: featured.length > 0,
+        hasEvents: events.length > 0
+      }),
     });
     
     if (!response.ok) {

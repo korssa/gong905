@@ -22,6 +22,8 @@ export interface AppItem {
   size?: string;
   category?: string;
   type?: 'gallery'; // 갤러리 앱 타입 구분을 위한 속성
+  isFeatured?: boolean; // Featured 앱 여부
+  isEvent?: boolean; // Event 앱 여부
 }
 
 export interface AppFormData {

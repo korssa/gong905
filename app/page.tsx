@@ -101,14 +101,16 @@ export default function Home() {
       try {
         const blobApps = await loadAppsByTypeFromBlob('gallery');
         if (blobApps.length > 0) {
-          const firstAppId = blobApps[0].id;
-          const newFeatured = [firstAppId];
-          setFeaturedApps(newFeatured);
-          localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
+          // 첫 번째 앱에 isFeatured: true 설정
+          const updatedApps = blobApps.map((app, index) => ({
+            ...app,
+            isFeatured: index === 0,
+            isEvent: app.isEvent || false
+          }));
           
-          // Vercel Blob에도 저장
-          const blobResult = await saveFeaturedAppsToBlob(newFeatured, eventApps);
-          console.log('💾 Featured Apps Blob 저장 결과:', blobResult);
+          // 업데이트된 앱들을 Blob에 저장
+          await saveAppsByTypeToBlob('gallery', updatedApps);
+          console.log('💾 Featured Apps boolean 필드 업데이트 완료');
         }
       } catch (error) {
         console.error('❌ Featured Apps 설정 실패:', error);
@@ -151,14 +153,16 @@ export default function Home() {
       try {
         const blobApps = await loadAppsByTypeFromBlob('gallery');
         if (blobApps.length > 1) {
-          const secondAppId = blobApps[1].id;
-          const newEvents = [secondAppId];
-          setEventApps(newEvents);
-          localStorage.setItem('event-apps', JSON.stringify(newEvents));
+          // 두 번째 앱에 isEvent: true 설정
+          const updatedApps = blobApps.map((app, index) => ({
+            ...app,
+            isFeatured: app.isFeatured || false,
+            isEvent: index === 1
+          }));
           
-          // Vercel Blob에도 저장
-          const blobResult = await saveFeaturedAppsToBlob(featuredApps, newEvents);
-          console.log('💾 Events Apps Blob 저장 결과:', blobResult);
+          // 업데이트된 앱들을 Blob에 저장
+          await saveAppsByTypeToBlob('gallery', updatedApps);
+          console.log('💾 Events Apps boolean 필드 업데이트 완료');
         }
       } catch (error) {
         console.error('❌ Events 설정 실패:', error);
@@ -428,22 +432,20 @@ export default function Home() {
         case "featured":
           console.log('🔍 Featured 필터링:', {
             totalApps: filteredApps.length,
-            featuredApps: featuredApps,
-            featuredCount: featuredApps.length,
-            filteredResult: filteredApps.filter(app => featuredApps.includes(app.id))
+            featuredCount: filteredApps.filter(app => app.isFeatured).length,
+            filteredResult: filteredApps.filter(app => app.isFeatured)
           });
           return filteredApps
-            .filter(app => featuredApps.includes(app.id))
+            .filter(app => app.isFeatured)
             .sort((a, b) => a.name.localeCompare(b.name));
         case "events":
           console.log('🔍 Events 필터링:', {
             totalApps: filteredApps.length,
-            eventApps: eventApps,
-            eventCount: eventApps.length,
-            filteredResult: filteredApps.filter(app => eventApps.includes(app.id))
+            eventCount: filteredApps.filter(app => app.isEvent).length,
+            filteredResult: filteredApps.filter(app => app.isEvent)
           });
           return filteredApps
-            .filter(app => eventApps.includes(app.id))
+            .filter(app => app.isEvent)
             .sort((a, b) => a.name.localeCompare(b.name));
         case "all":
         default:
