@@ -211,6 +211,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
       size: "50MB",
       category: "",
       storeUrl: "",
+      appCategory: "normal",
     });
   };
 

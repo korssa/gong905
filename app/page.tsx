@@ -256,6 +256,7 @@ export default function Home() {
    };
 
   const handleAppUpload = async (data: AppFormData, files: { icon: File; screenshots: File[] }) => {
+    console.log('📤 앱 업로드 시작:', { name: data.name, appCategory: data.appCategory });
     try {
       // 아이콘/스크린샷 파일 업로드 (Vercel Blob 우선)
       const iconUrl = await uploadFile(files.icon, "icon");
@@ -312,6 +313,7 @@ export default function Home() {
       }
 
       // 카테고리에 따라 Featured/Events에 자동 추가
+      console.log('🔍 카테고리 확인:', { appCategory: data.appCategory, appId: newApp.id });
       if (data.appCategory === 'featured' || data.appCategory === 'events') {
         try {
           const currentFeatured = [...featuredApps];
