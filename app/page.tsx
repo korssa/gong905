@@ -306,22 +306,23 @@ export default function Home() {
       };
 
       // 통합된 저장 및 상태 업데이트 (기존 데이터 보존)
+      // 1. 기존 앱 데이터 로드 (오버라이트 방지)
+      const existingApps = await loadAppsByTypeFromBlob('gallery');
+      console.log('📥 기존 앱 데이터 로드:', existingApps.length);
+      
+      // 2. 새 앱을 기존 데이터에 추가 (카테고리 정보 포함)
+      const sanitizedNewApp = { 
+        ...newApp, 
+        isFeatured: undefined, 
+        isEvent: undefined,
+        // 카테고리 정보를 앱 데이터에 포함 (통합 관리용)
+        appCategory: data.appCategory 
+      };
+      const updatedApps = [sanitizedNewApp, ...existingApps];
+      console.log('➕ 새 앱 추가 후 총 앱 수:', updatedApps.length);
+      console.log('📋 앱 카테고리:', data.appCategory);
+      
       try {
-        // 1. 기존 앱 데이터 로드 (오버라이트 방지)
-        const existingApps = await loadAppsByTypeFromBlob('gallery');
-        console.log('📥 기존 앱 데이터 로드:', existingApps.length);
-        
-        // 2. 새 앱을 기존 데이터에 추가 (카테고리 정보 포함)
-        const sanitizedNewApp = { 
-          ...newApp, 
-          isFeatured: undefined, 
-          isEvent: undefined,
-          // 카테고리 정보를 앱 데이터에 포함 (통합 관리용)
-          appCategory: data.appCategory 
-        };
-        const updatedApps = [sanitizedNewApp, ...existingApps];
-        console.log('➕ 새 앱 추가 후 총 앱 수:', updatedApps.length);
-        console.log('📋 앱 카테고리:', data.appCategory);
         
         // 3. 앱 저장 (기존 데이터 + 새 앱)
         const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps);
