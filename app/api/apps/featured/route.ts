@@ -53,18 +53,10 @@ async function writeBlobSets(sets: FeaturedSets): Promise<"blob" | "memory" | "l
       } catch (e) {
         console.error(`[Blob] 저장 실패 (시도 ${attempt}):`, e);
         if (attempt === 3) {
-          // Blob 저장 실패 시 메모리 + 로컬 파일 저장
+          // Blob 저장 실패 시 메모리만 사용 (Vercel 파일시스템은 읽기전용)
           memoryFeatured = { ...sets };
-          try {
-            const dir = path.dirname(LOCAL_FEATURED_PATH);
-            await fs.mkdir(dir, { recursive: true });
-            await fs.writeFile(LOCAL_FEATURED_PATH, JSON.stringify(sets, null, 2));
-            console.log('[Local] Vercel 환경에서 로컬 파일 저장 성공');
-            return "local";
-          } catch (localError) {
-            console.error('[Local] 로컬 파일 저장 실패:', localError);
-            return "memory";
-          }
+          console.log('[Memory] Vercel 환경에서 메모리 저장 사용');
+          return "memory";
         }
       }
     }
@@ -102,16 +94,7 @@ export async function GET() {
         console.warn('[Featured Blob] 조회 실패:', error);
       }
       
-      // Blob 실패 시 로컬 파일 시도
-      try {
-        const localData = await readFromLocal();
-        if (localData.featured.length > 0 || localData.events.length > 0) {
-          memoryFeatured = { ...localData };
-          return NextResponse.json(localData, { headers: { 'Cache-Control': 'no-store' } });
-        }
-      } catch (localError) {
-        console.warn('[Featured Local] 로컬 파일 조회 실패:', localError);
-      }
+      // Vercel 환경에서는 로컬 파일 읽기 제거 (읽기전용 파일시스템)
       
       // 메모리 폴백
       if (memoryFeatured.featured.length > 0 || memoryFeatured.events.length > 0) {
@@ -170,13 +153,8 @@ export async function PATCH(request: NextRequest) {
     if (isProd) {
       sets = await readFromBlobLatest();
       if (!sets) {
-        // Blob 실패 시 로컬 파일 시도
-        try {
-          sets = await readFromLocal();
-        } catch (localError) {
-          console.warn('[PATCH] 로컬 파일 조회 실패:', localError);
-          sets = { ...memoryFeatured };
-        }
+        // Vercel 환경에서는 메모리 폴백만 사용
+        sets = { ...memoryFeatured };
       }
     } else {
       sets = await readFromLocal();
