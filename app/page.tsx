@@ -326,29 +326,33 @@ export default function Home() {
       console.log('🔍 카테고리 확인:', { appCategory: data.appCategory, appId: newApp.id });
       if (data.appCategory === 'featured' || data.appCategory === 'events') {
         try {
-          const currentFeatured = [...featuredApps];
-          const currentEvents = [...eventApps];
+          // 서버에서 최신 Featured/Events 세트 가져오기
+          const latestSets = await loadFeaturedAppsFromBlob();
+          console.log('📥 서버에서 최신 세트 가져옴:', latestSets);
+          
+          let updatedFeatured = [...latestSets.featured];
+          let updatedEvents = [...latestSets.events];
           
           if (data.appCategory === 'featured') {
-            currentFeatured.push(newApp.id);
-            console.log('⭐ Featured 배열에 추가:', currentFeatured);
+            updatedFeatured.push(newApp.id);
+            console.log('⭐ Featured 배열에 추가:', updatedFeatured);
           } else if (data.appCategory === 'events') {
-            currentEvents.push(newApp.id);
-            console.log('🎉 Events 배열에 추가:', currentEvents);
+            updatedEvents.push(newApp.id);
+            console.log('🎉 Events 배열에 추가:', updatedEvents);
           }
           
           // Featured/Events 세트 저장
-          console.log('💾 저장할 세트:', { featured: currentFeatured, events: currentEvents });
-          const saveResult = await saveFeaturedAppsToBlob(currentFeatured, currentEvents);
+          console.log('💾 저장할 세트:', { featured: updatedFeatured, events: updatedEvents });
+          const saveResult = await saveFeaturedAppsToBlob(updatedFeatured, updatedEvents);
           console.log('💾 저장 결과:', saveResult);
           
           // 상태 업데이트
-          setFeaturedApps(currentFeatured);
-          setEventApps(currentEvents);
-          setAllApps(prev => applyFeaturedFlags(prev, currentFeatured, currentEvents));
+          setFeaturedApps(updatedFeatured);
+          setEventApps(updatedEvents);
+          setAllApps(prev => applyFeaturedFlags(prev, updatedFeatured, updatedEvents));
           
           console.log(`✅ 새 앱이 ${data.appCategory}에 자동 추가됨:`, newApp.id);
-          console.log('🔄 상태 업데이트 완료:', { featured: currentFeatured, events: currentEvents });
+          console.log('🔄 상태 업데이트 완료:', { featured: updatedFeatured, events: updatedEvents });
         } catch (error) {
           console.error(`❌ ${data.appCategory} 자동 추가 실패:`, error);
         }
