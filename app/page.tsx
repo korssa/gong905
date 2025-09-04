@@ -1118,8 +1118,8 @@ export default function Home() {
             </div>
             
             {/* 이미지 바로 밑 슬로건 및 Since 2025 */}
-            <div className="text-center mt-4">
-              <p className="text-lg font-medium text-amber-400 mb-2" translate="yes">
+            <div className="text-center mt-0">
+              <p className="text-lg font-medium text-amber-400 mb-1" translate="yes">
                 &quot;We&apos;re just. that kind of group!&quot;
               </p>
               <p className="text-sm text-gray-400 notranslate" translate="no" style={{translate: 'no'}}>
