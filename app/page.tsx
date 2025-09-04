@@ -647,6 +647,7 @@ export default function Home() {
             currentApps: apps.length,
             isMounted: isMounted 
           });
+          console.log('🔍 setApps 호출 후 스택 트레이스:', new Error().stack);
         } else {
           console.log('⚠️ Blob에 타입별 데이터 없음, 기존 API 시도...');
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
@@ -748,6 +749,7 @@ export default function Home() {
   // apps 상태 변경 디버깅
   useEffect(() => {
     console.log('🔄 apps 상태 변경됨:', apps.length, '개', new Date().toISOString());
+    console.log('🔍 apps 상태 변경 스택 트레이스:', new Error().stack);
     if (apps.length > 0) {
       console.log('📱 첫 번째 앱 정보:', { id: apps[0].id, name: apps[0].name });
     }
