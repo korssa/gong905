@@ -14,7 +14,6 @@ import { EditAppDialog } from "@/components/edit-app-dialog";
 import { AdminUploadDialog } from "@/components/admin-upload-dialog";
 import { SnowAnimation } from "@/components/snow-animation";
 import { MailForm } from "@/components/mail-form";
-import { GradientSlogan } from "@/components/gradient-slogan";
 // ContentManager is imported in other files; not used directly here.
 import { AppStoryList } from "@/components/app-story-list";
 import { NewsList } from "@/components/news-list";
@@ -814,8 +813,6 @@ export default function Home() {
              </span>
            </h1>
            
-           {/* 차분하고 고급스러운 우측 흐름의 그라디언트 애니메이션 슬로건 */}
-           <GradientSlogan />
            
            <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3 mt-0">
              <span className="notranslate" translate="no">PRESENT</span>
@@ -1122,7 +1119,7 @@ export default function Home() {
             
             {/* 이미지 바로 밑 슬로건 및 Since 2025 */}
             <div className="text-center mt-4">
-              <p className="text-lg font-medium text-amber-400 mb-2 notranslate" translate="no" style={{translate: 'no'}}>
+              <p className="text-lg font-medium text-amber-400 mb-2" translate="yes">
                 &quot;We&apos;re just. that kind of group!&quot;
               </p>
               <p className="text-sm text-gray-400 notranslate" translate="no" style={{translate: 'no'}}>
