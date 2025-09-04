@@ -1036,7 +1036,7 @@ export default function Home() {
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
                                                                                                                                                                                                                                <div>
-                                                                                                                                                <h4 className="font-medium mb-3 text-amber-400 text-base notranslate" translate="no" style={{translate: 'no'}}>Exhibition</h4>
+                                                                                                                                                <h4 className="font-medium mb-3 text-amber-400 text-base" translate="yes" onMouseEnter={blockTranslationFeedback}>{t("exhibition")}</h4>
                    <div className="space-y-3">
                                                                                           <button 
                           onClick={(e) => handleFooterLinkClick(handleAllAppsClick, e)} 
@@ -1044,8 +1044,8 @@ export default function Home() {
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group notranslate"
                           translate="no"
                         >
-                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors" onMouseEnter={blockTranslationFeedback}>All Apps</div>
-                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" onMouseEnter={blockTranslationFeedback}>See everything we&apos;ve made</div>
+                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>{t("allApps")}</div>
+                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>{t("seeEverything")}</div>
                        </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleNewReleasesClick, e)} 
@@ -1075,7 +1075,7 @@ export default function Home() {
                 </div>
 
                                                                             <div>
-                                                                                                                                                                       <h4 className="font-medium mb-3 text-amber-400 text-base notranslate" translate="no" style={{translate: 'no'}}>For You</h4>
+                                                                                                                                                                       <h4 className="font-medium mb-3 text-amber-400 text-base" translate="yes" onMouseEnter={blockTranslationFeedback}>{t("forYou")}</h4>
                    <div className="space-y-3">
                                                                                                                    <button 
                            onClick={(e) => handleFooterLinkClick(handleAppStoryClick, e)} 

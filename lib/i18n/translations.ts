@@ -68,6 +68,16 @@ export const translations = {
     settings: "Settings",
     copyright: "© 2025 gongmyung.com. All rights reserved.",
     
+    // Footer Sections
+    exhibition: "Exhibition",
+    forYou: "For You",
+    seeEverything: "See everything we've made",
+    justLaunched: "Just launched",
+    recommendedPicks: "Recommended picks",
+    discountsViaEmail: "Discounts via email",
+    appStory: "App Story",
+    howItWasMade: "How it was made",
+    
     // Messages
     noAppsYet: "No apps yet",
     firstAppMessage: "Upload your first app to get started!",
@@ -147,6 +157,16 @@ export const translations = {
     myApps: "내 앱",
     settings: "설정",
     copyright: "© 2025 gongmyung.com. 모든 권리 보유.",
+    
+    // Footer Sections
+    exhibition: "전시회",
+    forYou: "당신을 위해",
+    seeEverything: "우리가 만든 모든 것을 보세요",
+    justLaunched: "방금 출시됨",
+    recommendedPicks: "추천 선택",
+    discountsViaEmail: "이메일 할인",
+    appStory: "앱 스토리",
+    howItWasMade: "어떻게 만들어졌는지",
     
     // Messages
     noAppsYet: "아직 앱이 없습니다",
