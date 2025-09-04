@@ -278,13 +278,12 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
     <div className="flex items-center gap-2">
       <Button 
         size={buttonProps?.size || "default"}
-        className={buttonProps?.className || "gap-2"}
+        className={`${buttonProps?.className || "gap-2"} notranslate`}
         onClick={() => {
           setIsOpen(true);
         }}
         onMouseEnter={blockTranslationFeedback}
         translate="no"
-        style={{translate: 'no'}}
       >
         <Upload className="h-4 w-4" />
         {buttonText || adminTexts.upload}
