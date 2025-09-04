@@ -140,7 +140,10 @@ export async function PATCH(request: NextRequest) {
     const op: 'add' | 'remove' = body?.op;
     const id: string = body?.id;
 
+    console.log(`[PATCH] 요청 받음: ${list} ${op} ${id}`);
+
     if (!['featured', 'events'].includes(list) || !['add', 'remove'].includes(op) || !id) {
+      console.error(`[PATCH] 잘못된 요청:`, { list, op, id });
       return NextResponse.json(
         { success: false, error: "Body must be { list: 'featured'|'events', op: 'add'|'remove', id: string }" },
         { status: 400 }
@@ -161,6 +164,8 @@ export async function PATCH(request: NextRequest) {
     }
     if (!sets) sets = { featured: [], events: [] };
 
+    console.log(`[PATCH] 현재 세트:`, sets);
+
     const next: FeaturedSets = {
       featured: Array.from(new Set(sets.featured)),
       events: Array.from(new Set(sets.events)),
@@ -169,13 +174,27 @@ export async function PATCH(request: NextRequest) {
     const target = list === 'featured' ? next.featured : next.events;
 
     if (op === 'add') {
-      if (!target.includes(id)) target.push(id);
+      if (!target.includes(id)) {
+        target.push(id);
+        console.log(`[PATCH] ${list}에 ${id} 추가됨`);
+      } else {
+        console.log(`[PATCH] ${list}에 ${id} 이미 존재함`);
+      }
     } else {
       const idx = target.indexOf(id);
-      if (idx >= 0) target.splice(idx, 1);
+      if (idx >= 0) {
+        target.splice(idx, 1);
+        console.log(`[PATCH] ${list}에서 ${id} 제거됨`);
+      } else {
+        console.log(`[PATCH] ${list}에 ${id} 존재하지 않음`);
+      }
     }
 
+    console.log(`[PATCH] 업데이트된 세트:`, next);
+
     const storage = await writeBlobSets(next);
+    console.log(`[PATCH] 저장 결과:`, storage);
+    
     return NextResponse.json({ success: true, storage, ...next }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to toggle featured/events' }, { status: 500 });

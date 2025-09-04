@@ -198,13 +198,16 @@ export default function Home() {
   const handleToggleFeatured = async (appId: string) => {
     const isOn = featuredApps.includes(appId);
     const action = isOn ? 'remove' : 'add';
+    console.log(`[Client] Featured 토글 시도: ${appId} ${action}`);
     try {
       const res = await toggleFeaturedAppStatus(appId, 'featured', action);
+      console.log(`[Client] Featured 토글 응답:`, res);
       if (res) {
         // 최신 세트 반영
         setFeaturedApps(res.featured);
         setEventApps(res.events);
         setAllApps(prev => applyFeaturedFlags(prev, res.featured, res.events));
+        console.log(`[Client] Featured 상태 업데이트 완료:`, { featured: res.featured, events: res.events });
       }
     } catch (e) {
       console.error('❌ Featured 토글 오류:', e);
@@ -215,13 +218,16 @@ export default function Home() {
   const handleToggleEvent = async (appId: string) => {
     const isOn = eventApps.includes(appId);
     const action = isOn ? 'remove' : 'add';
+    console.log(`[Client] Events 토글 시도: ${appId} ${action}`);
     try {
       const res = await toggleFeaturedAppStatus(appId, 'events', action);
+      console.log(`[Client] Events 토글 응답:`, res);
       if (res) {
         // 최신 세트 반영
         setFeaturedApps(res.featured);
         setEventApps(res.events);
         setAllApps(prev => applyFeaturedFlags(prev, res.featured, res.events));
+        console.log(`[Client] Events 상태 업데이트 완료:`, { featured: res.featured, events: res.events });
       }
     } catch (e) {
       console.error('❌ Events 토글 오류:', e);
