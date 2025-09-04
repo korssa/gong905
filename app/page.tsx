@@ -821,7 +821,7 @@ export default function Home() {
            {/* 추가 번역 위젯 위치 옵션 - 타이틀 아래 */}
            {/* <div id="google_translate_element_main" className="mb-4"></div> */}
            
-           <p className="text-gray-300">
+           <p className="text-gray-300" onMouseEnter={blockTranslationFeedback}>
              {t("footerDescription")}
            </p>
          </div>
@@ -938,7 +938,7 @@ export default function Home() {
                            </button>
                            
                            {/* 스토어 배지 이미지 */}
-                           <div className="h-7 flex items-center">
+                           <div className="h-7 flex items-center" onMouseEnter={blockTranslationFeedback}>
                              {latestApp.store === "google-play" ? (
                                <Image 
                                    src="/google-play-badge.png" 
@@ -947,6 +947,7 @@ export default function Home() {
                                    height={28}
                                    unoptimized={isBlobUrl('/google-play-badge.png')}
                                    className="h-7 object-contain"
+                                   onMouseEnter={blockTranslationFeedback}
                                  />
                              ) : (
                                <Image 
@@ -956,6 +957,7 @@ export default function Home() {
                                  height={28}
                                  unoptimized={isBlobUrl('/app-store-badge.png')}
                                  className="h-7 object-contain"
+                                 onMouseEnter={blockTranslationFeedback}
                                />
                              )}
                            </div>
@@ -1039,7 +1041,8 @@ export default function Home() {
                                                                                           <button 
                           onClick={(e) => handleFooterLinkClick(handleAllAppsClick, e)} 
                           onMouseEnter={blockTranslationFeedback}
-                          className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
+                          className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group notranslate"
+                          translate="no"
                         >
                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors" onMouseEnter={blockTranslationFeedback}>All Apps</div>
                          <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" onMouseEnter={blockTranslationFeedback}>See everything we&apos;ve made</div>
@@ -1118,11 +1121,11 @@ export default function Home() {
             </div>
             
             {/* 이미지 바로 밑 슬로건 및 Since 2025 */}
-            <div className="text-center mt-0">
-              <p className="text-lg font-medium text-amber-400 mb-1" translate="yes">
+            <div className="text-center mt-0" onMouseEnter={blockTranslationFeedback}>
+              <p className="text-lg font-medium text-amber-400 mb-1" translate="yes" onMouseEnter={blockTranslationFeedback}>
                 &quot;We&apos;re just. that kind of group!&quot;
               </p>
-              <p className="text-sm text-gray-400 notranslate" translate="no" style={{translate: 'no'}}>
+              <p className="text-sm text-gray-400 notranslate" translate="no" style={{translate: 'no'}} onMouseEnter={blockTranslationFeedback}>
                 — Since 2025
               </p>
             </div>
