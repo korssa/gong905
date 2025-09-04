@@ -89,7 +89,8 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    // localStorage 기반 앱 데이터는 클라이언트에서 처리되므로
+    // 글로벌 저장소에서 앱 데이터 삭제 처리
+    // 클라이언트에서 이미 글로벌 저장소에 업데이트된 데이터를 저장했으므로
     // 서버에서는 파일 삭제만 처리하고 성공 응답 반환
 
     const result = {

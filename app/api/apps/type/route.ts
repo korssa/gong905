@@ -186,11 +186,8 @@ export async function POST(request: NextRequest) {
     // 메모리 저장소 업데이트
     memoryStorage = validApps;
 
-    // 로컬 환경에서는 파일에도 저장
-    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-      await ensureDataFile();
-      await fs.writeFile(APPS_FILE_PATH, JSON.stringify(validApps, null, 2));
-    }
+    // 로컬 환경에서도 글로벌 저장소 우선 사용 (로컬 파일 저장 제거)
+    // 로컬 파일 저장을 제거하여 글로벌에만 전달되도록 함
 
     // Vercel 환경에서는 Blob 동기화 확인 (메모장 방식)
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {

@@ -22,13 +22,12 @@ import { NewsList } from "@/components/news-list";
 import { AppItem, AppFormData, FilterType, ContentType } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
-import { saveFileToLocal, generateUniqueId } from "@/lib/file-utils";
+import { generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
 import { uploadFile, deleteFile } from "@/lib/storage-adapter";
-import { loadAppsFromBlob, saveAppsToBlob, loadFeaturedAppsFromBlob, saveFeaturedAppsToBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, saveAppsByTypeToBlob } from "@/lib/data-loader";
+import { loadAppsFromBlob, loadFeaturedAppsFromBlob, saveFeaturedAppsToBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, saveAppsByTypeToBlob } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 
 const isBlobUrl = (url?: string) => {
   return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
@@ -323,22 +322,27 @@ export default function Home() {
 
       // 앱 목록에 추가
       const updatedApps = [newApp, ...apps];
-      setApps(updatedApps);
       
-      // 메모장 방식: 타입별 분리된 Blob Storage에 저장
+      // 글로벌 저장소에 먼저 저장 (서버 우선)
       try {
         await saveAppsByTypeToBlob('gallery', updatedApps);
         
-        // 저장 후 즉시 Blob에서 다시 로드 (메모장 방식)
+        // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
         if (refreshedApps.length > 0) {
           setApps(refreshedApps);
           localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
+        } else {
+          // Blob에서 로드 실패시 로컬 상태만 업데이트
+          setApps(updatedApps);
+          localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
         }
-      } catch {}
-      
-      // 캐시용 localStorage 업데이트
-      localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
+      } catch (error) {
+        console.error('글로벌 저장 실패:', error);
+        // 글로벌 저장 실패시 로컬 상태만 업데이트
+        setApps(updatedApps);
+        localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
+      }
       
       // 앱 업로드 및 저장 완료
       alert("✅ App uploaded successfully!");
@@ -366,13 +370,30 @@ export default function Home() {
        const newFeaturedApps = featuredApps.filter(appId => appId !== id);
        const newEventApps = eventApps.filter(appId => appId !== id);
        
-       // 4. React 상태 업데이트 (순서 중요!)
-       setApps(newApps);  // 먼저 앱 목록 업데이트
-       setFeaturedApps(newFeaturedApps);  // 그 다음 Featured 업데이트
-       setEventApps(newEventApps);  // 마지막 Events 업데이트
+       // 4. 글로벌 저장소에 먼저 저장 (서버 우선)
+       try {
+         await saveAppsByTypeToBlob('gallery', newApps);
+         
+         // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
+         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
+         if (refreshedApps.length > 0) {
+           setApps(refreshedApps);
+           localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
+         } else {
+           // Blob에서 로드 실패시 로컬 상태만 업데이트
+           setApps(newApps);
+           localStorage.setItem('gallery-apps', JSON.stringify(newApps));
+         }
+       } catch (error) {
+         console.error('글로벌 저장 실패:', error);
+         // 글로벌 저장 실패시 로컬 상태만 업데이트
+         setApps(newApps);
+         localStorage.setItem('gallery-apps', JSON.stringify(newApps));
+       }
 
-       // 4. localStorage 업데이트 (순서 중요!)
-       localStorage.setItem('gallery-apps', JSON.stringify(newApps));
+       // 5. Featured/Events 상태 업데이트
+       setFeaturedApps(newFeaturedApps);
+       setEventApps(newEventApps);
        localStorage.setItem('featured-apps', JSON.stringify(newFeaturedApps));
        localStorage.setItem('event-apps', JSON.stringify(newEventApps));
 
@@ -393,38 +414,18 @@ export default function Home() {
          }
        }
 
-                // 6. 메모장 방식: 타입별 분리된 Blob Storage에 저장
-         let blobSyncSuccess = false;
-         try {
-           const blobResult = await saveAppsByTypeToBlob('gallery', newApps);
-           blobSyncSuccess = blobResult;
-           
-           // 저장 후 즉시 Blob에서 다시 로드 (메모장 방식)
-           if (blobResult) {
-             const refreshedApps = await loadAppsByTypeFromBlob('gallery');
-             if (refreshedApps.length === 0) {
-               // 삭제가 반영된 경우 - 빈 배열로 설정하지 않고 기존 상태 유지
-               console.log('⚠️ Blob 동기화 후 앱이 0개 - 기존 상태 유지');
-               localStorage.setItem('gallery-apps', JSON.stringify([]));
-             }
-           }
-         } catch (error) {
-           // Blob 동기화 실패 무시
-         }
-
-       // 7. Featured/Events Blob 동기화
+       // 6. Featured/Events Blob 동기화
        try {
          await saveFeaturedAppsToBlob(newFeaturedApps, newEventApps);
        } catch (error) {
          // Featured/Events Blob 동기화 실패 무시
        }
 
-              // 8. 삭제 완료 확인
-        if (blobSyncSuccess) {
-          // Blob 동기화 후 잠시 기다린 후 다시 로드 (동기화 지연 해결)
-          setTimeout(async () => {
-            try {
-              const updatedBlobApps = await loadAppsFromBlob();
+       // 7. 삭제 완료 확인
+       // Blob 동기화 후 잠시 기다린 후 다시 로드 (동기화 지연 해결)
+       setTimeout(async () => {
+         try {
+           const updatedBlobApps = await loadAppsFromBlob();
               
               if (updatedBlobApps && updatedBlobApps.length === 0) {
                 // Blob 동기화 완료
@@ -437,7 +438,6 @@ export default function Home() {
               // Blob 재확인 실패 무시
             }
           }, 1000); // 1초 대기
-        }
        
      } catch (error) {
        // 실패시 UI 상태 복원
@@ -607,15 +607,15 @@ export default function Home() {
       updatedApp.storeUrl = data.storeUrl || undefined;
       updatedApp.tags = data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
 
-      // 새 아이콘이 있으면 업데이트
+      // 새 아이콘이 있으면 업데이트 (글로벌 저장소 사용)
       if (files?.icon) {
-        updatedApp.iconUrl = await saveFileToLocal(files.icon, "icon");
+        updatedApp.iconUrl = await uploadFile(files.icon, "icon");
       }
 
-      // 새 스크린샷이 있으면 업데이트
+      // 새 스크린샷이 있으면 업데이트 (글로벌 저장소 사용)
       if (files?.screenshots && files.screenshots.length > 0) {
         const newScreenshotUrls = await Promise.all(
-          files.screenshots.map(file => saveFileToLocal(file, "screenshot"))
+          files.screenshots.map(file => uploadFile(file, "screenshot"))
         );
         updatedApp.screenshotUrls = newScreenshotUrls;
       }
@@ -623,24 +623,28 @@ export default function Home() {
       // 앱 목록 업데이트
       const newApps = [...apps];
       newApps[appIndex] = updatedApp;
-      setApps(newApps);
 
-      // localStorage에 저장
-      localStorage.setItem('gallery-apps', JSON.stringify(newApps));
-
-                           // 메모장 방식: 타입별 분리된 Blob Storage에 저장
-        try {
-          await saveAppsByTypeToBlob('gallery', newApps);
-          
-          // 저장 후 즉시 Blob에서 다시 로드 (메모장 방식)
-          const refreshedApps = await loadAppsByTypeFromBlob('gallery');
-          if (refreshedApps.length > 0) {
-            setApps(refreshedApps);
-            localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
-          }
-        } catch (error) {
-          alert("⚠️ App updated but cloud synchronization failed.");
+      // 글로벌 저장소에 먼저 저장 (서버 우선)
+      try {
+        await saveAppsByTypeToBlob('gallery', newApps);
+        
+        // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
+        const refreshedApps = await loadAppsByTypeFromBlob('gallery');
+        if (refreshedApps.length > 0) {
+          setApps(refreshedApps);
+          localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
+        } else {
+          // Blob에서 로드 실패시 로컬 상태만 업데이트
+          setApps(newApps);
+          localStorage.setItem('gallery-apps', JSON.stringify(newApps));
         }
+      } catch (error) {
+        console.error('글로벌 저장 실패:', error);
+        // 글로벌 저장 실패시 로컬 상태만 업데이트
+        setApps(newApps);
+        localStorage.setItem('gallery-apps', JSON.stringify(newApps));
+        alert("⚠️ App updated but cloud synchronization failed.");
+      }
 
              setEditingApp(null);
        // 앱 업데이트 및 저장 완료

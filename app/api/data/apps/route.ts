@@ -89,8 +89,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, storage: 'memory', warning: 'Blob save failed; using in-memory fallback' });
       }
     }
-    await writeToLocal(apps);
-    return NextResponse.json({ success: true });
+    // 로컬 파일 저장 제거 - 글로벌에만 전달되도록 함
+    // await writeToLocal(apps);
+    return NextResponse.json({ success: true, storage: 'global-only' });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to save apps' }, { status: 500 });
   }
