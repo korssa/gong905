@@ -295,31 +295,20 @@ export default function Home() {
       // 앱 목록에 추가
       const updatedApps = [newApp, ...allApps];
       
-      // 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
+      // 통합된 저장 및 상태 업데이트 (비동기 경합 방지)
       try {
         const sanitizedApps = updatedApps.map(({ isFeatured: _, isEvent: __, ...rest }) => rest);
+        
+        // 1. 앱 저장
         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
         
-        if (saveResult.success && saveResult.data) {
-          // API 응답에서 최종 저장된 데이터로 즉시 UI 업데이트
-          setAllApps(saveResult.data);
-          // 앱 목록 동기화 완료
-        } else {
-          // 저장 실패시 로컬 상태만 업데이트
-          setAllApps(updatedApps);
-          // 앱 목록 업데이트 완료
-        }
-      } catch (error) {
-        console.error('글로벌 저장 실패:', error);
-        // 글로벌 저장 실패시 로컬 상태만 업데이트
-        setAllApps(updatedApps); // Single source update
-        // 앱 목록 업데이트 완료
-      }
-
-      // 카테고리에 따라 Featured/Events에 자동 추가
-      console.log('🔍 카테고리 확인:', { appCategory: data.appCategory, appId: newApp.id });
-      if (data.appCategory === 'featured' || data.appCategory === 'events') {
-        try {
+        // 2. Featured/Events 저장 (카테고리가 있는 경우)
+        let finalFeaturedApps = featuredApps;
+        let finalEventApps = eventApps;
+        
+        if (data.appCategory === 'featured' || data.appCategory === 'events') {
+          console.log('🔍 카테고리 확인:', { appCategory: data.appCategory, appId: newApp.id });
+          
           // 서버에서 최신 Featured/Events 세트 가져오기
           const [currentFeatured, currentEvents] = await Promise.all([
             loadFeaturedIds(),
@@ -334,22 +323,36 @@ export default function Home() {
             updatedFeatured.push(newApp.id);
             console.log('⭐ Featured 배열에 추가:', updatedFeatured);
             await saveFeaturedIds(updatedFeatured);
+            finalFeaturedApps = updatedFeatured;
           } else if (data.appCategory === 'events') {
             updatedEvents.push(newApp.id);
             console.log('🎉 Events 배열에 추가:', updatedEvents);
             await saveEventIds(updatedEvents);
+            finalEventApps = updatedEvents;
           }
-          
-          // 상태 업데이트
-          setFeaturedApps(updatedFeatured);
-          setEventApps(updatedEvents);
-          // 플래그 주입은 통합된 useEffect에서 처리
-          
-          console.log(`✅ 새 앱이 ${data.appCategory}에 자동 추가됨:`, newApp.id);
-          console.log('🔄 상태 업데이트 완료:', { featured: updatedFeatured, events: updatedEvents });
-        } catch (error) {
-          console.error(`❌ ${data.appCategory} 자동 추가 실패:`, error);
         }
+        
+        // 3. 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
+        if (saveResult.success && saveResult.data) {
+          setAllApps(saveResult.data);
+        } else {
+          setAllApps(updatedApps);
+        }
+        
+        setFeaturedApps(finalFeaturedApps);
+        setEventApps(finalEventApps);
+        
+        console.log(`✅ 새 앱 업로드 완료:`, newApp.id);
+        console.log('🔄 최종 상태:', { 
+          apps: saveResult.success ? saveResult.data?.length : updatedApps.length,
+          featured: finalFeaturedApps.length, 
+          events: finalEventApps.length 
+        });
+        
+      } catch (error) {
+        console.error('글로벌 저장 실패:', error);
+        // 저장 실패시 로컬 상태만 업데이트
+        setAllApps(updatedApps);
       }
       
       // 앱 업로드 및 저장 완료
@@ -378,31 +381,35 @@ export default function Home() {
        const newFeaturedApps = featuredApps.filter(appId => appId !== id);
        const newEventApps = eventApps.filter(appId => appId !== id);
        
-       // 4. 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
+       // 4. 통합된 저장 및 상태 업데이트 (비동기 경합 방지)
        try {
          const sanitizedApps = newApps.map(({ isFeatured, isEvent, ...rest }) => rest);
          const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
          
+         // 5. 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
          if (saveResult.success && saveResult.data) {
-           // API 응답에서 최종 저장된 데이터로 즉시 UI 업데이트
            setAllApps(saveResult.data);
-           // 앱 목록 동기화 완료
          } else {
-           // 저장 실패시 로컬 상태만 업데이트
            setAllApps(newApps);
-           // 앱 목록 업데이트 완료
          }
+         
+         setFeaturedApps(newFeaturedApps);
+         setEventApps(newEventApps);
+         
+         console.log(`✅ 앱 삭제 완료:`, id);
+         console.log('🔄 최종 상태:', { 
+           apps: saveResult.success ? saveResult.data?.length : newApps.length,
+           featured: newFeaturedApps.length, 
+           events: newEventApps.length 
+         });
+         
        } catch (error) {
          console.error('글로벌 저장 실패:', error);
-         // 글로벌 저장 실패시 로컬 상태만 업데이트
-         setAllApps(newApps); // Single source update
-         // 앱 목록 업데이트 완료
+         // 저장 실패시 로컬 상태만 업데이트
+         setAllApps(newApps);
+         setFeaturedApps(newFeaturedApps);
+         setEventApps(newEventApps);
        }
-
-       // 5. Featured/Events 상태 업데이트
-       setFeaturedApps(newFeaturedApps);
-       setEventApps(newEventApps);
-       // Featured/Events 상태 업데이트 완료
 
        // 5. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
        if (appToDelete.iconUrl) {
@@ -655,26 +662,28 @@ export default function Home() {
       const newApps = [...allApps];
       newApps[appIndex] = updatedApp;
 
-      // 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
+      // 통합된 저장 및 상태 업데이트 (비동기 경합 방지)
       try {
         const sanitizedApps = newApps.map(({ isFeatured, isEvent, ...rest }) => rest);
         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
         
+        // 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
         if (saveResult.success && saveResult.data) {
-          // API 응답에서 최종 저장된 데이터로 즉시 UI 업데이트
           setAllApps(saveResult.data);
-          // 앱 목록 동기화 완료
         } else {
-          // 저장 실패시 로컬 상태만 업데이트
           setAllApps(newApps);
-          // 앱 목록 업데이트 완료
           alert("⚠️ App updated but cloud synchronization failed.");
         }
+        
+        console.log(`✅ 앱 수정 완료:`, updatedApp.id);
+        console.log('🔄 최종 상태:', { 
+          apps: saveResult.success ? saveResult.data?.length : newApps.length
+        });
+        
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
-        // 글로벌 저장 실패시 로컬 상태만 업데이트
+        // 저장 실패시 로컬 상태만 업데이트
         setAllApps(newApps);
-        // 앱 목록 업데이트 완료
         alert("⚠️ App updated but cloud synchronization failed.");
       }
 
