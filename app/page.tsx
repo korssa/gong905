@@ -298,7 +298,7 @@ export default function Home() {
       
       // 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
       try {
-        const sanitizedApps = updatedApps.map(({ isFeatured, isEvent, ...rest }) => rest);
+        const sanitizedApps = updatedApps.map(({ isFeatured: _, isEvent: __, ...rest }) => rest);
         await saveAppsByTypeToBlob('gallery', sanitizedApps);
         
         // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
@@ -329,8 +329,8 @@ export default function Home() {
           ]);
           console.log('📥 서버에서 최신 세트 가져옴:', { featured: currentFeatured, events: currentEvents });
           
-          let updatedFeatured = [...currentFeatured];
-          let updatedEvents = [...currentEvents];
+          const updatedFeatured = [...currentFeatured];
+          const updatedEvents = [...currentEvents];
           
           if (data.appCategory === 'featured') {
             updatedFeatured.push(newApp.id);
