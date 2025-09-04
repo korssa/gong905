@@ -514,9 +514,13 @@ export default function Home() {
         if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
         
         if (typeApps.length > 0) {
+          console.log('📱 타입별 앱 로드 성공:', typeApps.length, '개');
+          
           // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
           const validatedApps = await validateAppsImages(typeApps);
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
+          
+          console.log('✅ 이미지 검증 완료:', validatedApps.length, '개');
           
           // Featured/Events 플래그 주입
           const [featuredIds, eventIds] = await Promise.all([
@@ -526,9 +530,17 @@ export default function Home() {
           
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
+          console.log('🏷️ 플래그 로드 완료:', { featured: featuredIds.length, events: eventIds.length });
+          
           // 기존 앱들에 type 속성과 Featured/Events 플래그 추가
           const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
           const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
+          
+          console.log('🎯 최종 앱 데이터:', appsWithType.length, '개', {
+            featured: appsWithType.filter(a => a.isFeatured).length,
+            events: appsWithType.filter(a => a.isEvent).length
+          });
+          
           setApps(appsWithType); // 전역 스토어 업데이트
         } else {
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
@@ -537,9 +549,13 @@ export default function Home() {
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
           if (blobApps && blobApps.length > 0) {
+            console.log('📱 Blob 앱 로드 성공:', blobApps.length, '개');
+            
             const validatedApps = await validateAppsImages(blobApps);
             
             if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
+            
+            console.log('✅ 이미지 검증 완료 (fallback):', validatedApps.length, '개');
             
             // Featured/Events 플래그 주입
             const [featuredIds, eventIds] = await Promise.all([
@@ -549,9 +565,17 @@ export default function Home() {
             
             if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
             
+            console.log('🏷️ 플래그 로드 완료 (fallback):', { featured: featuredIds.length, events: eventIds.length });
+            
             // 기존 앱들에 type 속성과 Featured/Events 플래그 추가
             const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
             const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
+            
+            console.log('🎯 최종 앱 데이터 (fallback):', appsWithType.length, '개', {
+              featured: appsWithType.filter(a => a.isFeatured).length,
+              events: appsWithType.filter(a => a.isEvent).length
+            });
+            
             setApps(appsWithType); // 전역 스토어 업데이트
           } else {
             // Keep existing state - don't reset to empty array
@@ -575,6 +599,16 @@ export default function Home() {
       isMounted = false;
     };
   }, [setApps]); // setApps 의존성 추가
+
+  // 전역 스토어 상태 변화 로깅
+  useEffect(() => {
+    console.log('🔄 전역 스토어 상태 변화:', {
+      totalApps: allApps.length,
+      featuredApps: getFeaturedApps().length,
+      eventApps: getEventApps().length,
+      normalApps: getNormalApps().length
+    });
+  }, [allApps, getFeaturedApps, getEventApps, getNormalApps]);
 
   // Featured/Events 매핑 검증 (개발 모드에서만)
   useEffect(() => {
