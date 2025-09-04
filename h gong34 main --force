@@ -1,0 +1,5 @@
+[33mb005b38[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31mgong34/main[m[33m)[m Featured/Events 글로벌 상태 전파 수정: 갤러리 앱 데이터에 플래그 반영 및 동기화 개선
+[33md4e7adb[m[33m ([m[1;31morigin/main[m[33m)[m 탭 번역 피드백 방지: Google Play Store, App Store 탭에 번역 피드백 방지 적용
+[33me17c580[m 풋터 번역 적용: All Apps, Exhibition, For You 텍스트 번역 및 번역 피드백 방지
+[33m3d09ec6[m[33m ([m[1;31mgong77/main[m[33m)[m Fix: PRESENT 아래 설명에 번역 허용 및 번역피드백 방지 추가
+[33m4c64601[m Fix: 갤러리 탭 스토어 버튼과 풋터 모든 요소에 번역피드백 방지 추가
