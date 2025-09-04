@@ -44,13 +44,17 @@ export function AdminCardActionsDialog({
     setLocalEvent(isEvent);
   }, [isFeatured, isEvent]);
 
-  // 로컬 상태 동기화 - 현재 상태와 반대로 토글
+  // 해제만 가능하도록 수정 - 현재 상태가 true일 때만 false로 변경 가능
   const handleToggleFeatured = () => {
-    setLocalFeatured(!localFeatured);
+    if (localFeatured) {
+      setLocalFeatured(false);
+    }
   };
 
   const handleToggleEvent = () => {
-    setLocalEvent(!localEvent);
+    if (localEvent) {
+      setLocalEvent(false);
+    }
   };
 
   // 저장 버튼 클릭 시 트리거 실행 (최적화된 버전)
@@ -126,7 +130,7 @@ export function AdminCardActionsDialog({
             <Badge variant="secondary">{app.status}</Badge>
           </DialogTitle>
           <DialogDescription onMouseEnter={blockTranslationFeedback}>
-            앱의 Featured 및 Event 상태를 관리하고 편집/삭제할 수 있습니다.
+            앱의 Featured 및 Event 상태를 해제하고 편집/삭제할 수 있습니다. (추가는 푸터 버튼으로만 가능)
           </DialogDescription>
         </DialogHeader>
         
@@ -145,29 +149,39 @@ export function AdminCardActionsDialog({
             <p className="text-sm text-gray-700">{app.description}</p>
           </div>
 
-          {/* 상태 토글 버튼들 */}
+          {/* 상태 해제 버튼들 (해제만 가능) */}
           <div className="grid grid-cols-2 gap-3">
             <Button
               variant={localFeatured ? "destructive" : "secondary"}
               onClick={handleToggleFeatured}
-              className={`h-12 flex flex-col items-center gap-1 ${localFeatured ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+              disabled={!localFeatured}
+              className={`h-12 flex flex-col items-center gap-1 ${
+                localFeatured 
+                  ? 'bg-red-500 hover:bg-red-600' 
+                  : 'bg-gray-300 cursor-not-allowed'
+              }`}
               onMouseEnter={blockTranslationFeedback}
             >
-              <Heart className={`h-5 w-5 ${localFeatured ? 'fill-current text-white' : ''}`} />
-              <span className="text-xs text-white">
-                {localFeatured ? 'Featured 해제' : 'Featured 설정'}
+              <Heart className={`h-5 w-5 ${localFeatured ? 'fill-current text-white' : 'text-gray-500'}`} />
+              <span className={`text-xs ${localFeatured ? 'text-white' : 'text-gray-500'}`}>
+                {localFeatured ? 'Featured 해제' : 'Featured 없음'}
               </span>
             </Button>
             
             <Button
               variant={localEvent ? "destructive" : "secondary"}
               onClick={handleToggleEvent}
-              className={`h-12 flex flex-col items-center gap-1 ${localEvent ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+              disabled={!localEvent}
+              className={`h-12 flex flex-col items-center gap-1 ${
+                localEvent 
+                  ? 'bg-yellow-500 hover:bg-yellow-600' 
+                  : 'bg-gray-300 cursor-not-allowed'
+              }`}
               onMouseEnter={blockTranslationFeedback}
             >
-              <Star className={`h-5 w-5 ${localEvent ? 'fill-current text-white' : ''}`} />
-              <span className="text-xs text-white">
-                {localEvent ? 'Event 해제' : 'Event 설정'}
+              <Star className={`h-5 w-5 ${localEvent ? 'fill-current text-white' : 'text-gray-500'}`} />
+              <span className={`text-xs ${localEvent ? 'text-white' : 'text-gray-500'}`}>
+                {localEvent ? 'Event 해제' : 'Event 없음'}
               </span>
             </Button>
           </div>
