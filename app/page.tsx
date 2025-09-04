@@ -1005,32 +1005,32 @@ export default function Home() {
                           onMouseEnter={blockTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
-                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors">All Apps</div>
-                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors">See everything we&apos;ve made</div>
+                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors" onMouseEnter={blockTranslationFeedback}>All Apps</div>
+                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" onMouseEnter={blockTranslationFeedback}>See everything we&apos;ve made</div>
                        </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleNewReleasesClick, e)} 
                           onMouseEnter={blockTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
-                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors">New Releases</div>
-                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors">Just launched</div>
+                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors" onMouseEnter={blockTranslationFeedback}>New Releases</div>
+                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" onMouseEnter={blockTranslationFeedback}>Just launched</div>
                        </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleFeaturedAppsClick, e)} 
                           onMouseEnter={blockTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
-                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors">Featured Apps</div>
-                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors">Recommended picks</div>
+                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors" onMouseEnter={blockTranslationFeedback}>Featured Apps</div>
+                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" onMouseEnter={blockTranslationFeedback}>Recommended picks</div>
                        </button>
                                                                                               <button 
                            onClick={(e) => handleFooterLinkClick(handleEventsClick, e)} 
                            onMouseEnter={blockTranslationFeedback}
                            className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                          >
-                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors">Events</div>
-                          <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors">Discounts via email</div>
+                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors" onMouseEnter={blockTranslationFeedback}>Events</div>
+                          <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" onMouseEnter={blockTranslationFeedback}>Discounts via email</div>
                         </button>
                    </div>
                 </div>
@@ -1043,16 +1043,16 @@ export default function Home() {
                            onMouseEnter={blockTranslationFeedback}
                            className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                          >
-                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors">App Story</div>
-                          <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors">How it was made</div>
+                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors" onMouseEnter={blockTranslationFeedback}>App Story</div>
+                          <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" onMouseEnter={blockTranslationFeedback}>How it was made</div>
                         </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleNewsClick, e)} 
                           onMouseEnter={blockTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
-                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors">News</div>
-                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors">Latest updates</div>
+                         <div className="text-base font-medium group-hover:text-amber-400 transition-colors" onMouseEnter={blockTranslationFeedback}>News</div>
+                         <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" onMouseEnter={blockTranslationFeedback}>Latest updates</div>
                        </button>
                                              <MailForm
                          type="feedback"
