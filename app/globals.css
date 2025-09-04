@@ -1578,6 +1578,30 @@ button[type="reset"] * {
   animation: gradient-x 5s ease-in-out infinite;
 }
 
+/* 슬로건 번역 피드백 방지 (번역은 허용, 피드백만 차단) */
+.animate-gradient-x {
+  /* 번역 피드백 관련 요소들 차단 */
+  pointer-events: none;
+}
+
+.animate-gradient-x * {
+  /* 번역 피드백 관련 요소들 차단 */
+  pointer-events: none;
+}
+
+/* 슬로건 영역 번역 피드백 완전 차단 */
+.text-center.mb-6.overflow-hidden {
+  /* 번역 피드백 관련 모든 요소 차단 */
+  position: relative;
+  z-index: 1;
+}
+
+.text-center.mb-6.overflow-hidden * {
+  /* 번역 피드백 관련 모든 요소 차단 */
+  pointer-events: none;
+  user-select: none;
+}
+
 /* 모바일 이미지 최적화 */
 @media (max-width: 768px) {
   /* 스크린샷 이미지 강제 리사이징 */

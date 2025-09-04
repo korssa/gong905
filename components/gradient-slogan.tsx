@@ -8,8 +8,7 @@ export function GradientSlogan() {
   return (
     <div className="text-center mb-6 overflow-hidden">
       <h2
-        className="text-xl sm:text-2xl font-semibold tracking-wide italic animate-gradient-x bg-gradient-to-r from-white via-white to-amber-400 bg-[length:200%_100%] bg-clip-text text-transparent notranslate"
-        translate="no"
+        className="text-xl sm:text-2xl font-semibold tracking-wide italic animate-gradient-x bg-gradient-to-r from-white via-white to-amber-400 bg-[length:200%_100%] bg-clip-text text-transparent"
         style={{
           textShadow: '0 0 20px rgba(255, 255, 255, 0.3)',
         }}
