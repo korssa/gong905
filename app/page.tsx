@@ -547,17 +547,11 @@ export default function Home() {
             }
           } catch (error) {
             console.error('❌ Featured/Events 로드 오류:', error);
-            // localStorage 폴백
-            const savedFeaturedApps = localStorage.getItem('featured-apps');
-            if (savedFeaturedApps) {
-              const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
-              setFeaturedApps(parsedFeaturedApps);
-            }
-            
-            const savedEventApps = localStorage.getItem('event-apps');
-            if (savedEventApps) {
-              const parsedEventApps = JSON.parse(savedEventApps);
-              setEventApps(parsedEventApps);
+            // 저장소 로드 실패 시 빈 배열로 초기화 (카운트 0 표시)
+            if (isMounted && myId === reqIdRef.current) {
+              setFeaturedApps([]);
+              setEventApps([]);
+              console.log('🔄 Featured/Events 빈 배열로 초기화');
             }
           }
         }
