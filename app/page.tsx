@@ -600,14 +600,16 @@ export default function Home() {
     };
   }, [setApps]); // setApps 의존성 추가
 
-  // 전역 스토어 상태 변화 로깅
+  // 전역 스토어 상태 변화 로깅 (개발 모드에서만)
   useEffect(() => {
-    console.log('🔄 전역 스토어 상태 변화:', {
-      totalApps: allApps.length,
-      featuredApps: getFeaturedApps().length,
-      eventApps: getEventApps().length,
-      normalApps: getNormalApps().length
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🔄 전역 스토어 상태 변화:', {
+        totalApps: allApps.length,
+        featuredApps: getFeaturedApps().length,
+        eventApps: getEventApps().length,
+        normalApps: getNormalApps().length
+      });
+    }
   }, [allApps, getFeaturedApps, getEventApps, getNormalApps]);
 
   // Featured/Events 매핑 검증 (개발 모드에서만)
