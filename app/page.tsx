@@ -636,6 +636,11 @@ export default function Home() {
           setApps(appsWithType);
           localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
           console.log('💾 Blob 데이터를 localStorage에 저장 완료');
+          console.log('🔄 setApps 호출 완료, appsWithType:', appsWithType.length, '개');
+          
+          // 상태 업데이트를 기다리기 위해 약간의 지연
+          await new Promise(resolve => setTimeout(resolve, 100));
+          console.log('⏳ 상태 업데이트 대기 후 apps 상태:', apps.length, '개');
         } else {
           console.log('⚠️ Blob에 타입별 데이터 없음, 기존 API 시도...');
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
@@ -713,6 +718,7 @@ export default function Home() {
         
         if (isMounted) {
           console.log('🎯 최종 앱 상태:', apps.length, '개');
+          console.log('🔍 loadApps 함수 완료 시점의 apps 상태:', apps.length, '개');
         }
       } catch (error) {
         console.error('❌ 앱 로드 실패:', error);
