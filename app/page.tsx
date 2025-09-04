@@ -33,6 +33,13 @@ const isBlobUrl = (url?: string) => {
   return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
 };
 
+// Featured/Events 플래그를 앱에 주입하는 유틸 함수
+const applyFeaturedFlags = (apps: AppItem[], featuredIds: string[], eventIds: string[]) => {
+  const f = new Set(featuredIds);
+  const e = new Set(eventIds);
+  return apps.map(a => ({ ...a, isFeatured: f.has(a.id), isEvent: e.has(a.id) }));
+};
+
 // 빈 앱 데이터 (샘플 앱 제거됨)
 const sampleApps: AppItem[] = [];
 
@@ -128,101 +135,59 @@ export default function Home() {
 
   // Featured Apps 버튼 클릭 핸들러
   const handleFeaturedAppsClick = async () => {
-    
-    // Featured Apps가 비어있으면 첫 번째 앱을 Featured로 설정 (테스트용)
-    if (featuredApps.length === 0) {
+    if (featuredApps.length === 0 && allApps.length > 0) {
+      const firstId = allApps[0].id;
+      const nextF = Array.from(new Set([...featuredApps, firstId]));
       try {
-        const blobApps = await loadAppsByTypeFromBlob('gallery');
-        if (blobApps.length > 0) {
-          // 첫 번째 앱에 isFeatured: true 설정
-          const updatedApps = blobApps.map((app, index) => ({
-            ...app,
-            isFeatured: index === 0,
-            isEvent: app.isEvent || false
-          }));
-          
-          // 업데이트된 앱들을 Blob에 저장
-          await saveAppsByTypeToBlob('gallery', updatedApps);
-        }
-      } catch (error) {
-        console.error('❌ Featured Apps 설정 실패:', error);
+        await saveFeaturedAppsToBlob(nextF, eventApps);
+        setFeaturedApps(nextF);
+        setAllApps(prev => applyFeaturedFlags(prev, nextF, eventApps));
+      } catch (e) {
+        console.error('❌ Featured 세트 저장 실패:', e);
       }
     }
-    
-    // Single source 업데이트 (낙관적 업데이트)
-    setAllApps(prev => prev.map((app, index) => ({
-      ...app,
-      isFeatured: index === 0,
-      isEvent: app.isEvent || false
-    })));
-    
     setCurrentFilter("featured");
-    setCurrentContentType(null); // 메모장 모드 종료
-    // 갤러리로 스크롤
-    const galleryElement = document.querySelector('main');
-    if (galleryElement) {
-      galleryElement.scrollIntoView({ behavior: 'smooth' });
-    }
+    setCurrentContentType(null);
+    document.querySelector('main')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   // Events 버튼 클릭 핸들러
   const handleEventsClick = async () => {
-    
-    // Events Apps가 비어있으면 두 번째 앱을 Events로 설정 (테스트용)
-    if (eventApps.length === 0) {
+    // 앱이 2개 미만이면 첫 번째라도 넣어주기 (안전가드)
+    const candidateId =
+      allApps[1]?.id ?? allApps[0]?.id; // 두 번째가 없으면 첫 번째
+
+    if (eventApps.length === 0 && candidateId) {
+      const nextE = Array.from(new Set([...eventApps, candidateId]));
       try {
-        const blobApps = await loadAppsByTypeFromBlob('gallery');
-        if (blobApps.length > 1) {
-          // 두 번째 앱에 isEvent: true 설정
-          const updatedApps = blobApps.map((app, index) => ({
-            ...app,
-            isFeatured: app.isFeatured || false,
-            isEvent: index === 1
-          }));
-          
-          // 업데이트된 앱들을 Blob에 저장
-          await saveAppsByTypeToBlob('gallery', updatedApps);
-        }
-      } catch (error) {
-        console.error('❌ Events 설정 실패:', error);
+        await saveFeaturedAppsToBlob(featuredApps, nextE);
+        setEventApps(nextE);
+        setAllApps(prev => applyFeaturedFlags(prev, featuredApps, nextE));
+      } catch (e) {
+        console.error('❌ Events 세트 저장 실패:', e);
       }
     }
-    
-    // Single source 업데이트 (낙관적 업데이트)
-    setAllApps(prev => prev.map((app, index) => ({
-      ...app,
-      isFeatured: app.isFeatured || false,
-      isEvent: index === 1
-    })));
-    
+
     setCurrentFilter("events");
-    setCurrentContentType(null); // 메모장 모드 종료
-    // 페이지 상단으로 스크롤
+    setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // 데이터 리로드 핸들러 (Featured/Events 상태 변경 후 서버에서 최신 데이터 가져오기)
   const handleRefreshData = async () => {
     try {
-      // 서버에서 최신 Featured/Events 데이터 가져오기
-      const response = await fetch('/api/apps/featured', { 
-        method: 'GET',
-        cache: 'no-store' // 캐시 무시하고 최신 데이터 요청
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          // React 상태 업데이트
-          setFeaturedApps(data.featured || []);
-          setEventApps(data.events || []);
-          
-          // Featured/Events 데이터 업데이트 완료
-          
-        }
-      } else {
-        console.warn('⚠️ Featured/Events 데이터 리로드 실패:', response.status);
+      const res = await fetch('/api/apps/featured', { method: 'GET', cache: 'no-store' });
+      if (!res.ok) {
+        console.warn('⚠️ Featured/Events 데이터 리로드 실패:', res.status);
+        return;
       }
+      const data = await res.json(); // { featured: string[], events: string[] }
+      const f = Array.isArray(data.featured) ? data.featured : [];
+      const e = Array.isArray(data.events) ? data.events : [];
+      setFeaturedApps(f);
+      setEventApps(e);
+      // 🔑 allApps에도 즉시 주입
+      setAllApps(prev => applyFeaturedFlags(prev, f, e));
     } catch (error) {
       console.error('❌ Featured/Events 데이터 리로드 오류:', error);
     }
@@ -231,101 +196,57 @@ export default function Home() {
 
     // Featured 앱 토글 핸들러
   const handleToggleFeatured = async (appId: string) => {
-    const isCurrentlyFeatured = featuredApps.includes(appId);
-    const action = isCurrentlyFeatured ? 'remove' : 'add';
-    
+    const isOn = featuredApps.includes(appId);
+    const action = isOn ? 'remove' : 'add';
     try {
-      // API 호출로 상태 토글
-      const success = await toggleFeaturedAppStatus(appId, 'featured', action);
-      
-      if (success) {
-        // 1. 새로운 상태 계산 (명확한 트리거)
-        const newFeatured = isCurrentlyFeatured 
-          ? featuredApps.filter(id => id !== appId)
-          : [...featuredApps, appId];
-        
-        // 2. React 상태 업데이트
-        setFeaturedApps(newFeatured);
-        
-        // 3. Featured 데이터 저장 완료
-        
-        // 4. 글로벌 저장소에서 다시 로드하여 동기화 확인
-        try {
-          const refreshedData = await loadFeaturedAppsFromBlob();
-          if (refreshedData.featured.length > 0 || refreshedData.events.length > 0) {
-            // 글로벌 데이터로 상태 업데이트
-            setFeaturedApps(refreshedData.featured);
-            setEventApps(refreshedData.events);
-            // 글로벌 동기화 완료
-          } else {
-            console.warn('⚠️ Featured 글로벌 동기화 실패 (빈 데이터)');
-          }
-        } catch (blobError) {
-          console.error('❌ Featured 글로벌 동기화 오류:', blobError);
-        }
-      } else {
-        // Featured 앱 상태 토글 실패
-        console.warn('❌ Featured 토글 API 실패');
+      const ok = await toggleFeaturedAppStatus(appId, 'featured', action);
+      const next = isOn ? featuredApps.filter(id => id !== appId) : [...featuredApps, appId];
+
+      setFeaturedApps(next);
+      // 🔑 주입
+      setAllApps(prev => applyFeaturedFlags(prev, next, eventApps));
+
+      if (ok) {
+        const refreshed = await loadFeaturedAppsFromBlob();
+        const f = refreshed.featured ?? [];
+        const e = refreshed.events ?? [];
+        setFeaturedApps(f);
+        setEventApps(e);
+        setAllApps(prev => applyFeaturedFlags(prev, f, e));
       }
-    } catch (error) {
-      // Featured 앱 상태 토글 중 오류
-      console.error('❌ Featured 토글 중 오류:', error);
-      // 실패 시 로컬 상태만 업데이트 (사용자 경험 개선)
-      const newFeatured = isCurrentlyFeatured 
-        ? featuredApps.filter(id => id !== appId)
-        : [...featuredApps, appId];
-      setFeaturedApps(newFeatured);
-      // Featured 상태 업데이트 완료
+    } catch (e) {
+      console.error('❌ Featured 토글 오류:', e);
+      const next = isOn ? featuredApps.filter(id => id !== appId) : [...featuredApps, appId];
+      setFeaturedApps(next);
+      setAllApps(prev => applyFeaturedFlags(prev, next, eventApps));
     }
   };
 
   // Event 앱 토글 핸들러
   const handleToggleEvent = async (appId: string) => {
-    const isCurrentlyEvent = eventApps.includes(appId);
-    const action = isCurrentlyEvent ? 'remove' : 'add';
-    
+    const isOn = eventApps.includes(appId);
+    const action = isOn ? 'remove' : 'add';
     try {
-      // API 호출로 상태 토글
-      const success = await toggleFeaturedAppStatus(appId, 'events', action);
-      
-      if (success) {
-        // 1. 새로운 상태 계산 (명확한 트리거)
-        const newEvents = isCurrentlyEvent 
-          ? eventApps.filter(id => id !== appId)
-          : [...eventApps, appId];
-        
-        // 2. React 상태 업데이트
-        setEventApps(newEvents);
-        
-        // 3. Events 데이터 저장 완료
-        
-        // 4. 글로벌 저장소에서 다시 로드하여 동기화 확인
-        try {
-          const refreshedData = await loadFeaturedAppsFromBlob();
-          if (refreshedData.featured.length > 0 || refreshedData.events.length > 0) {
-            // 글로벌 데이터로 상태 업데이트
-            setFeaturedApps(refreshedData.featured);
-            setEventApps(refreshedData.events);
-            // 글로벌 동기화 완료
-          } else {
-            console.warn('⚠️ Events 글로벌 동기화 실패 (빈 데이터)');
-          }
-        } catch (blobError) {
-          console.error('❌ Events 글로벌 동기화 오류:', blobError);
-        }
-                   } else {
-        // Event 앱 상태 토글 실패
-        console.warn('❌ Events 토글 API 실패');
+      const ok = await toggleFeaturedAppStatus(appId, 'events', action);
+      const next = isOn ? eventApps.filter(id => id !== appId) : [...eventApps, appId];
+
+      setEventApps(next);
+      // 🔑 주입
+      setAllApps(prev => applyFeaturedFlags(prev, featuredApps, next));
+
+      if (ok) {
+        const refreshed = await loadFeaturedAppsFromBlob();
+        const f = refreshed.featured ?? [];
+        const e = refreshed.events ?? [];
+        setFeaturedApps(f);
+        setEventApps(e);
+        setAllApps(prev => applyFeaturedFlags(prev, f, e));
       }
-    } catch (error) {
-      // Event 앱 상태 토글 중 오류
-      console.error('❌ Events 토글 중 오류:', error);
-      // 실패 시 로컬 상태만 업데이트 (사용자 경험 개선)
-      const newEvents = isCurrentlyEvent 
-        ? eventApps.filter(id => id !== appId)
-        : [...eventApps, appId];
-      setEventApps(newEvents);
-      // Events 상태 업데이트 완료
+    } catch (e) {
+      console.error('❌ Events 토글 오류:', e);
+      const next = isOn ? eventApps.filter(id => id !== appId) : [...eventApps, appId];
+      setEventApps(next);
+      setAllApps(prev => applyFeaturedFlags(prev, featuredApps, next));
     }
   };
 
@@ -556,27 +477,18 @@ export default function Home() {
         // Featured Apps 로드 (Blob 우선, localStorage 폴백)
         if (isMounted) {
           try {
-            const blobFeatured = await loadFeaturedAppsFromBlob();
-            
-            if (blobFeatured.featured.length > 0 || blobFeatured.events.length > 0) {
-              setFeaturedApps(blobFeatured.featured);
-              setEventApps(blobFeatured.events);
-            } else {
-              // Blob에 데이터가 없으면 localStorage 폴백
-              const savedFeaturedApps = localStorage.getItem('featured-apps');
-              if (savedFeaturedApps) {
-                const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
-                setFeaturedApps(parsedFeaturedApps);
-              }
-              
-              const savedEventApps = localStorage.getItem('event-apps');
-              if (savedEventApps) {
-                const parsedEventApps = JSON.parse(savedEventApps);
-                setEventApps(parsedEventApps);
-              }
+            const sets = await loadFeaturedAppsFromBlob(); // { featured, events }
+            if (isMounted && myId === reqIdRef.current) {
+              const f = sets.featured ?? [];
+              const e = sets.events ?? [];
+              setFeaturedApps(f);
+              setEventApps(e);
+              // 🔑 이미 setAllApps가 한 번 세팅되었다면, 거기에 플래그 주입
+              setAllApps(prev => (prev.length ? applyFeaturedFlags(prev, f, e) : prev));
             }
           } catch (error) {
             console.error('❌ Featured/Events 로드 오류:', error);
+            // (로컬 스토리지 폴백은 원래 로직대로 두셔도 됩니다)
             // localStorage 폴백
             const savedFeaturedApps = localStorage.getItem('featured-apps');
             if (savedFeaturedApps) {
