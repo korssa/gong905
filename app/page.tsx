@@ -87,6 +87,22 @@ export default function Home() {
 
   // Featured Apps 버튼 클릭 핸들러
   const handleFeaturedAppsClick = () => {
+    console.log('🎯 Featured Apps 버튼 클릭:', {
+      currentFilter: currentFilter,
+      featuredApps: featuredApps,
+      featuredCount: featuredApps.length,
+      totalApps: apps.length,
+      appIds: apps.map(app => app.id)
+    });
+    
+    // Featured Apps가 비어있으면 첫 번째 앱을 Featured로 설정 (테스트용)
+    if (featuredApps.length === 0 && apps.length > 0) {
+      console.log('🔧 Featured Apps가 비어있음. 첫 번째 앱을 Featured로 설정 (테스트용)');
+      const firstAppId = apps[0].id;
+      setFeaturedApps([firstAppId]);
+      localStorage.setItem('featured-apps', JSON.stringify([firstAppId]));
+    }
+    
     setCurrentFilter("featured");
     setCurrentContentType(null); // 메모장 모드 종료
     // 갤러리로 스크롤
@@ -98,6 +114,22 @@ export default function Home() {
 
   // Events 버튼 클릭 핸들러
   const handleEventsClick = () => {
+    console.log('🎯 Events 버튼 클릭:', {
+      currentFilter: currentFilter,
+      eventApps: eventApps,
+      eventCount: eventApps.length,
+      totalApps: apps.length,
+      appIds: apps.map(app => app.id)
+    });
+    
+    // Events Apps가 비어있으면 두 번째 앱을 Events로 설정 (테스트용)
+    if (eventApps.length === 0 && apps.length > 1) {
+      console.log('🔧 Events Apps가 비어있음. 두 번째 앱을 Events로 설정 (테스트용)');
+      const secondAppId = apps[1].id;
+      setEventApps([secondAppId]);
+      localStorage.setItem('event-apps', JSON.stringify([secondAppId]));
+    }
+    
     setCurrentFilter("events");
     setCurrentContentType(null); // 메모장 모드 종료
     // 페이지 상단으로 스크롤
@@ -276,10 +308,22 @@ export default function Home() {
             );
           return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
         case "featured":
+          console.log('🔍 Featured 필터링:', {
+            totalApps: filteredApps.length,
+            featuredApps: featuredApps,
+            featuredCount: featuredApps.length,
+            filteredResult: filteredApps.filter(app => featuredApps.includes(app.id))
+          });
           return filteredApps
             .filter(app => featuredApps.includes(app.id))
             .sort((a, b) => a.name.localeCompare(b.name));
         case "events":
+          console.log('🔍 Events 필터링:', {
+            totalApps: filteredApps.length,
+            eventApps: eventApps,
+            eventCount: eventApps.length,
+            filteredResult: filteredApps.filter(app => eventApps.includes(app.id))
+          });
           return filteredApps
             .filter(app => eventApps.includes(app.id))
             .sort((a, b) => a.name.localeCompare(b.name));
@@ -525,36 +569,47 @@ export default function Home() {
         if (isMounted) {
           try {
             const blobFeatured = await loadFeaturedAppsFromBlob();
+            console.log('📊 Featured/Events 데이터 로드:', {
+              blobFeatured: blobFeatured,
+              featuredCount: blobFeatured.featured.length,
+              eventsCount: blobFeatured.events.length
+            });
+            
             if (blobFeatured.featured.length > 0 || blobFeatured.events.length > 0) {
               setFeaturedApps(blobFeatured.featured);
               setEventApps(blobFeatured.events);
-              // Blob에서 Featured/Events 앱 로드됨
+              console.log('✅ Blob에서 Featured/Events 앱 로드됨');
             } else {
               // Blob에 데이터가 없으면 localStorage 폴백
               const savedFeaturedApps = localStorage.getItem('featured-apps');
               if (savedFeaturedApps) {
                 const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
                 setFeaturedApps(parsedFeaturedApps);
+                console.log('📱 localStorage에서 Featured 앱 로드:', parsedFeaturedApps);
               }
               
               const savedEventApps = localStorage.getItem('event-apps');
               if (savedEventApps) {
                 const parsedEventApps = JSON.parse(savedEventApps);
                 setEventApps(parsedEventApps);
+                console.log('📱 localStorage에서 Events 앱 로드:', parsedEventApps);
               }
             }
           } catch (error) {
+            console.error('❌ Featured/Events 로드 오류:', error);
             // localStorage 폴백
             const savedFeaturedApps = localStorage.getItem('featured-apps');
             if (savedFeaturedApps) {
               const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
               setFeaturedApps(parsedFeaturedApps);
+              console.log('📱 localStorage 폴백으로 Featured 앱 로드:', parsedFeaturedApps);
             }
             
             const savedEventApps = localStorage.getItem('event-apps');
             if (savedEventApps) {
               const parsedEventApps = JSON.parse(savedEventApps);
               setEventApps(parsedEventApps);
+              console.log('📱 localStorage 폴백으로 Events 앱 로드:', parsedEventApps);
             }
           }
         }
