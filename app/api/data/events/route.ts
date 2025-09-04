@@ -31,13 +31,23 @@ async function writeToLocal(events: string[]) {
   await fs.writeFile(LOCAL_EVENTS_PATH, JSON.stringify(events, null, 2));
 }
 
-// GET: Blob 또는 로컬에서 Events 앱 정보 반환
+// GET: 로컬 파일 우선, Blob 폴백으로 Events 앱 정보 반환
 export async function GET() {
   try {
-    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+    // 1) 먼저 로컬 파일에서 읽기 (개발/배포 환경 모두)
+    try {
+      const local = await readFromLocal();
+      if (local && local.length > 0) {
+        console.log(`[Events API] 로컬 파일에서 ${local.length}개 Events 앱 로드`);
+        return NextResponse.json(local);
+      }
+    } catch (error) {
+      console.log('[Events API] 로컬 파일 읽기 실패:', error);
+    }
 
+    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
-      // 1) Blob에서 최신 JSON 파일 시도
+      // 2) Blob에서 최신 JSON 파일 시도
       try {
         const { blobs } = await list({ prefix: EVENTS_FILENAME, limit: 100 });
         if (blobs && blobs.length > 0) {
@@ -49,6 +59,7 @@ export async function GET() {
           if (res.ok) {
             const json = await res.json();
             const data = Array.isArray(json) ? json : [];
+            console.log(`[Events API] Blob에서 ${data.length}개 Events 앱 로드`);
             
             // 메모리와 동기화
             memoryEvents = [...data];
@@ -57,22 +68,21 @@ export async function GET() {
           }
         }
       } catch (error) {
-        console.warn('[Events Blob] 조회 실패:', error);
+        console.warn('[Events API] Blob 조회 실패:', error);
       }
 
-      // 2) 메모리 폴백
+      // 3) 메모리 폴백
       if (memoryEvents.length > 0) {
+        console.log(`[Events API] 메모리에서 ${memoryEvents.length}개 Events 앱 로드`);
         return NextResponse.json(memoryEvents);
       }
-
-      // 3) 모든 소스에서 데이터가 없으면 기본값
-      return NextResponse.json([]);
     }
 
-    // 개발 환경: 로컬 파일
-    const local = await readFromLocal();
-    return NextResponse.json(local);
-  } catch {
+    // 4) 모든 방법 실패 시 빈 배열
+    console.log('[Events API] 모든 로드 방법 실패, 빈 배열 반환');
+    return NextResponse.json([]);
+  } catch (error) {
+    console.error('[Events API] GET 오류:', error);
     return NextResponse.json([], { status: 200 });
   }
 }

@@ -78,32 +78,46 @@ async function readFromLocal(): Promise<FeaturedSets> {
   }
 }
 
-// GET: Featured/Events 앱 정보 조회
+// GET: 로컬 파일 우선, Blob 폴백으로 Featured/Events 앱 정보 조회
 export async function GET() {
   try {
-    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+    // 1) 먼저 로컬 파일에서 읽기 (개발/배포 환경 모두)
+    try {
+      const local = await readFromLocal();
+      if (local && (local.featured.length > 0 || local.events.length > 0)) {
+        console.log(`[Featured/Events API] 로컬 파일에서 Featured: ${local.featured.length}, Events: ${local.events.length} 로드`);
+        return NextResponse.json(local, { headers: { 'Cache-Control': 'no-store' } });
+      }
+    } catch (error) {
+      console.log('[Featured/Events API] 로컬 파일 읽기 실패:', error);
+    }
 
+    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
+      // 2) Blob에서 최신 JSON 파일 시도
       try {
         const data = await readFromBlobLatest();
         if (data) {
+          console.log(`[Featured/Events API] Blob에서 Featured: ${data.featured.length}, Events: ${data.events.length} 로드`);
           memoryFeatured = { ...data };
           return NextResponse.json(data, { headers: { 'Cache-Control': 'no-store' } });
         }
       } catch (error) {
-        console.warn('[Featured Blob] 조회 실패:', error);
+        console.warn('[Featured/Events API] Blob 조회 실패:', error);
       }
       
-      // Vercel 환경에서는 로컬 파일 읽기 제거 (읽기전용 파일시스템)
-      
-      // Blob이 없으면 메모리도 비우고 빈 세트 반환
-      memoryFeatured = { featured: [], events: [] };
-      return NextResponse.json({ featured: [], events: [] }, { headers: { 'Cache-Control': 'no-store' } });
+      // 3) 메모리 폴백
+      if (memoryFeatured.featured.length > 0 || memoryFeatured.events.length > 0) {
+        console.log(`[Featured/Events API] 메모리에서 Featured: ${memoryFeatured.featured.length}, Events: ${memoryFeatured.events.length} 로드`);
+        return NextResponse.json(memoryFeatured, { headers: { 'Cache-Control': 'no-store' } });
+      }
     }
 
-    const local = await readFromLocal();
-    return NextResponse.json(local, { headers: { 'Cache-Control': 'no-store' } });
-  } catch {
+    // 4) 모든 방법 실패 시 빈 세트 반환
+    console.log('[Featured/Events API] 모든 로드 방법 실패, 빈 세트 반환');
+    return NextResponse.json({ featured: [], events: [] }, { headers: { 'Cache-Control': 'no-store' } });
+  } catch (error) {
+    console.error('[Featured/Events API] GET 오류:', error);
     return NextResponse.json({ featured: [], events: [] }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
   }
 }
@@ -152,17 +166,33 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'appId required' }, { status: 400 });
     }
 
-    // 현재 세트 로드
+    // 현재 세트 로드 (로컬 파일 우선)
     let sets: FeaturedSets | null = null;
-    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
-    if (isProd) {
-      sets = await readFromBlobLatest();
-      if (!sets) {
-        sets = { ...memoryFeatured };
-      }
-    } else {
+    
+    // 1) 먼저 로컬 파일에서 읽기
+    try {
       sets = await readFromLocal();
+      if (sets && (sets.featured.length > 0 || sets.events.length > 0)) {
+        console.log(`[PUT] 로컬 파일에서 현재 세트 로드: Featured: ${sets.featured.length}, Events: ${sets.events.length}`);
+      } else {
+        sets = null;
+      }
+    } catch (error) {
+      console.log('[PUT] 로컬 파일 읽기 실패:', error);
+      sets = null;
     }
+
+    // 2) 로컬 파일이 없으면 Blob에서 읽기
+    if (!sets) {
+      const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+      if (isProd) {
+        sets = await readFromBlobLatest();
+        if (!sets) {
+          sets = { ...memoryFeatured };
+        }
+      }
+    }
+    
     if (!sets) sets = { featured: [], events: [] };
 
     console.log(`[PUT] 현재 세트:`, sets);
@@ -222,18 +252,34 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // 최신 세트 로드 (prod/blob → local → memory)
+    // 최신 세트 로드 (로컬 파일 우선)
     let sets: FeaturedSets | null = null;
-    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
-    if (isProd) {
-      sets = await readFromBlobLatest();
-      if (!sets) {
-        // Vercel 환경에서는 메모리 폴백만 사용
-        sets = { ...memoryFeatured };
-      }
-    } else {
+    
+    // 1) 먼저 로컬 파일에서 읽기
+    try {
       sets = await readFromLocal();
+      if (sets && (sets.featured.length > 0 || sets.events.length > 0)) {
+        console.log(`[PATCH] 로컬 파일에서 현재 세트 로드: Featured: ${sets.featured.length}, Events: ${sets.events.length}`);
+      } else {
+        sets = null;
+      }
+    } catch (error) {
+      console.log('[PATCH] 로컬 파일 읽기 실패:', error);
+      sets = null;
     }
+
+    // 2) 로컬 파일이 없으면 Blob에서 읽기
+    if (!sets) {
+      const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+      if (isProd) {
+        sets = await readFromBlobLatest();
+        if (!sets) {
+          // Vercel 환경에서는 메모리 폴백만 사용
+          sets = { ...memoryFeatured };
+        }
+      }
+    }
+    
     if (!sets) sets = { featured: [], events: [] };
 
     console.log(`[PATCH] 현재 세트:`, sets);
