@@ -326,13 +326,13 @@ export default function Home() {
           if (data.appCategory === 'featured') {
             updatedFeatured.push(newApp.id);
             console.log('⭐ Featured 배열에 추가:', updatedFeatured);
-            await saveFeaturedIds(updatedFeatured);
-            finalFeaturedApps = updatedFeatured;
+            const saveResult = await saveFeaturedIds(updatedFeatured);
+            finalFeaturedApps = saveResult.success && saveResult.data ? saveResult.data : updatedFeatured;
           } else if (data.appCategory === 'events') {
             updatedEvents.push(newApp.id);
             console.log('🎉 Events 배열에 추가:', updatedEvents);
-            await saveEventIds(updatedEvents);
-            finalEventApps = updatedEvents;
+            const saveResult = await saveEventIds(updatedEvents);
+            finalEventApps = saveResult.success && saveResult.data ? saveResult.data : updatedEvents;
           }
         }
         

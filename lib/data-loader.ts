@@ -289,7 +289,7 @@ export async function loadEventIds(): Promise<string[]> {
 /**
  * Featured 앱 ID 목록만 저장
  */
-export async function saveFeaturedIds(ids: string[]): Promise<boolean> {
+export async function saveFeaturedIds(ids: string[]): Promise<{ success: boolean; data?: string[] }> {
   try {
     console.log('📤 saveFeaturedIds 호출:', ids);
     const res = await fetch('/api/data/featured', {
@@ -298,17 +298,26 @@ export async function saveFeaturedIds(ids: string[]): Promise<boolean> {
       body: JSON.stringify(ids),
     });
     console.log('📤 saveFeaturedIds 응답:', { ok: res.ok, status: res.status });
-    return res.ok;
+    
+    if (!res.ok) {
+      return { success: false };
+    }
+    
+    const result = await res.json();
+    return { 
+      success: true, 
+      data: result.data || ids // API 응답에서 최종 데이터 반환
+    };
   } catch (error) {
     console.error('❌ saveFeaturedIds 오류:', error);
-    return false;
+    return { success: false };
   }
 }
 
 /**
  * Events 앱 ID 목록만 저장
  */
-export async function saveEventIds(ids: string[]): Promise<boolean> {
+export async function saveEventIds(ids: string[]): Promise<{ success: boolean; data?: string[] }> {
   try {
     console.log('📤 saveEventIds 호출:', ids);
     const res = await fetch('/api/data/events', {
@@ -317,9 +326,18 @@ export async function saveEventIds(ids: string[]): Promise<boolean> {
       body: JSON.stringify(ids),
     });
     console.log('📤 saveEventIds 응답:', { ok: res.ok, status: res.status });
-    return res.ok;
+    
+    if (!res.ok) {
+      return { success: false };
+    }
+    
+    const result = await res.json();
+    return { 
+      success: true, 
+      data: result.data || ids // API 응답에서 최종 데이터 반환
+    };
   } catch (error) {
     console.error('❌ saveEventIds 오류:', error);
-    return false;
+    return { success: false };
   }
 }

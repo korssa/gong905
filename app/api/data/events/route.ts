@@ -77,20 +77,40 @@ export async function GET() {
   }
 }
 
-// POST: Events 앱 정보를 받아 Blob(또는 로컬)에 저장
+// POST: Events 앱 정보를 받아 기존 데이터와 병합 후 저장 (오버라이트 방지)
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as unknown;
-    const events = Array.isArray(body) ? body : [];
+    const newEvents = Array.isArray(body) ? body : [];
 
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
-      // Blob 저장 강화 - 재시도 로직 추가
+      // 1. 기존 Events 데이터 로드 (오버라이트 방지)
+      let currentEvents: string[] = [];
+      try {
+        const { blobs } = await list({ prefix: EVENTS_FILENAME, limit: 1 });
+        if (blobs && blobs.length > 0) {
+          const res = await fetch(blobs[0].url, { cache: 'no-store' });
+          if (res.ok) {
+            const json = await res.json();
+            currentEvents = Array.isArray(json) ? json : [];
+          }
+        }
+      } catch (error) {
+        console.warn('[Events Blob] 기존 데이터 로드 실패, 메모리 사용:', error);
+        currentEvents = memoryEvents;
+      }
+      
+      // 2. 기존 데이터와 새 데이터 병합 (중복 제거)
+      const mergedEvents = Array.from(new Set([...currentEvents, ...newEvents]));
+      console.log(`[Events Blob] 병합 완료: 기존 ${currentEvents.length} + 새 ${newEvents.length} = 총 ${mergedEvents.length}`);
+      
+      // 3. 병합된 데이터 저장
       let blobSaved = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           console.log(`[Events Blob] 저장 시도 ${attempt}/3`);
-          await put(EVENTS_FILENAME, JSON.stringify(events, null, 2), {
+          await put(EVENTS_FILENAME, JSON.stringify(mergedEvents, null, 2), {
             access: 'public',
             contentType: 'application/json; charset=utf-8',
             addRandomSuffix: false,
@@ -107,22 +127,33 @@ export async function POST(request: NextRequest) {
       }
       
       // 메모리도 항상 업데이트
-      memoryEvents = [...events];
+      memoryEvents = [...mergedEvents];
       
       if (blobSaved) {
-        return NextResponse.json({ success: true, storage: 'blob' });
+        return NextResponse.json({ 
+          success: true, 
+          storage: 'blob',
+          data: mergedEvents // 병합된 최종 데이터 반환
+        });
       } else {
         return NextResponse.json({ 
           success: true, 
-          storage: 'memory', 
+          storage: 'memory',
+          data: mergedEvents, // 병합된 최종 데이터 반환
           warning: 'Blob save failed after 3 attempts; using in-memory fallback' 
         });
       }
     }
 
-    // 로컬 파일 저장
-    await writeToLocal(events);
-    return NextResponse.json({ success: true, storage: 'local' });
+    // 로컬 파일 저장 (병합 로직)
+    const currentLocal = await readFromLocal();
+    const mergedLocal = Array.from(new Set([...currentLocal, ...newEvents]));
+    await writeToLocal(mergedLocal);
+    return NextResponse.json({ 
+      success: true, 
+      storage: 'local',
+      data: mergedLocal // 병합된 최종 데이터 반환
+    });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to save events apps' }, { status: 500 });
   }
