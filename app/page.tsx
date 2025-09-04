@@ -86,7 +86,7 @@ export default function Home() {
    };
 
   // Featured Apps 버튼 클릭 핸들러
-  const handleFeaturedAppsClick = () => {
+  const handleFeaturedAppsClick = async () => {
     console.log('🎯 Featured Apps 버튼 클릭:', {
       currentFilter: currentFilter,
       featuredApps: featuredApps,
@@ -122,7 +122,7 @@ export default function Home() {
   };
 
   // Events 버튼 클릭 핸들러
-  const handleEventsClick = () => {
+  const handleEventsClick = async () => {
     console.log('🎯 Events 버튼 클릭:', {
       currentFilter: currentFilter,
       eventApps: eventApps,
@@ -367,7 +367,7 @@ export default function Home() {
   // 전역 테스트 함수 등록 (개발용)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      (window as any).testBlobAPI = testBlobAPI;
+      (window as typeof window & { testBlobAPI: typeof testBlobAPI }).testBlobAPI = testBlobAPI;
       console.log('🧪 testBlobAPI 함수가 전역에 등록되었습니다. 콘솔에서 testBlobAPI()를 호출하여 테스트하세요.');
     }
   }, []);
