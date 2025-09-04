@@ -212,9 +212,14 @@ export default function Home() {
         setEventApps(res.events);
         setAllApps(prev => applyFeaturedFlags(prev, res.featured, res.events));
         console.log(`[Client] Featured 상태 업데이트 완료:`, JSON.stringify({ featured: res.featured, events: res.events }, null, 2));
+      } else {
+        // 실패 시 최신 세트 다시 로드
+        console.log('❌ Featured 토글 실패, 데이터 새로고침 시도');
+        await handleRefreshData();
       }
     } catch (e) {
       console.error('❌ Featured 토글 오류:', e);
+      await handleRefreshData();
     }
   };
 
@@ -232,9 +237,14 @@ export default function Home() {
         setEventApps(res.events);
         setAllApps(prev => applyFeaturedFlags(prev, res.featured, res.events));
         console.log(`[Client] Events 상태 업데이트 완료:`, JSON.stringify({ featured: res.featured, events: res.events }, null, 2));
+      } else {
+        // 실패 시 최신 세트 다시 로드
+        console.log('❌ Events 토글 실패, 데이터 새로고침 시도');
+        await handleRefreshData();
       }
     } catch (e) {
       console.error('❌ Events 토글 오류:', e);
+      await handleRefreshData();
     }
   };
 

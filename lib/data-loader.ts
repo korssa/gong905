@@ -231,19 +231,23 @@ export async function toggleFeaturedAppStatus(
   action: 'add' | 'remove'
 ): Promise<{ featured: string[]; events: string[] } | null> {
   try {
+    console.log(`[Client] toggleFeaturedAppStatus 호출: ${appId} ${type} ${action}`);
     const response = await fetch('/api/apps/featured', {
-      method: 'PATCH',
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ list: type, op: action, id: appId }),
+      body: JSON.stringify({ appId, type, action }),
       cache: 'no-store',
     });
+    console.log(`[Client] toggleFeaturedAppStatus 응답:`, { ok: response.ok, status: response.status });
     if (!response.ok) return null;
     const data = await response.json();
+    console.log(`[Client] toggleFeaturedAppStatus 데이터:`, data);
     return {
       featured: Array.isArray(data.featured) ? data.featured : [],
       events: Array.isArray(data.events) ? data.events : [],
     };
-  } catch {
+  } catch (error) {
+    console.error(`[Client] toggleFeaturedAppStatus 오류:`, error);
     return null;
   }
 }

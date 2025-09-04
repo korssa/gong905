@@ -136,7 +136,74 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH: 토글 지원 - add/remove 처리
+// PUT: 개별 토글 지원
+/** PUT body: { appId: string, type: 'featured' | 'events', action: 'add' | 'remove' } */
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const appId = String(body?.appId || '');
+    const type = body?.type === 'featured' ? 'featured' : 'events';
+    const action = body?.action === 'remove' ? 'remove' : 'add';
+
+    console.log(`[PUT] 토글 요청: ${appId} ${type} ${action}`);
+
+    if (!appId) {
+      console.error('[PUT] appId 누락');
+      return NextResponse.json({ success: false, error: 'appId required' }, { status: 400 });
+    }
+
+    // 현재 세트 로드
+    let sets: FeaturedSets | null = null;
+    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+    if (isProd) {
+      sets = await readFromBlobLatest();
+      if (!sets) {
+        sets = { ...memoryFeatured };
+      }
+    } else {
+      sets = await readFromLocal();
+    }
+    if (!sets) sets = { featured: [], events: [] };
+
+    console.log(`[PUT] 현재 세트:`, sets);
+
+    const next: FeaturedSets = {
+      featured: Array.from(new Set(sets.featured)),
+      events: Array.from(new Set(sets.events)),
+    };
+
+    const target = type === 'featured' ? next.featured : next.events;
+
+    if (action === 'add') {
+      if (!target.includes(appId)) {
+        target.push(appId);
+        console.log(`[PUT] ${type}에 ${appId} 추가됨`);
+      } else {
+        console.log(`[PUT] ${type}에 ${appId} 이미 존재함`);
+      }
+    } else {
+      const idx = target.indexOf(appId);
+      if (idx >= 0) {
+        target.splice(idx, 1);
+        console.log(`[PUT] ${type}에서 ${appId} 제거됨`);
+      } else {
+        console.log(`[PUT] ${type}에 ${appId} 존재하지 않음`);
+      }
+    }
+
+    console.log(`[PUT] 업데이트된 세트:`, next);
+
+    const storage = await writeBlobSets(next);
+    console.log(`[PUT] 저장 결과:`, storage);
+    
+    return NextResponse.json({ success: true, storage, ...next }, { headers: { 'Cache-Control': 'no-store' } });
+  } catch (error) {
+    console.error('[PUT] 오류:', error);
+    return NextResponse.json({ success: false, error: 'Failed to toggle featured/events' }, { status: 500 });
+  }
+}
+
+// PATCH: 토글 지원 - add/remove 처리 (기존 호환성 유지)
 /** PATCH body: { list: 'featured' | 'events', op: 'add' | 'remove', id: string } */
 export async function PATCH(request: NextRequest) {
   try {
