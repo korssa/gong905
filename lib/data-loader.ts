@@ -207,14 +207,17 @@ export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; 
  */
 export async function saveFeaturedAppsToBlob(featured: string[], events: string[]): Promise<boolean> {
   try {
+    console.log('📤 saveFeaturedAppsToBlob 호출:', { featured, events });
     const response = await fetch('/api/apps/featured', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ featured, events }),
       cache: 'no-store',
     });
+    console.log('📤 saveFeaturedAppsToBlob 응답:', { ok: response.ok, status: response.status });
     return response.ok;
-  } catch {
+  } catch (error) {
+    console.error('❌ saveFeaturedAppsToBlob 오류:', error);
     return false;
   }
 }

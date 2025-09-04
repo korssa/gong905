@@ -112,19 +112,26 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('[POST] 요청 받음:', body);
     const featured = Array.isArray(body?.featured) ? body.featured : null;
     const events = Array.isArray(body?.events) ? body.events : null;
 
+    console.log('[POST] 파싱된 데이터:', { featured, events });
+
     if (!featured || !events) {
+      console.error('[POST] 잘못된 요청:', { featured, events });
       return NextResponse.json(
         { success: false, error: "Body must be { featured: string[], events: string[] }" },
         { status: 400 }
       );
     }
 
+    console.log('[POST] 저장할 세트:', { featured, events });
     const storage = await writeBlobSets({ featured, events });
+    console.log('[POST] 저장 결과:', storage);
     return NextResponse.json({ success: true, storage }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
+    console.error('[POST] 오류:', error);
     return NextResponse.json({ success: false, error: 'Failed to save featured apps' }, { status: 500 });
   }
 }

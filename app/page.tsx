@@ -321,12 +321,16 @@ export default function Home() {
           
           if (data.appCategory === 'featured') {
             currentFeatured.push(newApp.id);
+            console.log('⭐ Featured 배열에 추가:', currentFeatured);
           } else if (data.appCategory === 'events') {
             currentEvents.push(newApp.id);
+            console.log('🎉 Events 배열에 추가:', currentEvents);
           }
           
           // Featured/Events 세트 저장
-          await saveFeaturedAppsToBlob(currentFeatured, currentEvents);
+          console.log('💾 저장할 세트:', { featured: currentFeatured, events: currentEvents });
+          const saveResult = await saveFeaturedAppsToBlob(currentFeatured, currentEvents);
+          console.log('💾 저장 결과:', saveResult);
           
           // 상태 업데이트
           setFeaturedApps(currentFeatured);
@@ -334,6 +338,7 @@ export default function Home() {
           setAllApps(prev => applyFeaturedFlags(prev, currentFeatured, currentEvents));
           
           console.log(`✅ 새 앱이 ${data.appCategory}에 자동 추가됨:`, newApp.id);
+          console.log('🔄 상태 업데이트 완료:', { featured: currentFeatured, events: currentEvents });
         } catch (error) {
           console.error(`❌ ${data.appCategory} 자동 추가 실패:`, error);
         }
