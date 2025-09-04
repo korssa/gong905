@@ -34,6 +34,11 @@ const adminTexts = {
   description: "Description",
   descriptionPlaceholder: "Enter app description",
   category: "Category",
+  appCategory: "App Category",
+  appCategoryPlaceholder: "Select app category",
+  normal: "Normal",
+  featured: "Featured",
+  events: "Events",
   tags: "Tags (Optional)",
   tagsPlaceholder: "Enter tags separated by commas",
   tagsExample: "e.g., productivity, utility, game",
@@ -97,6 +102,7 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
     size: "50MB",
     category: "",
     storeUrl: "",
+    appCategory: "normal",
   });
 
   const { isAuthenticated, login, logout } = useAdmin();
@@ -392,6 +398,36 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   {formData.status === "development" && "🚧 " + adminTexts.development}
                 </Button>
               </div>
+            </div>
+
+            {/* App Category */}
+            <div onMouseEnter={blockTranslationFeedback}>
+              <label className="block text-sm font-medium mb-2">
+                {adminTexts.appCategory} *
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start h-10 bg-white hover:bg-gray-50 border border-gray-200"
+                onClick={() => {
+                  try {
+                    blockTranslationFeedback();
+                    
+                    const categories: ('normal' | 'featured' | 'events')[] = ["normal", "featured", "events"];
+                    const currentIndex = categories.indexOf(formData.appCategory || 'normal');
+                    const nextIndex = (currentIndex + 1) % categories.length;
+                    const newCategory = categories[nextIndex];
+                    setFormData(prev => ({ ...prev, appCategory: newCategory }));
+                  } catch (error) {
+                    // Category change error
+                  }
+                }}
+                onMouseEnter={blockTranslationFeedback}
+              >
+                {formData.appCategory === "normal" && "📱 " + adminTexts.normal}
+                {formData.appCategory === "featured" && "⭐ " + adminTexts.featured}
+                {formData.appCategory === "events" && "🎉 " + adminTexts.events}
+              </Button>
             </div>
 
             {/* Additional Info */}

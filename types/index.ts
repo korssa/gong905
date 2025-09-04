@@ -39,6 +39,7 @@ export interface AppFormData {
   size: string;
   category: string;
   storeUrl: string;
+  appCategory?: 'featured' | 'events' | 'normal'; // 새 카드 생성 시 분류
 }
 
 export type FilterType = "all" | "latest" | "featured" | "events";

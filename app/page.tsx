@@ -310,6 +310,32 @@ export default function Home() {
         setAllApps(updatedApps); // Single source update
         // 앱 목록 업데이트 완료
       }
+
+      // 카테고리에 따라 Featured/Events에 자동 추가
+      if (data.appCategory === 'featured' || data.appCategory === 'events') {
+        try {
+          const currentFeatured = [...featuredApps];
+          const currentEvents = [...eventApps];
+          
+          if (data.appCategory === 'featured') {
+            currentFeatured.push(newApp.id);
+          } else if (data.appCategory === 'events') {
+            currentEvents.push(newApp.id);
+          }
+          
+          // Featured/Events 세트 저장
+          await saveFeaturedAppsToBlob(currentFeatured, currentEvents);
+          
+          // 상태 업데이트
+          setFeaturedApps(currentFeatured);
+          setEventApps(currentEvents);
+          setAllApps(prev => applyFeaturedFlags(prev, currentFeatured, currentEvents));
+          
+          console.log(`✅ 새 앱이 ${data.appCategory}에 자동 추가됨:`, newApp.id);
+        } catch (error) {
+          console.error(`❌ ${data.appCategory} 자동 추가 실패:`, error);
+        }
+      }
       
       // 앱 업로드 및 저장 완료
       alert("✅ App uploaded successfully!");
