@@ -817,7 +817,7 @@ export default function Home() {
            {/* 차분하고 고급스러운 우측 흐름의 그라디언트 애니메이션 슬로건 */}
            <GradientSlogan />
            
-           <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3">
+           <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3 -mt-2">
              <span className="notranslate" translate="no">PRESENT</span>
            </h2>
            
