@@ -25,14 +25,11 @@ async function migrateToBlob() {
     // Vercel Blob Storage에 저장
     if (apps.length > 0) {
       const appsSuccess = await saveAppsToBlob(apps);
-      if (appsSuccess) {
     }
     
     if (contents.length > 0) {
       const contentsSuccess = await saveContentsToBlob(contents);
-      if (contentsSuccess) {
     }
-    
     
   } catch (error) {
     console.error('❌ 마이그레이션 중 오류 발생:', error);

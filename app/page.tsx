@@ -678,7 +678,7 @@ export default function Home() {
       }
 
       // 앱 목록 업데이트
-      const newApps = [...apps];
+      const newApps = [...allApps];
       newApps[appIndex] = updatedApp;
 
       // 글로벌 저장소에 먼저 저장 (서버 우선)
