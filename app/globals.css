@@ -1564,6 +1564,20 @@ button[type="reset"] * {
   -ms-translate: no !important;
 }
 
+/* 그라디언트 슬로건 애니메이션 */
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 5s ease-in-out infinite;
+}
+
 /* 모바일 이미지 최적화 */
 @media (max-width: 768px) {
   /* 스크린샷 이미지 강제 리사이징 */

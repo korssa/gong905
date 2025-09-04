@@ -14,6 +14,7 @@ import { EditAppDialog } from "@/components/edit-app-dialog";
 import { AdminUploadDialog } from "@/components/admin-upload-dialog";
 import { SnowAnimation } from "@/components/snow-animation";
 import { MailForm } from "@/components/mail-form";
+import { GradientSlogan } from "@/components/gradient-slogan";
 // ContentManager is imported in other files; not used directly here.
 import { AppStoryList } from "@/components/app-story-list";
 import { NewsList } from "@/components/news-list";
@@ -815,6 +816,9 @@ export default function Home() {
            <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3">
              <span className="notranslate" translate="no">PRESENT</span>
            </h2>
+           
+           {/* 차분하고 고급스러운 우측 흐름의 그라디언트 애니메이션 슬로건 */}
+           <GradientSlogan />
            
            {/* 추가 번역 위젯 위치 옵션 - 타이틀 아래 */}
            {/* <div id="google_translate_element_main" className="mb-4"></div> */}
