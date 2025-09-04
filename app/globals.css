@@ -1699,6 +1699,17 @@ button[type="reset"] * {
   -ms-user-select: none;
 }
 
+/* 관리자 버튼들은 클릭 가능하게 강제 설정 */
+.notranslate button,
+button.notranslate {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
+  cursor: pointer !important;
+}
+
 /* 강력한 번역 방지 */
 [translate="no"] {
   pointer-events: none;
