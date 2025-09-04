@@ -518,8 +518,17 @@ export default function Home() {
           const validatedApps = await validateAppsImages(typeApps);
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
-          // 기존 앱들에 type 속성 추가
-          const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+          // Featured/Events 플래그 주입
+          const [featuredIds, eventIds] = await Promise.all([
+            loadFeaturedIds(),
+            loadEventIds()
+          ]);
+          
+          if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
+          
+          // 기존 앱들에 type 속성과 Featured/Events 플래그 추가
+          const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
+          const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
           setApps(appsWithType); // 전역 스토어 업데이트
         } else {
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
@@ -532,8 +541,17 @@ export default function Home() {
             
             if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
             
-            // 기존 앱들에 type 속성 추가
-            const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
+            // Featured/Events 플래그 주입
+            const [featuredIds, eventIds] = await Promise.all([
+              loadFeaturedIds(),
+              loadEventIds()
+            ]);
+            
+            if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
+            
+            // 기존 앱들에 type 속성과 Featured/Events 플래그 추가
+            const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
+            const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
             setApps(appsWithType); // 전역 스토어 업데이트
           } else {
             // Keep existing state - don't reset to empty array
