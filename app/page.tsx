@@ -341,9 +341,27 @@ export default function Home() {
       try {
         
         // 3. 앱 저장 (기존 데이터 + 새 앱, featured/events 상태 반영)
-        const featuredIds = getFeaturedApps().map(app => app.id);
-        const eventIds = getEventApps().map(app => app.id);
-        const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps, featuredIds, eventIds);
+        // 기존 일반 카드들의 상태도 유지하면서 새 앱의 상태 추가
+        const currentFeaturedIds = getFeaturedApps().map(app => app.id);
+        const currentEventIds = getEventApps().map(app => app.id);
+        
+        // 새 앱의 카테고리에 따라 상태 추가
+        let finalFeaturedIds = [...currentFeaturedIds];
+        let finalEventIds = [...currentEventIds];
+        
+        if (data.appCategory === 'featured' && !finalFeaturedIds.includes(newApp.id)) {
+          finalFeaturedIds.push(newApp.id);
+        } else if (data.appCategory === 'events' && !finalEventIds.includes(newApp.id)) {
+          finalEventIds.push(newApp.id);
+        }
+        
+        console.log('💾 저장할 상태:', { 
+          featured: finalFeaturedIds, 
+          events: finalEventIds,
+          newAppCategory: data.appCategory 
+        });
+        
+        const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps, finalFeaturedIds, finalEventIds);
         
         // 2. Featured/Events 상태 업데이트 (전역 스토어 사용)
         if (data.appCategory === 'featured' || data.appCategory === 'events') {
