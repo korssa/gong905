@@ -44,11 +44,20 @@ async function ensureFeaturedFile() {
   }
 }
 
-// 앱 데이터 로드
+// 앱 데이터 로드 (글로벌 저장소 우선)
 async function loadApps(): Promise<AppItem[]> {
   try {
-    // Vercel 환경에서는 메모리 저장소만 사용
+    // Vercel 환경에서는 글로벌 저장소에서 로드
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      try {
+        const response = await fetch('/api/data/apps', { cache: 'no-store' });
+        if (response.ok) {
+          const apps = await response.json();
+          return Array.isArray(apps) ? apps : [];
+        }
+      } catch (error) {
+        console.warn('글로벌 앱 데이터 로드 실패, 메모리 사용:', error);
+      }
       return memoryApps;
     }
     
@@ -61,11 +70,23 @@ async function loadApps(): Promise<AppItem[]> {
   }
 }
 
-// Featured/Events 데이터 로드
+// Featured/Events 데이터 로드 (글로벌 저장소 우선)
 async function loadFeatured(): Promise<{ featured: string[]; events: string[] }> {
   try {
-    // Vercel 환경에서는 메모리 저장소만 사용
+    // Vercel 환경에서는 글로벌 저장소에서 로드
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      try {
+        const response = await fetch('/api/data/featured-apps', { cache: 'no-store' });
+        if (response.ok) {
+          const data = await response.json();
+          return {
+            featured: data.featured || [],
+            events: data.events || []
+          };
+        }
+      } catch (error) {
+        console.warn('글로벌 Featured 데이터 로드 실패, 메모리 사용:', error);
+      }
       return memoryFeatured;
     }
     
@@ -78,11 +99,28 @@ async function loadFeatured(): Promise<{ featured: string[]; events: string[] }>
   }
 }
 
-// Featured/Events 데이터 저장
+// Featured/Events 데이터 저장 (글로벌 저장소 우선)
 async function saveFeatured(featured: { featured: string[]; events: string[] }) {
   try {
-    // Vercel 환경에서는 메모리 저장소 사용
+    // Vercel 환경에서는 글로벌 저장소에 먼저 저장
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+      try {
+        const response = await fetch('/api/data/featured-apps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(featured),
+        });
+        
+        if (response.ok) {
+          // 글로벌 저장 성공 시 메모리도 동기화
+          memoryFeatured = { ...featured };
+          return;
+        }
+      } catch (error) {
+        console.warn('글로벌 Featured 저장 실패, 메모리 사용:', error);
+      }
+      
+      // 글로벌 저장 실패 시 메모리 저장소 사용
       memoryFeatured = { ...featured };
       return;
     }
@@ -139,18 +177,6 @@ export async function POST(request: NextRequest) {
     };
     
     await saveFeatured(newFeatured);
-    
-    // Blob 동기화
-    try {
-      const origin = new URL(request.url).origin;
-      await fetch(`${origin}/api/data/featured-apps`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newFeatured),
-      });
-    } catch (error) {
-      console.warn('Blob 동기화 실패:', error);
-    }
     
     return NextResponse.json({
       success: true,
@@ -211,18 +237,6 @@ export async function PUT(request: NextRequest) {
     };
     
     await saveFeatured(newFeatured);
-    
-    // Blob 동기화
-    try {
-      const origin = new URL(request.url).origin;
-      await fetch(`${origin}/api/data/featured-apps`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newFeatured),
-      });
-    } catch (error) {
-      console.warn('Blob 동기화 실패:', error);
-    }
     
     return NextResponse.json({
       success: true,

@@ -158,17 +158,22 @@ export default function Home() {
         // 3. localStorage 백업 저장
         localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
         
-        // 4. Vercel Blob에 명시적 동기화 (트리거)
+        // 4. 글로벌 저장소에서 다시 로드하여 동기화 확인
         try {
-          console.log('🔄 Featured Blob 동기화 시작:', { newFeatured, eventApps });
-          const blobResult = await saveFeaturedAppsToBlob(newFeatured, eventApps);
-          if (blobResult) {
-            console.log('✅ Featured Blob 동기화 성공:', newFeatured);
+          console.log('🔄 Featured 글로벌 동기화 확인:', { newFeatured, eventApps });
+          const refreshedData = await loadFeaturedAppsFromBlob();
+          if (refreshedData.featured.length > 0 || refreshedData.events.length > 0) {
+            console.log('✅ Featured 글로벌 동기화 성공:', refreshedData);
+            // 글로벌 데이터로 상태 업데이트
+            setFeaturedApps(refreshedData.featured);
+            setEventApps(refreshedData.events);
+            localStorage.setItem('featured-apps', JSON.stringify(refreshedData.featured));
+            localStorage.setItem('event-apps', JSON.stringify(refreshedData.events));
           } else {
-            console.warn('⚠️ Featured Blob 동기화 실패 (반환값 false)');
+            console.warn('⚠️ Featured 글로벌 동기화 실패 (빈 데이터)');
           }
         } catch (blobError) {
-          console.error('❌ Featured Blob 동기화 오류 (Vercel):', blobError);
+          console.error('❌ Featured 글로벌 동기화 오류:', blobError);
         }
       } else {
         // Featured 앱 상태 토글 실패
@@ -207,17 +212,22 @@ export default function Home() {
         // 3. localStorage 백업 저장
         localStorage.setItem('event-apps', JSON.stringify(newEvents));
         
-        // 4. Vercel Blob에 명시적 동기화 (트리거)
+        // 4. 글로벌 저장소에서 다시 로드하여 동기화 확인
         try {
-          console.log('🔄 Events Blob 동기화 시작:', { featuredApps, newEvents });
-          const blobResult = await saveFeaturedAppsToBlob(featuredApps, newEvents);
-          if (blobResult) {
-            console.log('✅ Events Blob 동기화 성공:', newEvents);
+          console.log('🔄 Events 글로벌 동기화 확인:', { featuredApps, newEvents });
+          const refreshedData = await loadFeaturedAppsFromBlob();
+          if (refreshedData.featured.length > 0 || refreshedData.events.length > 0) {
+            console.log('✅ Events 글로벌 동기화 성공:', refreshedData);
+            // 글로벌 데이터로 상태 업데이트
+            setFeaturedApps(refreshedData.featured);
+            setEventApps(refreshedData.events);
+            localStorage.setItem('featured-apps', JSON.stringify(refreshedData.featured));
+            localStorage.setItem('event-apps', JSON.stringify(refreshedData.events));
           } else {
-            console.warn('⚠️ Events Blob 동기화 실패 (반환값 false)');
+            console.warn('⚠️ Events 글로벌 동기화 실패 (빈 데이터)');
           }
         } catch (blobError) {
-          console.error('❌ Events Blob 동기화 오류 (Vercel):', blobError);
+          console.error('❌ Events 글로벌 동기화 오류:', blobError);
         }
                    } else {
         // Event 앱 상태 토글 실패

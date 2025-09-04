@@ -114,8 +114,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await writeToLocal(featured);
-    return NextResponse.json({ success: true });
+    // 로컬 파일 저장 제거 - 글로벌에만 전달되도록 함
+    // await writeToLocal(featured);
+    return NextResponse.json({ success: true, storage: 'global-only' });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to save featured apps' }, { status: 500 });
   }
