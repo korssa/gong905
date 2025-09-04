@@ -1679,3 +1679,24 @@ button[type="reset"] * {
     overflow: hidden !important;
   }
 }
+
+/* 슬로건 번역 피드백 방지 (번역은 허용, 피드백만 차단) */
+.animate-gradient-x {
+  pointer-events: none;
+}
+
+.animate-gradient-x * {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 슬로건 영역 번역 피드백 완전 차단 */
+.text-center.mb-0.mt-0.overflow-hidden {
+  position: relative;
+  z-index: 1;
+}
+
+.text-center.mb-0.mt-0.overflow-hidden * {
+  pointer-events: none;
+  user-select: none;
+}
