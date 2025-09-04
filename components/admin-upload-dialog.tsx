@@ -283,6 +283,8 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
           setIsOpen(true);
         }}
         onMouseEnter={blockTranslationFeedback}
+        translate="no"
+        style={{translate: 'no'}}
       >
         <Upload className="h-4 w-4" />
         {buttonText || adminTexts.upload}
@@ -424,10 +426,11 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                   }
                 }}
                 onMouseEnter={blockTranslationFeedback}
+                
               >
                 {formData.appCategory === "normal" && "📱 " + adminTexts.normal}
-                {formData.appCategory === "events" && "🎉 " + adminTexts.featured}
-                {formData.appCategory === "featured" && "⭐ " + adminTexts.events}
+                {formData.appCategory === "featured" && "⭐ " + adminTexts.featured}
+                {formData.appCategory === "events" && "🎉 " + adminTexts.events}
               </Button>
             </div>
 

@@ -1149,6 +1149,8 @@ export default function Home() {
                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                      }`}
                      onMouseEnter={blockTranslationFeedback}
+                     translate="no"
+                     style={{translate: 'no'}}
                    >
                      📱 전체 ({allApps.length})
                    </button>
@@ -1160,6 +1162,8 @@ export default function Home() {
                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                      }`}
                      onMouseEnter={blockTranslationFeedback}
+                     translate="no"
+                     style={{translate: 'no'}}
                    >
                      📱 일반 ({allApps.filter(app => !featuredApps.includes(app.id) && !eventApps.includes(app.id)).length})
                    </button>
@@ -1171,6 +1175,8 @@ export default function Home() {
                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                      }`}
                      onMouseEnter={blockTranslationFeedback}
+                     translate="no"
+                     style={{translate: 'no'}}
                    >
                      ⭐ Featured ({featuredApps.length})
                    </button>
@@ -1182,6 +1188,8 @@ export default function Home() {
                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                      }`}
                      onMouseEnter={blockTranslationFeedback}
+                     translate="no"
+                     style={{translate: 'no'}}
                    >
                      🎉 Events ({eventApps.length})
                    </button>
@@ -1193,6 +1201,8 @@ export default function Home() {
                      onClick={createAdminButtonHandler(handleManualSave)}
                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 text-sm font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
                      onMouseEnter={blockTranslationFeedback}
+                     translate="no"
+                     style={{translate: 'no'}}
                    >
                      🔒 변경사항 저장
                    </button>
