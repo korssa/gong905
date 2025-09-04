@@ -38,6 +38,8 @@ async function readFromBlobLatest(): Promise<FeaturedSets | null> {
 
 async function writeBlobSets(sets: FeaturedSets): Promise<"blob" | "memory" | "local"> {
   const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+  
+  // Vercel 환경에서 Blob 저장 시도
   if (isProd) {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
@@ -49,15 +51,26 @@ async function writeBlobSets(sets: FeaturedSets): Promise<"blob" | "memory" | "l
         memoryFeatured = { ...sets };
         return "blob";
       } catch (e) {
+        console.error(`[Blob] 저장 실패 (시도 ${attempt}):`, e);
         if (attempt === 3) {
+          // Blob 저장 실패 시 메모리 + 로컬 파일 저장
           memoryFeatured = { ...sets };
-          return "memory";
+          try {
+            const dir = path.dirname(LOCAL_FEATURED_PATH);
+            await fs.mkdir(dir, { recursive: true });
+            await fs.writeFile(LOCAL_FEATURED_PATH, JSON.stringify(sets, null, 2));
+            console.log('[Local] Vercel 환경에서 로컬 파일 저장 성공');
+            return "local";
+          } catch (localError) {
+            console.error('[Local] 로컬 파일 저장 실패:', localError);
+            return "memory";
+          }
         }
       }
     }
   }
   
-  // 로컬 파일 저장
+  // 개발 환경: 로컬 파일 저장
   const dir = path.dirname(LOCAL_FEATURED_PATH);
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(LOCAL_FEATURED_PATH, JSON.stringify(sets, null, 2));
@@ -88,6 +101,19 @@ export async function GET() {
       } catch (error) {
         console.warn('[Featured Blob] 조회 실패:', error);
       }
+      
+      // Blob 실패 시 로컬 파일 시도
+      try {
+        const localData = await readFromLocal();
+        if (localData.featured.length > 0 || localData.events.length > 0) {
+          memoryFeatured = { ...localData };
+          return NextResponse.json(localData, { headers: { 'Cache-Control': 'no-store' } });
+        }
+      } catch (localError) {
+        console.warn('[Featured Local] 로컬 파일 조회 실패:', localError);
+      }
+      
+      // 메모리 폴백
       if (memoryFeatured.featured.length > 0 || memoryFeatured.events.length > 0) {
         return NextResponse.json(memoryFeatured, { headers: { 'Cache-Control': 'no-store' } });
       }
@@ -138,12 +164,20 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // 최신 세트 로드 (prod/blob → memory → local)
+    // 최신 세트 로드 (prod/blob → local → memory)
     let sets: FeaturedSets | null = null;
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
       sets = await readFromBlobLatest();
-      if (!sets) sets = { ...memoryFeatured };
+      if (!sets) {
+        // Blob 실패 시 로컬 파일 시도
+        try {
+          sets = await readFromLocal();
+        } catch (localError) {
+          console.warn('[PATCH] 로컬 파일 조회 실패:', localError);
+          sets = { ...memoryFeatured };
+        }
+      }
     } else {
       sets = await readFromLocal();
     }
