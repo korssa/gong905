@@ -96,20 +96,34 @@ export default function Home() {
     });
     
     // Featured Apps가 비어있으면 첫 번째 앱을 Featured로 설정 (테스트용)
-    if (featuredApps.length === 0 && apps.length > 0) {
-      console.log('🔧 Featured Apps가 비어있음. 첫 번째 앱을 Featured로 설정 (테스트용)');
-      const firstAppId = apps[0].id;
-      const newFeatured = [firstAppId];
-      setFeaturedApps(newFeatured);
-      localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
-      
-      // Vercel Blob에도 저장
+    if (featuredApps.length === 0) {
+      console.log('🔧 Featured Apps가 비어있음. Blob에서 앱을 로드하여 첫 번째 앱을 Featured로 설정');
       try {
-        const blobResult = await saveFeaturedAppsToBlob(newFeatured, eventApps);
-        console.log('💾 Featured Apps Blob 저장 결과:', blobResult);
+        const blobApps = await loadAppsByTypeFromBlob('gallery');
+        if (blobApps.length > 0) {
+          const firstAppId = blobApps[0].id;
+          const newFeatured = [firstAppId];
+          setFeaturedApps(newFeatured);
+          localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
+          
+          // Vercel Blob에도 저장
+          const blobResult = await saveFeaturedAppsToBlob(newFeatured, eventApps);
+          console.log('💾 Featured Apps Blob 저장 결과:', blobResult);
+        }
       } catch (error) {
-        console.error('❌ Featured Apps Blob 저장 실패:', error);
+        console.error('❌ Featured Apps 설정 실패:', error);
       }
+    }
+    
+    // Featured 필터링 전에 Blob에서 최신 앱 데이터 로드
+    try {
+      const blobApps = await loadAppsByTypeFromBlob('gallery');
+      if (blobApps.length > 0) {
+        setApps(blobApps);
+        console.log('🔄 Featured 필터링을 위해 Blob에서 앱 로드:', blobApps.length, '개');
+      }
+    } catch (error) {
+      console.error('❌ Featured 필터링을 위한 앱 로드 실패:', error);
     }
     
     setCurrentFilter("featured");
@@ -132,20 +146,34 @@ export default function Home() {
     });
     
     // Events Apps가 비어있으면 두 번째 앱을 Events로 설정 (테스트용)
-    if (eventApps.length === 0 && apps.length > 1) {
-      console.log('🔧 Events Apps가 비어있음. 두 번째 앱을 Events로 설정 (테스트용)');
-      const secondAppId = apps[1].id;
-      const newEvents = [secondAppId];
-      setEventApps(newEvents);
-      localStorage.setItem('event-apps', JSON.stringify(newEvents));
-      
-      // Vercel Blob에도 저장
+    if (eventApps.length === 0) {
+      console.log('🔧 Events Apps가 비어있음. Blob에서 앱을 로드하여 두 번째 앱을 Events로 설정');
       try {
-        const blobResult = await saveFeaturedAppsToBlob(featuredApps, newEvents);
-        console.log('💾 Events Apps Blob 저장 결과:', blobResult);
+        const blobApps = await loadAppsByTypeFromBlob('gallery');
+        if (blobApps.length > 1) {
+          const secondAppId = blobApps[1].id;
+          const newEvents = [secondAppId];
+          setEventApps(newEvents);
+          localStorage.setItem('event-apps', JSON.stringify(newEvents));
+          
+          // Vercel Blob에도 저장
+          const blobResult = await saveFeaturedAppsToBlob(featuredApps, newEvents);
+          console.log('💾 Events Apps Blob 저장 결과:', blobResult);
+        }
       } catch (error) {
-        console.error('❌ Events Apps Blob 저장 실패:', error);
+        console.error('❌ Events 설정 실패:', error);
       }
+    }
+    
+    // Events 필터링 전에 Blob에서 최신 앱 데이터 로드
+    try {
+      const blobApps = await loadAppsByTypeFromBlob('gallery');
+      if (blobApps.length > 0) {
+        setApps(blobApps);
+        console.log('🔄 Events 필터링을 위해 Blob에서 앱 로드:', blobApps.length, '개');
+      }
+    } catch (error) {
+      console.error('❌ Events 필터링을 위한 앱 로드 실패:', error);
     }
     
     setCurrentFilter("events");
@@ -435,6 +463,12 @@ export default function Home() {
 
   const handleAppUpload = async (data: AppFormData, files: { icon: File; screenshots: File[] }) => {
     try {
+      console.log('🔄 handleAppUpload 함수 호출됨:', { 
+        appName: data.name, 
+        developer: data.developer,
+        iconFile: files.icon?.name,
+        screenshotCount: files.screenshots?.length || 0
+      });
       // 아이콘/스크린샷 파일 업로드 (Vercel Blob 우선)
       const iconUrl = await uploadFile(files.icon, "icon");
       const screenshotUrls = await Promise.all(
