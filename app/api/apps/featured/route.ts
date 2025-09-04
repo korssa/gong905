@@ -1,143 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { AppItem } from '@/types';
-
-// 로컬 파일 경로
-const APPS_FILE_PATH = path.join(process.cwd(), 'data', 'apps.json');
-const FEATURED_FILE_PATH = path.join(process.cwd(), 'data', 'featured-apps.json');
-
-// 메모리 기반 저장소 (Vercel 환경에서 사용)
-const memoryApps: AppItem[] = [];
-let memoryFeatured: { featured: string[]; events: string[] } = { featured: [], events: [] };
-
-// 데이터 디렉토리 생성 및 파일 초기화
-async function ensureDataFile() {
-  try {
-    const dataDir = path.dirname(APPS_FILE_PATH);
-    await fs.mkdir(dataDir, { recursive: true });
-    
-    // 파일이 없으면 빈 배열로 초기화
-    try {
-      await fs.access(APPS_FILE_PATH);
-    } catch {
-      await fs.writeFile(APPS_FILE_PATH, JSON.stringify([]));
-    }
-  } catch {
-    // 에러 무시
-  }
-}
-
-async function ensureFeaturedFile() {
-  try {
-    const dataDir = path.dirname(FEATURED_FILE_PATH);
-    await fs.mkdir(dataDir, { recursive: true });
-    
-    // 파일이 없으면 기본값으로 초기화
-    try {
-      await fs.access(FEATURED_FILE_PATH);
-    } catch {
-      await fs.writeFile(FEATURED_FILE_PATH, JSON.stringify({ featured: [], events: [] }));
-    }
-  } catch {
-    // 에러 무시
-  }
-}
-
-// 앱 데이터 로드 (글로벌 저장소 우선)
-async function loadApps(): Promise<AppItem[]> {
-  try {
-    // Vercel 환경에서는 글로벌 저장소에서 로드
-    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-      try {
-        const response = await fetch('/api/data/apps', { cache: 'no-store' });
-        if (response.ok) {
-          const apps = await response.json();
-          return Array.isArray(apps) ? apps : [];
-        }
-      } catch (error) {
-        console.warn('글로벌 앱 데이터 로드 실패, 메모리 사용:', error);
-      }
-      return memoryApps;
-    }
-    
-    // 로컬 환경에서는 파일에서 로드
-    await ensureDataFile();
-    const data = await fs.readFile(APPS_FILE_PATH, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-// Featured/Events 데이터 로드 (글로벌 저장소 우선)
-async function loadFeatured(): Promise<{ featured: string[]; events: string[] }> {
-  try {
-    // Vercel 환경에서는 글로벌 저장소에서 로드
-    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-      try {
-        const response = await fetch('/api/data/featured-apps', { cache: 'no-store' });
-        if (response.ok) {
-          const data = await response.json();
-          return {
-            featured: data.featured || [],
-            events: data.events || []
-          };
-        }
-      } catch (error) {
-        console.warn('글로벌 Featured 데이터 로드 실패, 메모리 사용:', error);
-      }
-      return memoryFeatured;
-    }
-    
-    // 로컬 환경에서는 파일에서 로드
-    await ensureFeaturedFile();
-    const data = await fs.readFile(FEATURED_FILE_PATH, 'utf-8');
-    return JSON.parse(data);
-  } catch {
-    return { featured: [], events: [] };
-  }
-}
-
-// Featured/Events 데이터 저장 (글로벌 저장소 우선)
-async function saveFeatured(featured: { featured: string[]; events: string[] }) {
-  try {
-    // Vercel 환경에서는 글로벌 저장소에 먼저 저장
-    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-      try {
-        const response = await fetch('/api/data/featured-apps', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(featured),
-        });
-        
-        if (response.ok) {
-          // 글로벌 저장 성공 시 메모리도 동기화
-          memoryFeatured = { ...featured };
-          return;
-        }
-      } catch (error) {
-        console.warn('글로벌 Featured 저장 실패, 메모리 사용:', error);
-      }
-      
-      // 글로벌 저장 실패 시 메모리 저장소 사용
-      memoryFeatured = { ...featured };
-      return;
-    }
-    
-    // 로컬 환경에서는 파일 저장
-    await ensureFeaturedFile();
-    const jsonData = JSON.stringify(featured, null, 2);
-    await fs.writeFile(FEATURED_FILE_PATH, jsonData);
-  } catch (error) {
-    throw new Error(`Featured 앱 저장 오류: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
-  }
-}
+import { loadFeaturedAppsFromBlob, saveFeaturedAppsToBlob } from '@/lib/data-loader';
 
 // GET: Featured/Events 앱 정보 조회
 export async function GET() {
   try {
-    const featured = await loadFeatured();
+    const featured = await loadFeaturedAppsFromBlob();
     
     return NextResponse.json({
       success: true,
@@ -166,25 +33,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'featured와 events는 배열이어야 합니다.' }, { status: 400 });
     }
     
-    // 앱 목록 로드하여 유효성 검증
-    const apps = await loadApps();
-    const validFeatured = featured.filter(id => apps.some(app => app.id === id));
-    const validEvents = events.filter(id => apps.some(app => app.id === id));
-    
     const newFeatured = {
-      featured: validFeatured,
-      events: validEvents
+      featured: featured,
+      events: events
     };
     
-    await saveFeatured(newFeatured);
+    await saveFeaturedAppsToBlob(newFeatured.featured, newFeatured.events);
     
     return NextResponse.json({
       success: true,
-      featured: validFeatured,
-      events: validEvents,
+      featured: featured,
+      events: events,
       count: {
-        featured: validFeatured.length,
-        events: validEvents.length
+        featured: featured.length,
+        events: events.length
       }
     });
   } catch (error) {
@@ -214,13 +76,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'action은 add 또는 remove여야 합니다.' }, { status: 400 });
     }
     
-    // 앱 목록 로드하여 유효성 검증
-    const apps = await loadApps();
-    if (!apps.some(app => app.id === appId)) {
-      return NextResponse.json({ error: '존재하지 않는 앱입니다.' }, { status: 404 });
-    }
-    
-    const currentFeatured = await loadFeatured();
+    const currentFeatured = await loadFeaturedAppsFromBlob();
     let updatedList: string[];
     
     if (action === 'add') {
@@ -236,7 +92,7 @@ export async function PUT(request: NextRequest) {
       [type]: updatedList
     };
     
-    await saveFeatured(newFeatured);
+    await saveFeaturedAppsToBlob(newFeatured.featured, newFeatured.events);
     
     return NextResponse.json({
       success: true,

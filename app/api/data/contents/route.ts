@@ -66,18 +66,15 @@ export async function GET() {
           blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
           const latestBlob = blobs[0];
           
-          console.log(`[Blob] 총 ${blobs.length}개 파일 중 최신: ${latestBlob.uploadedAt}`);
           
           const res = await fetch(latestBlob.url, { cache: 'no-store' });
           if (res.ok) {
             const json = await res.json();
             const data = Array.isArray(json) ? (json as ContentItem[]) : [];
-            console.log(`[Blob] 최신 데이터 로드 성공: ${data.length}개 콘텐츠`);
             
             // App Story 전용 디버깅
             const appStoryCount = data.filter(c => c.type === 'appstory').length;
             const newsCount = data.filter(c => c.type === 'news').length;
-            console.log(`[Blob] 로드된 타입별 개수 - App Story: ${appStoryCount}, News: ${newsCount}`);
             
             return NextResponse.json(data);
           }
@@ -89,12 +86,10 @@ export async function GET() {
 
       // 2) 메모리 폴백
       if (memoryContents.length > 0) {
-        console.log(`[Memory] 폴백 데이터 사용: ${memoryContents.length}개 콘텐츠`);
         
         // App Story 전용 디버깅
         const appStoryCount = memoryContents.filter(c => c.type === 'appstory').length;
         const newsCount = memoryContents.filter(c => c.type === 'news').length;
-        console.log(`[Memory] 폴백 타입별 개수 - App Story: ${appStoryCount}, News: ${newsCount}`);
         
         return NextResponse.json(memoryContents);
       }
@@ -121,12 +116,10 @@ export async function POST(request: NextRequest) {
     if (isProd) {
       // Blob 저장 우선 시도, 실패 시 메모리 폴백으로도 성공 처리
       try {
-        console.log(`[Blob] 저장 시도: ${contents.length}개 콘텐츠`);
         
         // App Story 전용 디버깅
         const appStoryCount = contents.filter(c => c.type === 'appstory').length;
         const newsCount = contents.filter(c => c.type === 'news').length;
-        console.log(`[Blob] 타입별 개수 - App Story: ${appStoryCount}, News: ${newsCount}`);
         
         await put(CONTENTS_FILE_NAME, JSON.stringify(contents, null, 2), {
           access: 'public',
@@ -134,7 +127,6 @@ export async function POST(request: NextRequest) {
           addRandomSuffix: false,
         });
         // Blob 저장 성공
-        console.log('[Blob] 저장 성공');
         // 메모리와의 불일치 방지를 위해 메모리도 최신으로 갱신
         memoryContents = [...contents];
         return NextResponse.json({ success: true, storage: 'blob' });

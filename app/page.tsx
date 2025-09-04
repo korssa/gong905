@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 declare global {
   interface Window {
@@ -38,7 +38,7 @@ const sampleApps: AppItem[] = [];
 
 export default function Home() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [apps, setApps] = useState<AppItem[]>([]);
+  const [allApps, setAllApps] = useState<AppItem[]>([]); // Single source of truth
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<AppItem | null>(null);
   const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
@@ -49,6 +49,47 @@ export default function Home() {
   const { t } = useLanguage();
   const { isAuthenticated } = useAdmin();
   const [adminVisible, setAdminVisible] = useState(false);
+
+  // Request ID for preventing race conditions
+  const reqIdRef = useRef(0);
+  const loadedRef = useRef(false);
+
+  // Derived state - filtered apps based on current filter
+  const filteredApps = useMemo(() => {
+    let filtered = [...allApps];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(app => 
+        app.name.toLowerCase().includes(query) ||
+        app.description.toLowerCase().includes(query) ||
+        app.developer.toLowerCase().includes(query)
+      );
+    }
+
+    // Type filter
+    switch (currentFilter) {
+      case "latest":
+        const latestApps = filtered
+          .filter(app => app.status === "published")
+          .sort((a, b) => 
+            new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+          );
+        return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
+      case "featured": {
+        const featuredApps = filtered.filter(app => app.isFeatured);
+        return featuredApps.sort((a, b) => a.name.localeCompare(b.name));
+      }
+      case "events": {
+        const eventApps = filtered.filter(app => app.isEvent);
+        return eventApps.sort((a, b) => a.name.localeCompare(b.name));
+      }
+      case "all":
+      default:
+        return filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
+  }, [allApps, currentFilter, searchQuery]);
 
 
 
@@ -87,17 +128,9 @@ export default function Home() {
 
   // Featured Apps 버튼 클릭 핸들러
   const handleFeaturedAppsClick = async () => {
-    console.log('🎯 Featured Apps 버튼 클릭:', {
-      currentFilter: currentFilter,
-      featuredApps: featuredApps,
-      featuredCount: featuredApps.length,
-      totalApps: apps.length,
-      appIds: apps.map(app => app.id)
-    });
     
     // Featured Apps가 비어있으면 첫 번째 앱을 Featured로 설정 (테스트용)
     if (featuredApps.length === 0) {
-      console.log('🔧 Featured Apps가 비어있음. Blob에서 앱을 로드하여 첫 번째 앱을 Featured로 설정');
       try {
         const blobApps = await loadAppsByTypeFromBlob('gallery');
         if (blobApps.length > 0) {
@@ -110,22 +143,19 @@ export default function Home() {
           
           // 업데이트된 앱들을 Blob에 저장
           await saveAppsByTypeToBlob('gallery', updatedApps);
-          console.log('💾 Featured Apps boolean 필드 업데이트 완료');
         }
       } catch (error) {
         console.error('❌ Featured Apps 설정 실패:', error);
       }
     }
     
-    // Featured 필터링 전에 Blob에서 최신 앱 데이터 로드
-    try {
-      const blobApps = await loadAppsByTypeFromBlob('gallery');
-      if (blobApps.length > 0) {
-        setApps(blobApps);
-        console.log('🔄 Featured 필터링을 위해 Blob에서 앱 로드:', blobApps.length, '개');
-      }
-    } catch (error) {
-      console.error('❌ Featured 필터링을 위한 앱 로드 실패:', error);
+    // Single source 업데이트 (낙관적 업데이트)
+    if (featuredApps.length === 0) {
+      setAllApps(prev => prev.map((app, index) => ({
+        ...app,
+        isFeatured: index === 0,
+        isEvent: app.isEvent || false
+      })));
     }
     
     setCurrentFilter("featured");
@@ -139,17 +169,9 @@ export default function Home() {
 
   // Events 버튼 클릭 핸들러
   const handleEventsClick = async () => {
-    console.log('🎯 Events 버튼 클릭:', {
-      currentFilter: currentFilter,
-      eventApps: eventApps,
-      eventCount: eventApps.length,
-      totalApps: apps.length,
-      appIds: apps.map(app => app.id)
-    });
     
     // Events Apps가 비어있으면 두 번째 앱을 Events로 설정 (테스트용)
     if (eventApps.length === 0) {
-      console.log('🔧 Events Apps가 비어있음. Blob에서 앱을 로드하여 두 번째 앱을 Events로 설정');
       try {
         const blobApps = await loadAppsByTypeFromBlob('gallery');
         if (blobApps.length > 1) {
@@ -162,22 +184,19 @@ export default function Home() {
           
           // 업데이트된 앱들을 Blob에 저장
           await saveAppsByTypeToBlob('gallery', updatedApps);
-          console.log('💾 Events Apps boolean 필드 업데이트 완료');
         }
       } catch (error) {
         console.error('❌ Events 설정 실패:', error);
       }
     }
     
-    // Events 필터링 전에 Blob에서 최신 앱 데이터 로드
-    try {
-      const blobApps = await loadAppsByTypeFromBlob('gallery');
-      if (blobApps.length > 0) {
-        setApps(blobApps);
-        console.log('🔄 Events 필터링을 위해 Blob에서 앱 로드:', blobApps.length, '개');
-      }
-    } catch (error) {
-      console.error('❌ Events 필터링을 위한 앱 로드 실패:', error);
+    // Single source 업데이트 (낙관적 업데이트)
+    if (eventApps.length === 0) {
+      setAllApps(prev => prev.map((app, index) => ({
+        ...app,
+        isFeatured: app.isFeatured || false,
+        isEvent: index === 1
+      })));
     }
     
     setCurrentFilter("events");
@@ -206,10 +225,6 @@ export default function Home() {
           localStorage.setItem('featured-apps', JSON.stringify(data.featured || []));
           localStorage.setItem('event-apps', JSON.stringify(data.events || []));
           
-          console.log('✅ Featured/Events 데이터 리로드 성공:', {
-            featured: data.featured,
-            events: data.events
-          });
         }
       } else {
         console.warn('⚠️ Featured/Events 데이터 리로드 실패:', response.status);
@@ -219,69 +234,6 @@ export default function Home() {
     }
   };
 
-  // Vercel Blob API 직접 테스트 함수
-  const testBlobAPI = async () => {
-    console.log('🧪 Vercel Blob API 테스트 시작...');
-    
-    try {
-      // 1. Blob에서 데이터 로드 테스트
-      console.log('1️⃣ Blob에서 데이터 로드 테스트...');
-      const loadResponse = await fetch('/api/data/featured-apps', {
-        method: 'GET',
-        cache: 'no-store'
-      });
-      
-      console.log('📊 Blob 로드 응답:', {
-        status: loadResponse.status,
-        statusText: loadResponse.statusText,
-        ok: loadResponse.ok
-      });
-      
-      if (loadResponse.ok) {
-        const loadData = await loadResponse.json();
-        console.log('📊 Blob 로드 데이터:', loadData);
-      }
-      
-      // 2. Blob에 테스트 데이터 저장
-      console.log('2️⃣ Blob에 테스트 데이터 저장...');
-      const testData = {
-        featured: ['test_featured_1', 'test_featured_2'],
-        events: ['test_event_1']
-      };
-      
-      const saveResponse = await fetch('/api/data/featured-apps', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(testData)
-      });
-      
-      console.log('💾 Blob 저장 응답:', {
-        status: saveResponse.status,
-        statusText: saveResponse.statusText,
-        ok: saveResponse.ok
-      });
-      
-      if (saveResponse.ok) {
-        const saveData = await saveResponse.json();
-        console.log('💾 Blob 저장 결과:', saveData);
-      }
-      
-      // 3. 다시 로드해서 저장 확인
-      console.log('3️⃣ 저장 후 다시 로드 테스트...');
-      const reloadResponse = await fetch('/api/data/featured-apps', {
-        method: 'GET',
-        cache: 'no-store'
-      });
-      
-      if (reloadResponse.ok) {
-        const reloadData = await reloadResponse.json();
-        console.log('🔄 재로드 데이터:', reloadData);
-      }
-      
-    } catch (error) {
-      console.error('❌ Blob API 테스트 오류:', error);
-    }
-  };
 
     // Featured 앱 토글 핸들러
   const handleToggleFeatured = async (appId: string) => {
@@ -306,10 +258,8 @@ export default function Home() {
         
         // 4. 글로벌 저장소에서 다시 로드하여 동기화 확인
         try {
-          console.log('🔄 Featured 글로벌 동기화 확인:', { newFeatured, eventApps });
           const refreshedData = await loadFeaturedAppsFromBlob();
           if (refreshedData.featured.length > 0 || refreshedData.events.length > 0) {
-            console.log('✅ Featured 글로벌 동기화 성공:', refreshedData);
             // 글로벌 데이터로 상태 업데이트
             setFeaturedApps(refreshedData.featured);
             setEventApps(refreshedData.events);
@@ -360,10 +310,8 @@ export default function Home() {
         
         // 4. 글로벌 저장소에서 다시 로드하여 동기화 확인
         try {
-          console.log('🔄 Events 글로벌 동기화 확인:', { featuredApps, newEvents });
           const refreshedData = await loadFeaturedAppsFromBlob();
           if (refreshedData.featured.length > 0 || refreshedData.events.length > 0) {
-            console.log('✅ Events 글로벌 동기화 성공:', refreshedData);
             // 글로벌 데이터로 상태 업데이트
             setFeaturedApps(refreshedData.featured);
             setEventApps(refreshedData.events);
@@ -396,70 +344,11 @@ export default function Home() {
     blockTranslationFeedback();
   };
 
-  // 전역 테스트 함수 등록 (개발용)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as typeof window & { testBlobAPI: typeof testBlobAPI }).testBlobAPI = testBlobAPI;
-      console.log('🧪 testBlobAPI 함수가 전역에 등록되었습니다. 콘솔에서 testBlobAPI()를 호출하여 테스트하세요.');
-    }
-  }, []);
 
-     // 앱 필터링 및 정렬 로직
-   const getFilteredAndSortedApps = () => {
-     let filteredApps = [...apps];
-
-     // 검색어 필터링
-     if (searchQuery.trim()) {
-       const query = searchQuery.toLowerCase().trim();
-       filteredApps = filteredApps.filter(app => 
-         app.name.toLowerCase().includes(query) ||
-         app.developer.toLowerCase().includes(query) ||
-         app.description.toLowerCase().includes(query) ||
-         app.category?.toLowerCase().includes(query) ||
-         app.tags?.some(tag => tag.toLowerCase().includes(query))
-       );
-     }
-
-           // 필터 타입별 정렬
-      switch (currentFilter) {
-        case "latest":
-          const latestApps = filteredApps
-            .filter(app => app.status === "published")
-            .sort((a, b) => 
-              new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
-            );
-          return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
-        case "featured":
-          const featuredApps = filteredApps.filter(app => app.isFeatured);
-          console.log('🔍 Featured 필터링:', {
-            totalApps: filteredApps.length,
-            featuredCount: featuredApps.length,
-            filteredResult: featuredApps,
-            featuredAppNames: featuredApps.map(app => app.name)
-          });
-          return filteredApps
-            .filter(app => app.isFeatured)
-            .sort((a, b) => a.name.localeCompare(b.name));
-        case "events":
-          const eventApps = filteredApps.filter(app => app.isEvent);
-          console.log('🔍 Events 필터링:', {
-            totalApps: filteredApps.length,
-            eventCount: eventApps.length,
-            filteredResult: eventApps,
-            eventAppNames: eventApps.map(app => app.name)
-          });
-          return filteredApps
-            .filter(app => app.isEvent)
-            .sort((a, b) => a.name.localeCompare(b.name));
-        case "all":
-        default:
-          return filteredApps.sort((a, b) => a.name.localeCompare(b.name));
-      }
-   };
 
    // New Release 앱을 가져오는 별도 함수
    const getLatestApp = () => {
-     const latestApps = apps
+     const latestApps = allApps
        .filter(app => app.status === "published")
        .sort((a, b) => 
          new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
@@ -469,12 +358,6 @@ export default function Home() {
 
   const handleAppUpload = async (data: AppFormData, files: { icon: File; screenshots: File[] }) => {
     try {
-      console.log('🔄 handleAppUpload 함수 호출됨:', { 
-        appName: data.name, 
-        developer: data.developer,
-        iconFile: files.icon?.name,
-        screenshotCount: files.screenshots?.length || 0
-      });
       // 아이콘/스크린샷 파일 업로드 (Vercel Blob 우선)
       const iconUrl = await uploadFile(files.icon, "icon");
       const screenshotUrls = await Promise.all(
@@ -505,7 +388,7 @@ export default function Home() {
       };
 
       // 앱 목록에 추가
-      const updatedApps = [newApp, ...apps];
+      const updatedApps = [newApp, ...allApps];
       
       // 글로벌 저장소에 먼저 저장 (서버 우선)
       try {
@@ -514,17 +397,17 @@ export default function Home() {
         // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
         if (refreshedApps.length > 0) {
-          setApps(refreshedApps);
+          setAllApps(refreshedApps); // Single source update
           localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
         } else {
           // Blob에서 로드 실패시 로컬 상태만 업데이트
-          setApps(updatedApps);
+          setAllApps(updatedApps); // Single source update
           localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
         }
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
         // 글로벌 저장 실패시 로컬 상태만 업데이트
-        setApps(updatedApps);
+        setAllApps(updatedApps); // Single source update
         localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
       }
       
@@ -532,7 +415,6 @@ export default function Home() {
       alert("✅ App uploaded successfully!");
       
       // 갤러리 강제 새로고침 (리프레시 없이도 최신 데이터 표시)
-      console.log('🔄 handleAppUpload에서 forceRefreshGallery 호출');
       await forceRefreshGallery();
       
     } catch {
@@ -543,13 +425,13 @@ export default function Home() {
      const handleDeleteApp = async (id: string) => {
      try {
        // 1. 삭제할 앱 정보 찾기 (원본 배열에서 찾기)
-       const appToDelete = apps.find(app => app.id === id);
+       const appToDelete = allApps.find(app => app.id === id);
        if (!appToDelete) {
          return;
        }
 
        // 2. 새로운 앱 목록 계산 (원본 배열 기반)
-       const newApps = apps.filter(app => app.id !== id);
+       const newApps = allApps.filter(app => app.id !== id);
        
        // 3. Featured/Events 앱에서도 제거 (원본 배열 기반)
        const newFeaturedApps = featuredApps.filter(appId => appId !== id);
@@ -562,17 +444,17 @@ export default function Home() {
          // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
          const refreshedApps = await loadAppsByTypeFromBlob('gallery');
          if (refreshedApps.length > 0) {
-           setApps(refreshedApps);
+           setAllApps(refreshedApps); // Single source update
            localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
          } else {
            // Blob에서 로드 실패시 로컬 상태만 업데이트
-           setApps(newApps);
+           setAllApps(newApps); // Single source update
            localStorage.setItem('gallery-apps', JSON.stringify(newApps));
          }
        } catch (error) {
          console.error('글로벌 저장 실패:', error);
          // 글로벌 저장 실패시 로컬 상태만 업데이트
-         setApps(newApps);
+         setAllApps(newApps); // Single source update
          localStorage.setItem('gallery-apps', JSON.stringify(newApps));
        }
 
@@ -612,13 +494,7 @@ export default function Home() {
          try {
            const updatedBlobApps = await loadAppsFromBlob();
               
-              if (updatedBlobApps && updatedBlobApps.length === 0) {
-                // Blob 동기화 완료
-                console.log('✅ Blob 동기화 완료 - 앱 삭제 반영됨');
-              } else {
-                // Blob 동기화 지연 - 기존 상태 유지
-                console.log('⚠️ Blob 동기화 지연 - 기존 상태 유지');
-              }
+              // Blob 동기화 상태 확인 (동기화 완료 또는 지연)
             } catch (error) {
               // Blob 재확인 실패 무시
             }
@@ -630,7 +506,7 @@ export default function Home() {
        if (savedAppsStr) {
          try {
            const parsedApps = JSON.parse(savedAppsStr);
-           setApps(parsedApps);
+           setAllApps(parsedApps);
          } catch (parseError) {
            // localStorage 파싱 실패 무시
          }
@@ -644,73 +520,49 @@ export default function Home() {
     setEditingApp(app);
   };
 
-    // 앱 목록 로드 및 동기화 (메모장 방식으로 수정)
+    // 앱 목록 로드 및 동기화 (Single source + race condition prevention)
   useEffect(() => {
+    // StrictMode 이중 실행 방지
+    if (loadedRef.current) return;
+    loadedRef.current = true;
+
     let isMounted = true; // 컴포넌트 마운트 상태 추적
-    console.log('🚀 useEffect 시작, 컴포넌트 마운트됨');
     
-    const loadApps = async () => {
+    const loadAllApps = async () => {
+      const myId = ++reqIdRef.current; // Request ID for race condition prevention
+      
       try {
-        console.log('🔄 앱 로드 시작...', new Date().toISOString());
-        
         // 메모장과 동일하게 타입별 분리된 Blob Storage에서 로드 시도
         const typeApps = await loadAppsByTypeFromBlob('gallery');
-        console.log('📦 Blob에서 타입별 앱 로드 결과:', typeApps.length, '개');
         
-        if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
+        if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
         
         if (typeApps.length > 0) {
-          console.log('✅ Blob에서 앱 데이터 로드 성공');
           // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
           const validatedApps = await validateAppsImages(typeApps);
-          console.log('🔍 이미지 검증 후 앱:', validatedApps.length, '개');
-          console.log('🔍 validateAppsImages 완료, isMounted:', isMounted);
-          
-          console.log('🔍 isMounted 상태 확인:', isMounted);
-          if (!isMounted) {
-            console.log('❌ 컴포넌트가 언마운트됨, setApps 중단');
-            return; // 컴포넌트가 언마운트되었으면 중단
-          }
+          if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
           // 기존 앱들에 type 속성 추가
           const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-          console.log('🔄 setApps 호출 전:', { appsWithType: appsWithType.length, currentApps: apps.length });
-          setApps(appsWithType);
+          setAllApps(appsWithType); // Single source update
           localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
-          console.log('💾 Blob 데이터를 localStorage에 저장 완료');
-          console.log('🔄 setApps 호출 완료, appsWithType:', appsWithType.length, '개');
-          
-          // 상태 업데이트를 기다리기 위해 약간의 지연
-          await new Promise(resolve => setTimeout(resolve, 100));
-          console.log('⏳ 상태 업데이트 대기 후 apps 상태:', apps.length, '개');
-          console.log('🔍 setApps 호출 후 실제 반영 여부 확인:', { 
-            appsWithType: appsWithType.length, 
-            currentApps: apps.length,
-            isMounted: isMounted 
-          });
-          console.log('🔍 setApps 호출 후 스택 트레이스:', new Error().stack);
         } else {
-          console.log('⚠️ Blob에 타입별 데이터 없음, 기존 API 시도...');
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
           const blobApps = await loadAppsFromBlob();
-          console.log('📦 기존 Blob API 결과:', blobApps?.length || 0, '개');
           
-          if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
+          if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
           if (blobApps && blobApps.length > 0) {
-            console.log('✅ 기존 Blob API에서 데이터 로드 성공');
             const validatedApps = await validateAppsImages(blobApps);
             
-            if (!isMounted) return; // 컴포넌트가 언마운트되었으면 중단
+            if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
             
             // 기존 앱들에 type 속성 추가
             const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-            console.log('🔄 기존 API setApps 호출 전:', { appsWithType: appsWithType.length, currentApps: apps.length });
-            setApps(appsWithType);
+            setAllApps(appsWithType); // Single source update
             localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
           } else {
-            console.log('❌ localStorage에도 데이터 없음, 기존 상태 유지');
-            // setApps([]) 호출 제거 - 기존 상태 유지
+            // Keep existing state - don't reset to empty array
             localStorage.setItem('gallery-apps', JSON.stringify([]));
           }
         }
@@ -719,30 +571,22 @@ export default function Home() {
         if (isMounted) {
           try {
             const blobFeatured = await loadFeaturedAppsFromBlob();
-            console.log('📊 Featured/Events 데이터 로드:', {
-              blobFeatured: blobFeatured,
-              featuredCount: blobFeatured.featured.length,
-              eventsCount: blobFeatured.events.length
-            });
             
             if (blobFeatured.featured.length > 0 || blobFeatured.events.length > 0) {
               setFeaturedApps(blobFeatured.featured);
               setEventApps(blobFeatured.events);
-              console.log('✅ Blob에서 Featured/Events 앱 로드됨');
             } else {
               // Blob에 데이터가 없으면 localStorage 폴백
               const savedFeaturedApps = localStorage.getItem('featured-apps');
               if (savedFeaturedApps) {
                 const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
                 setFeaturedApps(parsedFeaturedApps);
-                console.log('📱 localStorage에서 Featured 앱 로드:', parsedFeaturedApps);
               }
               
               const savedEventApps = localStorage.getItem('event-apps');
               if (savedEventApps) {
                 const parsedEventApps = JSON.parse(savedEventApps);
                 setEventApps(parsedEventApps);
-                console.log('📱 localStorage에서 Events 앱 로드:', parsedEventApps);
               }
             }
           } catch (error) {
@@ -752,60 +596,46 @@ export default function Home() {
             if (savedFeaturedApps) {
               const parsedFeaturedApps = JSON.parse(savedFeaturedApps);
               setFeaturedApps(parsedFeaturedApps);
-              console.log('📱 localStorage 폴백으로 Featured 앱 로드:', parsedFeaturedApps);
             }
             
             const savedEventApps = localStorage.getItem('event-apps');
             if (savedEventApps) {
               const parsedEventApps = JSON.parse(savedEventApps);
               setEventApps(parsedEventApps);
-              console.log('📱 localStorage 폴백으로 Events 앱 로드:', parsedEventApps);
             }
           }
         }
         
-        if (isMounted) {
-          console.log('🎯 최종 앱 상태:', apps.length, '개');
-          console.log('🔍 loadApps 함수 완료 시점의 apps 상태:', apps.length, '개');
-        }
       } catch (error) {
         console.error('❌ 앱 로드 실패:', error);
         if (isMounted) {
           // 앱 로드 실패
           // 실패시 샘플 데이터 사용
-          setApps(sampleApps);
+          setAllApps(sampleApps);
         }
       }
     };
 
-    loadApps();
+    loadAllApps();
     
     // 클린업 함수
     return () => {
-      console.log('🧹 useEffect 클린업, 컴포넌트 언마운트됨');
       isMounted = false;
     };
   }, []); // 의존성 배열을 빈 배열로 변경하여 한 번만 실행
 
-  // apps 상태 변경 디버깅
-  useEffect(() => {
-    console.log('🔄 apps 상태 변경됨:', apps.length, '개', new Date().toISOString());
-    console.log('🔍 apps 상태 변경 스택 트레이스:', new Error().stack);
-    if (apps.length > 0) {
-      console.log('📱 첫 번째 앱 정보:', { id: apps[0].id, name: apps[0].name });
-    }
-  }, [apps]);
 
   // 강제 데이터 새로고침 함수
   const forceRefreshGallery = async () => {
+    const myId = ++reqIdRef.current; // Request ID for race condition prevention
+    
     try {
-      console.log('🔄 forceRefreshGallery 호출됨');
       // Blob에서 최신 데이터 강제 로드
       const typeApps = await loadAppsByTypeFromBlob('gallery');
-      if (typeApps.length > 0) {
+      if (typeApps.length > 0 && myId === reqIdRef.current) {
         const validatedApps = await validateAppsImages(typeApps);
         const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-        setApps(appsWithType);
+        setAllApps(appsWithType); // Single source update
         localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
       }
     } catch (error) {
@@ -815,10 +645,10 @@ export default function Home() {
 
   const handleUpdateApp = async (appId: string, data: AppFormData, files?: { icon?: File; screenshots?: File[] }) => {
     try {
-      const appIndex = apps.findIndex(app => app.id === appId);
+      const appIndex = allApps.findIndex(app => app.id === appId);
       if (appIndex === -1) return;
 
-      const updatedApp = { ...apps[appIndex] };
+      const updatedApp = { ...allApps[appIndex] };
 
       // 기본 정보 업데이트
       updatedApp.name = data.name;
@@ -858,17 +688,17 @@ export default function Home() {
         // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
         if (refreshedApps.length > 0) {
-          setApps(refreshedApps);
+          setAllApps(refreshedApps);
           localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
         } else {
           // Blob에서 로드 실패시 로컬 상태만 업데이트
-          setApps(newApps);
+          setAllApps(newApps);
           localStorage.setItem('gallery-apps', JSON.stringify(newApps));
         }
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
         // 글로벌 저장 실패시 로컬 상태만 업데이트
-        setApps(newApps);
+        setAllApps(newApps);
         localStorage.setItem('gallery-apps', JSON.stringify(newApps));
         alert("⚠️ App updated but cloud synchronization failed.");
       }
@@ -1155,7 +985,7 @@ export default function Home() {
                        {currentFilter !== "latest" && (
                          <>
                            <AppGallery 
-                             apps={getFilteredAndSortedApps()} 
+                             apps={filteredApps} 
                              viewMode={viewMode} 
                              onDeleteApp={handleDeleteApp}
                              onEditApp={handleEditApp}

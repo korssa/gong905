@@ -45,13 +45,11 @@ export async function GET() {
           blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
           const latestBlob = blobs[0];
           
-          console.log(`[Featured Blob] 총 ${blobs.length}개 파일 중 최신: ${latestBlob.uploadedAt}`);
           
           const res = await fetch(latestBlob.url, { cache: 'no-store' });
           if (res.ok) {
             const json = await res.json();
             const data = json.featured && json.events ? json : { featured: [], events: [] };
-            console.log(`[Featured Blob] 최신 데이터 로드 성공: Featured ${data.featured.length}개, Events ${data.events.length}개`);
             
             // 메모리와 동기화
             memoryFeatured = { ...data };
@@ -65,7 +63,6 @@ export async function GET() {
 
       // 2) 메모리 폴백
       if (memoryFeatured.featured.length > 0 || memoryFeatured.events.length > 0) {
-        console.log(`[Featured Memory] 폴백 데이터 사용: Featured ${memoryFeatured.featured.length}개, Events ${memoryFeatured.events.length}개`);
         return NextResponse.json(memoryFeatured);
       }
 
@@ -93,7 +90,6 @@ export async function POST(request: NextRequest) {
     if (isProd) {
       // Blob 저장 우선 시도, 실패 시 메모리 폴백으로도 성공 처리
       try {
-        console.log(`[Featured Blob] 저장 시도: Featured ${featured.featured.length}개, Events ${featured.events.length}개`);
         
         await put(FEATURED_FILE_NAME, JSON.stringify(featured, null, 2), {
           access: 'public',
@@ -102,7 +98,6 @@ export async function POST(request: NextRequest) {
         });
         
         // Blob 저장 성공
-        console.log('[Featured Blob] 저장 성공');
         // 메모리와의 불일치 방지를 위해 메모리도 최신으로 갱신
         memoryFeatured = { ...featured };
         return NextResponse.json({ success: true, storage: 'blob' });
