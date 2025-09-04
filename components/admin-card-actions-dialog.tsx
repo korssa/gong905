@@ -20,6 +20,7 @@ interface AdminCardActionsDialogProps {
   isFeatured?: boolean;
   isEvent?: boolean;
   onRefreshData?: () => Promise<void>; // 추가: 데이터 리로드 콜백
+  onCleanData?: () => Promise<void>; // 추가: 데이터 정리 콜백
 }
 
 export function AdminCardActionsDialog({
@@ -32,7 +33,8 @@ export function AdminCardActionsDialog({
   onToggleEvent,
   isFeatured = false,
   isEvent = false,
-  onRefreshData
+  onRefreshData,
+  onCleanData
 }: AdminCardActionsDialogProps) {
   const [localFeatured, setLocalFeatured] = useState(isFeatured);
   const [localEvent, setLocalEvent] = useState(isEvent);
@@ -205,6 +207,18 @@ export function AdminCardActionsDialog({
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? '저장 중...' : '변경사항 저장'}
           </Button>
+
+          {/* 데이터 정리 버튼 (개발 모드에서만) */}
+          {process.env.NODE_ENV !== 'production' && onCleanData && (
+            <Button
+              onClick={onCleanData}
+              variant="outline"
+              className="w-full border-orange-500 text-orange-600 hover:bg-orange-50"
+              onMouseEnter={blockTranslationFeedback}
+            >
+              🧹 앱 데이터 정리 (불린 플래그 제거)
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

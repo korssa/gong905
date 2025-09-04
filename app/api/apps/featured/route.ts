@@ -96,10 +96,8 @@ export async function GET() {
       
       // Vercel 환경에서는 로컬 파일 읽기 제거 (읽기전용 파일시스템)
       
-      // 메모리 폴백
-      if (memoryFeatured.featured.length > 0 || memoryFeatured.events.length > 0) {
-        return NextResponse.json(memoryFeatured, { headers: { 'Cache-Control': 'no-store' } });
-      }
+      // Blob이 없으면 메모리도 비우고 빈 세트 반환
+      memoryFeatured = { featured: [], events: [] };
       return NextResponse.json({ featured: [], events: [] }, { headers: { 'Cache-Control': 'no-store' } });
     }
 

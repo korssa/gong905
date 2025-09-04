@@ -33,7 +33,13 @@ const isBlobUrl = (url?: string) => {
   return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
 };
 
-// Featured/Events 플래그를 앱에 주입하는 유틸 함수
+// ID 세트로 앱을 필터링하는 유틸 함수
+const pickByIds = (apps: AppItem[], ids: string[]) => {
+  const set = new Set(ids);
+  return apps.filter(a => set.has(a.id));
+};
+
+// Featured/Events 플래그를 앱에 주입하는 유틸 함수 (표시용만)
 const applyFeaturedFlags = (apps: AppItem[], featuredIds: string[], eventIds: string[]) => {
   const f = new Set(featuredIds);
   const e = new Set(eventIds);
@@ -85,18 +91,16 @@ export default function Home() {
           );
         return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
       case "featured": {
-        const featuredApps = filtered.filter(app => app.isFeatured);
-        return featuredApps.sort((a, b) => a.name.localeCompare(b.name));
+        return pickByIds(filtered, featuredApps).sort((a, b) => a.name.localeCompare(b.name));
       }
       case "events": {
-        const eventApps = filtered.filter(app => app.isEvent);
-        return eventApps.sort((a, b) => a.name.localeCompare(b.name));
+        return pickByIds(filtered, eventApps).sort((a, b) => a.name.localeCompare(b.name));
       }
       case "all":
       default:
         return filtered.sort((a, b) => a.name.localeCompare(b.name));
     }
-  }, [allApps, currentFilter, searchQuery]);
+  }, [allApps, currentFilter, searchQuery, featuredApps, eventApps]);
 
 
 
@@ -285,9 +289,10 @@ export default function Home() {
       // 앱 목록에 추가
       const updatedApps = [newApp, ...allApps];
       
-      // 글로벌 저장소에 먼저 저장 (서버 우선)
+      // 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
       try {
-        await saveAppsByTypeToBlob('gallery', updatedApps);
+        const sanitizedApps = updatedApps.map(({ isFeatured, isEvent, ...rest }) => rest);
+        await saveAppsByTypeToBlob('gallery', sanitizedApps);
         
         // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
@@ -332,9 +337,10 @@ export default function Home() {
        const newFeaturedApps = featuredApps.filter(appId => appId !== id);
        const newEventApps = eventApps.filter(appId => appId !== id);
        
-       // 4. 글로벌 저장소에 먼저 저장 (서버 우선)
+       // 4. 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
        try {
-         await saveAppsByTypeToBlob('gallery', newApps);
+         const sanitizedApps = newApps.map(({ isFeatured, isEvent, ...rest }) => rest);
+         await saveAppsByTypeToBlob('gallery', sanitizedApps);
          
          // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
          const refreshedApps = await loadAppsByTypeFromBlob('gallery');
@@ -513,6 +519,38 @@ export default function Home() {
     }
   }, [allApps.length, featuredApps, eventApps]);
 
+  // Featured/Events 매핑 검증 (개발 모드에서만)
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      if (currentFilter === 'featured') {
+        const anyEventCard = filteredApps.some(a => eventApps.includes(a.id));
+        if (anyEventCard) console.warn('⚠️ Featured 뷰에 Event 카드가 섞여 있습니다. 매핑 확인 필요.');
+      }
+      if (currentFilter === 'events') {
+        const anyFeaturedCard = filteredApps.some(a => featuredApps.includes(a.id));
+        if (anyFeaturedCard) console.warn('⚠️ Events 뷰에 Featured 카드가 섞여 있습니다. 매핑 확인 필요.');
+      }
+    }
+  }, [currentFilter, filteredApps, featuredApps, eventApps]);
+
+  // 기존 앱 데이터에서 불린 플래그 제거 (1회성 정리)
+  const cleanAppData = async () => {
+    try {
+      const apps = await loadAppsByTypeFromBlob('gallery');
+      const cleaned = apps.map(({ isFeatured, isEvent, ...rest }) => rest);
+      await saveAppsByTypeToBlob('gallery', cleaned);
+      console.log('✅ 앱 데이터에서 불린 플래그 제거 완료');
+      
+      // 정리 후 데이터 다시 로드
+      const refreshedApps = await loadAppsByTypeFromBlob('gallery');
+      if (refreshedApps.length > 0) {
+        setAllApps(refreshedApps);
+      }
+    } catch (error) {
+      console.error('❌ 앱 데이터 정리 실패:', error);
+    }
+  };
+
   // 강제 데이터 새로고침 함수
   const forceRefreshGallery = async () => {
     const myId = ++reqIdRef.current; // Request ID for race condition prevention
@@ -569,9 +607,10 @@ export default function Home() {
       const newApps = [...allApps];
       newApps[appIndex] = updatedApp;
 
-      // 글로벌 저장소에 먼저 저장 (서버 우선)
+      // 글로벌 저장소에 먼저 저장 (서버 우선) - 불린 플래그 제거
       try {
-        await saveAppsByTypeToBlob('gallery', newApps);
+        const sanitizedApps = newApps.map(({ isFeatured, isEvent, ...rest }) => rest);
+        await saveAppsByTypeToBlob('gallery', sanitizedApps);
         
         // 저장 후 즉시 Blob에서 다시 로드하여 글로벌 데이터와 동기화
         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
@@ -883,6 +922,7 @@ export default function Home() {
                              eventApps={eventApps}
                              showNumbering={currentFilter === "events"}
                              onRefreshData={handleRefreshData}
+                             onCleanData={cleanAppData}
                            />
                            
                            {/* Events 모드일 때 설명문구와 메일폼 추가 */}
