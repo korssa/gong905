@@ -430,19 +430,23 @@ export default function Home() {
             );
           return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
         case "featured":
+          const featuredApps = filteredApps.filter(app => app.isFeatured);
           console.log('🔍 Featured 필터링:', {
             totalApps: filteredApps.length,
-            featuredCount: filteredApps.filter(app => app.isFeatured).length,
-            filteredResult: filteredApps.filter(app => app.isFeatured)
+            featuredCount: featuredApps.length,
+            filteredResult: featuredApps,
+            featuredAppNames: featuredApps.map(app => app.name)
           });
           return filteredApps
             .filter(app => app.isFeatured)
             .sort((a, b) => a.name.localeCompare(b.name));
         case "events":
+          const eventApps = filteredApps.filter(app => app.isEvent);
           console.log('🔍 Events 필터링:', {
             totalApps: filteredApps.length,
-            eventCount: filteredApps.filter(app => app.isEvent).length,
-            filteredResult: filteredApps.filter(app => app.isEvent)
+            eventCount: eventApps.length,
+            filteredResult: eventApps,
+            eventAppNames: eventApps.map(app => app.name)
           });
           return filteredApps
             .filter(app => app.isEvent)
