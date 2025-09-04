@@ -194,28 +194,32 @@ export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[]): Pr
  */
 export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; events: string[] }> {
   try {
-    // 메모장과 동일하게 직접 Blob에서 로드
-    const response = await fetch('/api/apps/featured', { 
+    // Vercel Blob에서 직접 로드
+    const response = await fetch('/api/data/featured-apps', { 
       method: 'GET',
       cache: 'no-store' // 캐시 무시하고 최신 데이터
     });
     
     if (!response.ok) {
-      // Failed to load featured apps from blob
+      console.error('❌ Featured/Events Blob 로드 실패:', response.status, response.statusText);
       return { featured: [], events: [] };
     }
     
     const data = await response.json();
-    if (data.success) {
+    console.log('📊 Featured/Events Blob 응답:', data);
+    
+    // 응답 데이터 구조 확인
+    if (data && typeof data === 'object') {
       return {
-        featured: data.featured || [],
-        events: data.events || []
+        featured: Array.isArray(data.featured) ? data.featured : [],
+        events: Array.isArray(data.events) ? data.events : []
       };
     }
     
+    console.warn('⚠️ Featured/Events Blob 응답 형식 오류:', data);
     return { featured: [], events: [] };
   } catch (error) {
-    // Error loading featured apps from blob
+    console.error('❌ Featured/Events Blob 로드 오류:', error);
     return { featured: [], events: [] };
   }
 }

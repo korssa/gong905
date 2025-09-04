@@ -99,8 +99,17 @@ export default function Home() {
     if (featuredApps.length === 0 && apps.length > 0) {
       console.log('🔧 Featured Apps가 비어있음. 첫 번째 앱을 Featured로 설정 (테스트용)');
       const firstAppId = apps[0].id;
-      setFeaturedApps([firstAppId]);
-      localStorage.setItem('featured-apps', JSON.stringify([firstAppId]));
+      const newFeatured = [firstAppId];
+      setFeaturedApps(newFeatured);
+      localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
+      
+      // Vercel Blob에도 저장
+      try {
+        const blobResult = await saveFeaturedAppsToBlob(newFeatured, eventApps);
+        console.log('💾 Featured Apps Blob 저장 결과:', blobResult);
+      } catch (error) {
+        console.error('❌ Featured Apps Blob 저장 실패:', error);
+      }
     }
     
     setCurrentFilter("featured");
@@ -126,8 +135,17 @@ export default function Home() {
     if (eventApps.length === 0 && apps.length > 1) {
       console.log('🔧 Events Apps가 비어있음. 두 번째 앱을 Events로 설정 (테스트용)');
       const secondAppId = apps[1].id;
-      setEventApps([secondAppId]);
-      localStorage.setItem('event-apps', JSON.stringify([secondAppId]));
+      const newEvents = [secondAppId];
+      setEventApps(newEvents);
+      localStorage.setItem('event-apps', JSON.stringify(newEvents));
+      
+      // Vercel Blob에도 저장
+      try {
+        const blobResult = await saveFeaturedAppsToBlob(featuredApps, newEvents);
+        console.log('💾 Events Apps Blob 저장 결과:', blobResult);
+      } catch (error) {
+        console.error('❌ Events Apps Blob 저장 실패:', error);
+      }
     }
     
     setCurrentFilter("events");
@@ -166,6 +184,70 @@ export default function Home() {
       }
     } catch (error) {
       console.error('❌ Featured/Events 데이터 리로드 오류:', error);
+    }
+  };
+
+  // Vercel Blob API 직접 테스트 함수
+  const testBlobAPI = async () => {
+    console.log('🧪 Vercel Blob API 테스트 시작...');
+    
+    try {
+      // 1. Blob에서 데이터 로드 테스트
+      console.log('1️⃣ Blob에서 데이터 로드 테스트...');
+      const loadResponse = await fetch('/api/data/featured-apps', {
+        method: 'GET',
+        cache: 'no-store'
+      });
+      
+      console.log('📊 Blob 로드 응답:', {
+        status: loadResponse.status,
+        statusText: loadResponse.statusText,
+        ok: loadResponse.ok
+      });
+      
+      if (loadResponse.ok) {
+        const loadData = await loadResponse.json();
+        console.log('📊 Blob 로드 데이터:', loadData);
+      }
+      
+      // 2. Blob에 테스트 데이터 저장
+      console.log('2️⃣ Blob에 테스트 데이터 저장...');
+      const testData = {
+        featured: ['test_featured_1', 'test_featured_2'],
+        events: ['test_event_1']
+      };
+      
+      const saveResponse = await fetch('/api/data/featured-apps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(testData)
+      });
+      
+      console.log('💾 Blob 저장 응답:', {
+        status: saveResponse.status,
+        statusText: saveResponse.statusText,
+        ok: saveResponse.ok
+      });
+      
+      if (saveResponse.ok) {
+        const saveData = await saveResponse.json();
+        console.log('💾 Blob 저장 결과:', saveData);
+      }
+      
+      // 3. 다시 로드해서 저장 확인
+      console.log('3️⃣ 저장 후 다시 로드 테스트...');
+      const reloadResponse = await fetch('/api/data/featured-apps', {
+        method: 'GET',
+        cache: 'no-store'
+      });
+      
+      if (reloadResponse.ok) {
+        const reloadData = await reloadResponse.json();
+        console.log('🔄 재로드 데이터:', reloadData);
+      }
+      
+    } catch (error) {
+      console.error('❌ Blob API 테스트 오류:', error);
     }
   };
 
@@ -281,6 +363,14 @@ export default function Home() {
   const handleFooterHover = () => {
     blockTranslationFeedback();
   };
+
+  // 전역 테스트 함수 등록 (개발용)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).testBlobAPI = testBlobAPI;
+      console.log('🧪 testBlobAPI 함수가 전역에 등록되었습니다. 콘솔에서 testBlobAPI()를 호출하여 테스트하세요.');
+    }
+  }, []);
 
      // 앱 필터링 및 정렬 로직
    const getFilteredAndSortedApps = () => {
