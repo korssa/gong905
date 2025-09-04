@@ -91,10 +91,16 @@ export default function Home() {
           );
         return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
       case "featured": {
-        return pickByIds(filtered, eventApps).sort((a, b) => a.name.localeCompare(b.name));
+        return pickByIds(filtered, featuredApps).sort((a, b) => a.name.localeCompare(b.name));
       }
       case "events": {
-        return pickByIds(filtered, featuredApps).sort((a, b) => a.name.localeCompare(b.name));
+        return pickByIds(filtered, eventApps).sort((a, b) => a.name.localeCompare(b.name));
+      }
+      case "normal": {
+        // 일반 카드만 표시 (featured/events에 포함되지 않은 앱들)
+        return filtered
+          .filter(app => !featuredApps.includes(app.id) && !eventApps.includes(app.id))
+          .sort((a, b) => a.name.localeCompare(b.name));
       }
       case "all":
       default:
@@ -173,6 +179,13 @@ export default function Home() {
     }
 
     setCurrentFilter("events");
+    setCurrentContentType(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 일반 카드 필터 핸들러 (관리 모드용)
+  const handleNormalClick = () => {
+    setCurrentFilter("normal");
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -298,10 +311,17 @@ export default function Home() {
         const existingApps = await loadAppsByTypeFromBlob('gallery');
         console.log('📥 기존 앱 데이터 로드:', existingApps.length);
         
-        // 2. 새 앱을 기존 데이터에 추가 (중복 방지)
-        const sanitizedNewApp = { ...newApp, isFeatured: undefined, isEvent: undefined };
+        // 2. 새 앱을 기존 데이터에 추가 (카테고리 정보 포함)
+        const sanitizedNewApp = { 
+          ...newApp, 
+          isFeatured: undefined, 
+          isEvent: undefined,
+          // 카테고리 정보를 앱 데이터에 포함 (통합 관리용)
+          appCategory: data.appCategory 
+        };
         const updatedApps = [sanitizedNewApp, ...existingApps];
         console.log('➕ 새 앱 추가 후 총 앱 수:', updatedApps.length);
+        console.log('📋 앱 카테고리:', data.appCategory);
         
         // 3. 앱 저장 (기존 데이터 + 새 앱)
         const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps);
@@ -1122,17 +1142,68 @@ export default function Home() {
               <span className="notranslate" translate="no">© 2025 gongmyung.com. All rights reserved.</span>
             </span>
             
-                         {/* 관리자 모드일 때만 표시되는 업로드 버튼 */}
+                         {/* 관리자 모드일 때만 표시되는 업로드 버튼 및 카테고리 필터 */}
               {isAuthenticated && adminVisible && (
-               <div className="mt-4 flex justify-center">
-                 <AdminUploadDialog 
-                   onUpload={handleAppUpload}
-                   buttonProps={{
-                     size: "lg",
-                     className: "bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
-                   }}
-                   buttonText="📱 새 앱 업로드"
-                 />
+               <div className="mt-4 space-y-4">
+                 {/* 카테고리별 필터 버튼 */}
+                 <div className="flex justify-center gap-2 flex-wrap">
+                   <button
+                     onClick={createAdminButtonHandler(() => setCurrentFilter("all"))}
+                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                       currentFilter === "all" 
+                         ? "bg-blue-600 text-white" 
+                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                     }`}
+                     onMouseEnter={blockTranslationFeedback}
+                   >
+                     📱 전체 ({allApps.length})
+                   </button>
+                   <button
+                     onClick={createAdminButtonHandler(handleNormalClick)}
+                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                       currentFilter === "normal" 
+                         ? "bg-green-600 text-white" 
+                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                     }`}
+                     onMouseEnter={blockTranslationFeedback}
+                   >
+                     📱 일반 ({allApps.filter(app => !featuredApps.includes(app.id) && !eventApps.includes(app.id)).length})
+                   </button>
+                   <button
+                     onClick={createAdminButtonHandler(handleFeaturedAppsClick)}
+                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                       currentFilter === "featured" 
+                         ? "bg-yellow-600 text-white" 
+                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                     }`}
+                     onMouseEnter={blockTranslationFeedback}
+                   >
+                     ⭐ Featured ({featuredApps.length})
+                   </button>
+                   <button
+                     onClick={createAdminButtonHandler(handleEventsClick)}
+                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                       currentFilter === "events" 
+                         ? "bg-purple-600 text-white" 
+                         : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                     }`}
+                     onMouseEnter={blockTranslationFeedback}
+                   >
+                     🎉 Events ({eventApps.length})
+                   </button>
+                 </div>
+                 
+                 {/* 업로드 버튼 */}
+                 <div className="flex justify-center">
+                   <AdminUploadDialog 
+                     onUpload={handleAppUpload}
+                     buttonProps={{
+                       size: "lg",
+                       className: "bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
+                     }}
+                     buttonText="📱 새 앱 업로드"
+                   />
+                 </div>
                </div>
              )}
              
