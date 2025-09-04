@@ -606,6 +606,7 @@ export default function Home() {
     // 앱 목록 로드 및 동기화 (메모장 방식으로 수정)
   useEffect(() => {
     let isMounted = true; // 컴포넌트 마운트 상태 추적
+    console.log('🚀 useEffect 시작, 컴포넌트 마운트됨');
     
     const loadApps = async () => {
       try {
@@ -641,6 +642,11 @@ export default function Home() {
           // 상태 업데이트를 기다리기 위해 약간의 지연
           await new Promise(resolve => setTimeout(resolve, 100));
           console.log('⏳ 상태 업데이트 대기 후 apps 상태:', apps.length, '개');
+          console.log('🔍 setApps 호출 후 실제 반영 여부 확인:', { 
+            appsWithType: appsWithType.length, 
+            currentApps: apps.length,
+            isMounted: isMounted 
+          });
         } else {
           console.log('⚠️ Blob에 타입별 데이터 없음, 기존 API 시도...');
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
@@ -734,6 +740,7 @@ export default function Home() {
     
     // 클린업 함수
     return () => {
+      console.log('🧹 useEffect 클린업, 컴포넌트 언마운트됨');
       isMounted = false;
     };
   }, []); // 의존성 배열을 빈 배열로 변경하여 한 번만 실행
