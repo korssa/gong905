@@ -813,12 +813,13 @@ export default function Home() {
                <span className="shine-dots"></span>
              </span>
            </h1>
-           <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3">
-             <span className="notranslate" translate="no">PRESENT</span>
-           </h2>
            
            {/* 차분하고 고급스러운 우측 흐름의 그라디언트 애니메이션 슬로건 */}
            <GradientSlogan />
+           
+           <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3">
+             <span className="notranslate" translate="no">PRESENT</span>
+           </h2>
            
            {/* 추가 번역 위젯 위치 옵션 - 타이틀 아래 */}
            {/* <div id="google_translate_element_main" className="mb-4"></div> */}

@@ -13,7 +13,7 @@ export function GradientSlogan() {
           textShadow: '0 0 20px rgba(255, 255, 255, 0.3)',
         }}
       >
-        We&apos;re just. That kind of group!
+        &quot;We&apos;re just. That kind of group!&quot;
       </h2>
     </div>
   );
