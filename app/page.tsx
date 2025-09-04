@@ -609,7 +609,7 @@ export default function Home() {
     
     const loadApps = async () => {
       try {
-        console.log('🔄 앱 로드 시작...');
+        console.log('🔄 앱 로드 시작...', new Date().toISOString());
         
         // 메모장과 동일하게 타입별 분리된 Blob Storage에서 로드 시도
         const typeApps = await loadAppsByTypeFromBlob('gallery');
@@ -734,7 +734,7 @@ export default function Home() {
 
   // apps 상태 변경 디버깅
   useEffect(() => {
-    console.log('🔄 apps 상태 변경됨:', apps.length, '개');
+    console.log('🔄 apps 상태 변경됨:', apps.length, '개', new Date().toISOString());
     if (apps.length > 0) {
       console.log('📱 첫 번째 앱 정보:', { id: apps[0].id, name: apps[0].name });
     }
