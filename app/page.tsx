@@ -492,6 +492,7 @@ export default function Home() {
       alert("✅ App uploaded successfully!");
       
       // 갤러리 강제 새로고침 (리프레시 없이도 최신 데이터 표시)
+      console.log('🔄 handleAppUpload에서 forceRefreshGallery 호출');
       await forceRefreshGallery();
       
     } catch {
@@ -758,6 +759,7 @@ export default function Home() {
   // 강제 데이터 새로고침 함수
   const forceRefreshGallery = async () => {
     try {
+      console.log('🔄 forceRefreshGallery 호출됨');
       // Blob에서 최신 데이터 강제 로드
       const typeApps = await loadAppsByTypeFromBlob('gallery');
       if (typeApps.length > 0) {
