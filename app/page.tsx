@@ -218,7 +218,19 @@ export default function Home() {
         // 최신 세트 반영
         setFeaturedApps(res.featured);
         setEventApps(res.events);
-        // 플래그 주입은 통합된 useEffect에서 처리
+        
+        // 갤러리 앱 데이터도 업데이트 (featured/events 플래그 반영)
+        try {
+          const existingApps = await loadAppsByTypeFromBlob('gallery');
+          const saveResult = await saveAppsByTypeToBlob('gallery', existingApps, res.featured, res.events);
+          if (saveResult.success && saveResult.data) {
+            setAllApps(saveResult.data);
+            console.log('🔄 갤러리 앱 데이터에 featured 플래그 반영 완료');
+          }
+        } catch (error) {
+          console.error('❌ 갤러리 앱 데이터 업데이트 실패:', error);
+        }
+        
         console.log(`[Client] Featured 상태 업데이트 완료:`, JSON.stringify({ featured: res.featured, events: res.events }, null, 2));
       } else {
         // 실패 시 최신 세트 다시 로드
@@ -243,7 +255,19 @@ export default function Home() {
         // 최신 세트 반영
         setFeaturedApps(res.featured);
         setEventApps(res.events);
-        // 플래그 주입은 통합된 useEffect에서 처리
+        
+        // 갤러리 앱 데이터도 업데이트 (featured/events 플래그 반영)
+        try {
+          const existingApps = await loadAppsByTypeFromBlob('gallery');
+          const saveResult = await saveAppsByTypeToBlob('gallery', existingApps, res.featured, res.events);
+          if (saveResult.success && saveResult.data) {
+            setAllApps(saveResult.data);
+            console.log('🔄 갤러리 앱 데이터에 events 플래그 반영 완료');
+          }
+        } catch (error) {
+          console.error('❌ 갤러리 앱 데이터 업데이트 실패:', error);
+        }
+        
         console.log(`[Client] Events 상태 업데이트 완료:`, JSON.stringify({ featured: res.featured, events: res.events }, null, 2));
       } else {
         // 실패 시 최신 세트 다시 로드
@@ -324,8 +348,8 @@ export default function Home() {
       
       try {
         
-        // 3. 앱 저장 (기존 데이터 + 새 앱)
-        const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps);
+        // 3. 앱 저장 (기존 데이터 + 새 앱, featured/events 상태 반영)
+        const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps, featuredApps, eventApps);
         
         // 2. Featured/Events 상태 업데이트 (로컬만, 자동 저장 제거)
         let finalFeaturedApps = featuredApps;
@@ -403,7 +427,7 @@ export default function Home() {
          const sanitizedApps = existingApps.filter(app => app.id !== id);
          console.log('🗑️ 앱 삭제 후 총 앱 수:', sanitizedApps.length);
          
-         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
+         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps, newFeaturedApps, newEventApps);
          
          // 5. 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
          if (saveResult.success && saveResult.data) {
@@ -688,7 +712,7 @@ export default function Home() {
         );
         console.log('✏️ 앱 수정 후 총 앱 수:', sanitizedApps.length);
         
-        const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps);
+        const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps, featuredApps, eventApps);
         
         // 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
         if (saveResult.success && saveResult.data) {

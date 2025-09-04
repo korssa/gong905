@@ -158,16 +158,35 @@ export async function loadAppsByTypeFromBlob(type: 'gallery'): Promise<AppItem[]
 }
 
 /**
- * 타입별로 갤러리 앱을 분리해서 저장
+ * 타입별로 갤러리 앱을 분리해서 저장 (featured/events 상태 반영)
  */
-export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[]): Promise<{ success: boolean; data?: AppItem[] }> {
+export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[], featuredIds?: string[], eventIds?: string[]): Promise<{ success: boolean; data?: AppItem[] }> {
   try {
+    // featured/events 상태를 앱 데이터에 반영
+    let appsWithFlags = apps;
+    if (featuredIds && eventIds) {
+      const featuredSet = new Set(featuredIds);
+      const eventSet = new Set(eventIds);
+      
+      appsWithFlags = apps.map(app => ({
+        ...app,
+        isFeatured: featuredSet.has(app.id),
+        isEvent: eventSet.has(app.id)
+      }));
+      
+      console.log('🔄 갤러리 앱에 featured/events 플래그 반영:', {
+        total: appsWithFlags.length,
+        featured: appsWithFlags.filter(app => app.isFeatured).length,
+        events: appsWithFlags.filter(app => app.isEvent).length
+      });
+    }
+    
     const response = await fetch(`/api/apps/type?type=${type}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ apps }),
+      body: JSON.stringify({ apps: appsWithFlags }),
     });
     
     if (!response.ok) {
@@ -177,7 +196,7 @@ export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[]): Pr
     const result = await response.json();
     return { 
       success: true, 
-      data: result.data || apps // API 응답에서 최종 데이터 반환
+      data: result.data || appsWithFlags // API 응답에서 최종 데이터 반환
     };
   } catch (error) {
     return { success: false };
