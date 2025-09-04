@@ -150,13 +150,11 @@ export default function Home() {
     }
     
     // Single source 업데이트 (낙관적 업데이트)
-    if (featuredApps.length === 0) {
-      setAllApps(prev => prev.map((app, index) => ({
-        ...app,
-        isFeatured: index === 0,
-        isEvent: app.isEvent || false
-      })));
-    }
+    setAllApps(prev => prev.map((app, index) => ({
+      ...app,
+      isFeatured: index === 0,
+      isEvent: app.isEvent || false
+    })));
     
     setCurrentFilter("featured");
     setCurrentContentType(null); // 메모장 모드 종료
@@ -191,13 +189,11 @@ export default function Home() {
     }
     
     // Single source 업데이트 (낙관적 업데이트)
-    if (eventApps.length === 0) {
-      setAllApps(prev => prev.map((app, index) => ({
-        ...app,
-        isFeatured: app.isFeatured || false,
-        isEvent: index === 1
-      })));
-    }
+    setAllApps(prev => prev.map((app, index) => ({
+      ...app,
+      isFeatured: app.isFeatured || false,
+      isEvent: index === 1
+    })));
     
     setCurrentFilter("events");
     setCurrentContentType(null); // 메모장 모드 종료
@@ -221,9 +217,7 @@ export default function Home() {
           setFeaturedApps(data.featured || []);
           setEventApps(data.events || []);
           
-          // localStorage 백업 업데이트
-          localStorage.setItem('featured-apps', JSON.stringify(data.featured || []));
-          localStorage.setItem('event-apps', JSON.stringify(data.events || []));
+          // Featured/Events 데이터 업데이트 완료
           
         }
       } else {
@@ -253,8 +247,7 @@ export default function Home() {
         // 2. React 상태 업데이트
         setFeaturedApps(newFeatured);
         
-        // 3. localStorage 백업 저장
-        localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
+        // 3. Featured 데이터 저장 완료
         
         // 4. 글로벌 저장소에서 다시 로드하여 동기화 확인
         try {
@@ -263,8 +256,7 @@ export default function Home() {
             // 글로벌 데이터로 상태 업데이트
             setFeaturedApps(refreshedData.featured);
             setEventApps(refreshedData.events);
-            localStorage.setItem('featured-apps', JSON.stringify(refreshedData.featured));
-            localStorage.setItem('event-apps', JSON.stringify(refreshedData.events));
+            // 글로벌 동기화 완료
           } else {
             console.warn('⚠️ Featured 글로벌 동기화 실패 (빈 데이터)');
           }
@@ -283,7 +275,7 @@ export default function Home() {
         ? featuredApps.filter(id => id !== appId)
         : [...featuredApps, appId];
       setFeaturedApps(newFeatured);
-      localStorage.setItem('featured-apps', JSON.stringify(newFeatured));
+      // Featured 상태 업데이트 완료
     }
   };
 
@@ -305,8 +297,7 @@ export default function Home() {
         // 2. React 상태 업데이트
         setEventApps(newEvents);
         
-        // 3. localStorage 백업 저장
-        localStorage.setItem('event-apps', JSON.stringify(newEvents));
+        // 3. Events 데이터 저장 완료
         
         // 4. 글로벌 저장소에서 다시 로드하여 동기화 확인
         try {
@@ -315,8 +306,7 @@ export default function Home() {
             // 글로벌 데이터로 상태 업데이트
             setFeaturedApps(refreshedData.featured);
             setEventApps(refreshedData.events);
-            localStorage.setItem('featured-apps', JSON.stringify(refreshedData.featured));
-            localStorage.setItem('event-apps', JSON.stringify(refreshedData.events));
+            // 글로벌 동기화 완료
           } else {
             console.warn('⚠️ Events 글로벌 동기화 실패 (빈 데이터)');
           }
@@ -335,7 +325,7 @@ export default function Home() {
         ? eventApps.filter(id => id !== appId)
         : [...eventApps, appId];
       setEventApps(newEvents);
-      localStorage.setItem('event-apps', JSON.stringify(newEvents));
+      // Events 상태 업데이트 완료
     }
   };
 
@@ -398,17 +388,17 @@ export default function Home() {
         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
         if (refreshedApps.length > 0) {
           setAllApps(refreshedApps); // Single source update
-          localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
+          // 앱 목록 동기화 완료
         } else {
           // Blob에서 로드 실패시 로컬 상태만 업데이트
           setAllApps(updatedApps); // Single source update
-          localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
+          // 앱 목록 업데이트 완료
         }
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
         // 글로벌 저장 실패시 로컬 상태만 업데이트
         setAllApps(updatedApps); // Single source update
-        localStorage.setItem('gallery-apps', JSON.stringify(updatedApps));
+        // 앱 목록 업데이트 완료
       }
       
       // 앱 업로드 및 저장 완료
@@ -445,24 +435,23 @@ export default function Home() {
          const refreshedApps = await loadAppsByTypeFromBlob('gallery');
          if (refreshedApps.length > 0) {
            setAllApps(refreshedApps); // Single source update
-           localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
+           // 앱 목록 동기화 완료
          } else {
            // Blob에서 로드 실패시 로컬 상태만 업데이트
            setAllApps(newApps); // Single source update
-           localStorage.setItem('gallery-apps', JSON.stringify(newApps));
+           // 앱 목록 업데이트 완료
          }
        } catch (error) {
          console.error('글로벌 저장 실패:', error);
          // 글로벌 저장 실패시 로컬 상태만 업데이트
          setAllApps(newApps); // Single source update
-         localStorage.setItem('gallery-apps', JSON.stringify(newApps));
+         // 앱 목록 업데이트 완료
        }
 
        // 5. Featured/Events 상태 업데이트
        setFeaturedApps(newFeaturedApps);
        setEventApps(newEventApps);
-       localStorage.setItem('featured-apps', JSON.stringify(newFeaturedApps));
-       localStorage.setItem('event-apps', JSON.stringify(newEventApps));
+       // Featured/Events 상태 업데이트 완료
 
        // 5. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
        if (appToDelete.iconUrl) {
@@ -545,7 +534,6 @@ export default function Home() {
           // 기존 앱들에 type 속성 추가
           const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
           setAllApps(appsWithType); // Single source update
-          localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
         } else {
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
           const blobApps = await loadAppsFromBlob();
@@ -560,10 +548,8 @@ export default function Home() {
             // 기존 앱들에 type 속성 추가
             const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
             setAllApps(appsWithType); // Single source update
-            localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
           } else {
             // Keep existing state - don't reset to empty array
-            localStorage.setItem('gallery-apps', JSON.stringify([]));
           }
         }
 
@@ -636,7 +622,7 @@ export default function Home() {
         const validatedApps = await validateAppsImages(typeApps);
         const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
         setAllApps(appsWithType); // Single source update
-        localStorage.setItem('gallery-apps', JSON.stringify(appsWithType));
+        // 앱 목록 동기화 완료
       }
     } catch (error) {
       // 새로고침 실패 시 기존 데이터 유지
@@ -689,17 +675,17 @@ export default function Home() {
         const refreshedApps = await loadAppsByTypeFromBlob('gallery');
         if (refreshedApps.length > 0) {
           setAllApps(refreshedApps);
-          localStorage.setItem('gallery-apps', JSON.stringify(refreshedApps));
+          // 앱 목록 동기화 완료
         } else {
           // Blob에서 로드 실패시 로컬 상태만 업데이트
           setAllApps(newApps);
-          localStorage.setItem('gallery-apps', JSON.stringify(newApps));
+          // 앱 목록 업데이트 완료
         }
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
         // 글로벌 저장 실패시 로컬 상태만 업데이트
         setAllApps(newApps);
-        localStorage.setItem('gallery-apps', JSON.stringify(newApps));
+        // 앱 목록 업데이트 완료
         alert("⚠️ App updated but cloud synchronization failed.");
       }
 
