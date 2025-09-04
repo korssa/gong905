@@ -426,8 +426,8 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
                 onMouseEnter={blockTranslationFeedback}
               >
                 {formData.appCategory === "normal" && "📱 " + adminTexts.normal}
-                {formData.appCategory === "featured" && "⭐ " + adminTexts.featured}
-                {formData.appCategory === "events" && "🎉 " + adminTexts.events}
+                {formData.appCategory === "events" && "🎉 " + adminTexts.featured}
+                {formData.appCategory === "featured" && "⭐ " + adminTexts.events}
               </Button>
             </div>
 
