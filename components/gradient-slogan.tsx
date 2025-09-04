@@ -15,7 +15,7 @@ export function GradientSlogan() {
         }}
         translate="yes"
       >
-        We&apos;re just. that kind of group!
+        &quot;We&apos;re just. that kind of group!&quot;
       </h2>
     </div>
   );

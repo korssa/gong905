@@ -817,7 +817,7 @@ export default function Home() {
            {/* 차분하고 고급스러운 우측 흐름의 그라디언트 애니메이션 슬로건 */}
            <GradientSlogan />
            
-           <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3 -mt-2">
+           <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3 mt-0">
              <span className="notranslate" translate="no">PRESENT</span>
            </h2>
            
@@ -1206,6 +1206,18 @@ export default function Home() {
              )}
              
              
+          </div>
+        </div>
+        
+        {/* 풋터 하단 슬로건 및 Since 2025 */}
+        <div className="mt-8 pt-8 border-t border-gray-700">
+          <div className="text-center">
+            <p className="text-lg font-medium text-amber-400 mb-2" translate="yes">
+              &quot;We&apos;re just. that kind of group!&quot;
+            </p>
+            <p className="text-sm text-gray-400">
+              — Since 2025
+            </p>
           </div>
         </div>
       </footer>
