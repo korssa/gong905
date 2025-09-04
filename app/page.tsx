@@ -34,11 +34,11 @@ const isBlobUrl = (url?: string) => {
   return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
 };
 
-// ID 세트로 앱을 필터링하는 유틸 함수
-const pickByIds = (apps: AppItem[], ids: string[]) => {
-  const set = new Set(ids);
-  return apps.filter(a => set.has(a.id));
-};
+// ID 세트로 앱을 필터링하는 유틸 함수 (현재 사용하지 않음)
+// const pickByIds = (apps: AppItem[], ids: string[]) => {
+//   const set = new Set(ids);
+//   return apps.filter(a => set.has(a.id));
+// };
 
 // Featured/Events 플래그를 앱에 주입하는 유틸 함수 (표시용만)
 const applyFeaturedFlags = (apps: AppItem[], featuredIds: string[], eventIds: string[]) => {
@@ -346,8 +346,8 @@ export default function Home() {
         const currentEventIds = getEventApps().map(app => app.id);
         
         // 새 앱의 카테고리에 따라 상태 추가
-        let finalFeaturedIds = [...currentFeaturedIds];
-        let finalEventIds = [...currentEventIds];
+        const finalFeaturedIds = [...currentFeaturedIds];
+        const finalEventIds = [...currentEventIds];
         
         if (data.appCategory === 'featured' && !finalFeaturedIds.includes(newApp.id)) {
           finalFeaturedIds.push(newApp.id);
