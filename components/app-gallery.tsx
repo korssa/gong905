@@ -14,14 +14,12 @@ interface AppGalleryProps {
   onEditApp?: (app: AppItem) => void;
   onToggleFeatured?: (id: string) => void;
   onToggleEvent?: (id: string) => void;
-  featuredApps?: string[];
-  eventApps?: string[];
   showNumbering?: boolean;
   onRefreshData?: () => Promise<void>; // 추가: 데이터 리로드 콜백
   onCleanData?: () => Promise<void>; // 추가: 데이터 정리 콜백
 }
 
-export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp, onToggleFeatured, onToggleEvent, featuredApps = [], eventApps = [], showNumbering = false, onRefreshData, onCleanData }: AppGalleryProps) {
+export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp, onToggleFeatured, onToggleEvent, showNumbering = false, onRefreshData, onCleanData }: AppGalleryProps) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<AppStore>("google-play");
   const [apps, setApps] = useState<AppItem[]>(initialApps);
@@ -83,8 +81,8 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
                 onEdit={onEditApp}
                 onToggleFeatured={onToggleFeatured}
                 onToggleEvent={onToggleEvent}
-                isFeatured={featuredApps.includes(app.id)}
-                isEvent={eventApps.includes(app.id)}
+                isFeatured={app.isFeatured}
+                isEvent={app.isEvent}
                 onRefreshData={onRefreshData}
                 onCleanData={onCleanData}
               />
@@ -110,8 +108,8 @@ export function AppGallery({ apps: initialApps, viewMode, onDeleteApp, onEditApp
               onEdit={onEditApp}
               onToggleFeatured={onToggleFeatured}
               onToggleEvent={onToggleEvent}
-              isFeatured={featuredApps.includes(app.id)}
-              isEvent={eventApps.includes(app.id)}
+              isFeatured={app.isFeatured}
+              isEvent={app.isEvent}
               onRefreshData={onRefreshData}
               onCleanData={onCleanData}
             />

@@ -27,6 +27,7 @@ import { validateAppsImages } from "@/lib/image-utils";
 import { uploadFile, deleteFile } from "@/lib/storage-adapter";
 import { loadAppsFromBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, saveAppsByTypeToBlob, loadFeaturedIds, loadEventIds, saveFeaturedIds, saveEventIds } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
+import { useAppStore } from "@/store/useAppStore";
 import Image from "next/image";
 
 const isBlobUrl = (url?: string) => {
@@ -51,17 +52,25 @@ const sampleApps: AppItem[] = [];
 
 export default function Home() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [allApps, setAllApps] = useState<AppItem[]>([]); // Single source of truth
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<AppItem | null>(null);
   const [currentFilter, setCurrentFilter] = useState<FilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [featuredApps, setFeaturedApps] = useState<string[]>([]);
-  const [eventApps, setEventApps] = useState<string[]>([]);
   const [currentContentType, setCurrentContentType] = useState<ContentType | null>(null);
   const { t } = useLanguage();
   const { isAuthenticated } = useAdmin();
   const [adminVisible, setAdminVisible] = useState(false);
+
+  // 전역 스토어 사용
+  const { 
+    apps: allApps, 
+    setApps, 
+    toggleFeatured, 
+    toggleEvent, 
+    getFeaturedApps, 
+    getEventApps, 
+    getNormalApps 
+  } = useAppStore();
 
   // Request ID for preventing race conditions
   const reqIdRef = useRef(0);
@@ -81,7 +90,7 @@ export default function Home() {
       );
     }
 
-    // Type filter
+    // Type filter using global store
     switch (currentFilter) {
       case "latest":
         const latestApps = filtered
@@ -91,22 +100,20 @@ export default function Home() {
           );
         return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
       case "featured": {
-        return pickByIds(filtered, featuredApps).sort((a, b) => a.name.localeCompare(b.name));
+        return getFeaturedApps().sort((a, b) => a.name.localeCompare(b.name));
       }
       case "events": {
-        return pickByIds(filtered, eventApps).sort((a, b) => a.name.localeCompare(b.name));
+        return getEventApps().sort((a, b) => a.name.localeCompare(b.name));
       }
       case "normal": {
         // 일반 카드만 표시 (featured/events에 포함되지 않은 앱들)
-        return filtered
-          .filter(app => !featuredApps.includes(app.id) && !eventApps.includes(app.id))
-          .sort((a, b) => a.name.localeCompare(b.name));
+        return getNormalApps().sort((a, b) => a.name.localeCompare(b.name));
       }
       case "all":
       default:
         return filtered.sort((a, b) => a.name.localeCompare(b.name));
     }
-  }, [allApps, currentFilter, searchQuery, featuredApps, eventApps]);
+  }, [allApps, currentFilter, searchQuery, getFeaturedApps, getEventApps, getNormalApps]);
 
 
 
@@ -206,77 +213,53 @@ export default function Home() {
   };
 
 
-    // Featured 앱 토글 핸들러
+  // Featured 앱 토글 핸들러 (전역 스토어 사용)
   const handleToggleFeatured = async (appId: string) => {
-    const isOn = featuredApps.includes(appId);
-    const action = isOn ? 'remove' : 'add';
-    console.log(`[Client] Featured 토글 시도: ${appId} ${action}`);
+    console.log(`[Client] Featured 토글 시도: ${appId}`);
     try {
-      const res = await toggleFeaturedAppStatus(appId, 'featured', action);
-      console.log(`[Client] Featured 토글 응답:`, JSON.stringify(res, null, 2));
-      if (res) {
-        // 최신 세트 반영
-        setFeaturedApps(res.featured);
-        setEventApps(res.events);
-        
-        // 갤러리 앱 데이터도 업데이트 (featured/events 플래그 반영)
+      // 전역 스토어에서 즉시 토글
+      toggleFeatured(appId);
+      
+      // 서버 동기화 (비동기)
+      const app = allApps.find(a => a.id === appId);
+      if (app) {
+        const action = app.isFeatured ? 'remove' : 'add';
         try {
-          const existingApps = await loadAppsByTypeFromBlob('gallery');
-          const saveResult = await saveAppsByTypeToBlob('gallery', existingApps, res.featured, res.events);
-          if (saveResult.success && saveResult.data) {
-            setAllApps(saveResult.data);
-            console.log('🔄 갤러리 앱 데이터에 featured 플래그 반영 완료');
+          const res = await toggleFeaturedAppStatus(appId, 'featured', action);
+          if (res) {
+            console.log('🔄 서버 동기화 완료:', res);
           }
         } catch (error) {
-          console.error('❌ 갤러리 앱 데이터 업데이트 실패:', error);
+          console.error('❌ 서버 동기화 실패:', error);
         }
-        
-        console.log(`[Client] Featured 상태 업데이트 완료:`, JSON.stringify({ featured: res.featured, events: res.events }, null, 2));
-      } else {
-        // 실패 시 최신 세트 다시 로드
-        console.log('❌ Featured 토글 실패, 데이터 새로고침 시도');
-        await handleRefreshData();
       }
     } catch (e) {
       console.error('❌ Featured 토글 오류:', e);
-      await handleRefreshData();
     }
   };
 
-  // Event 앱 토글 핸들러
+  // Event 앱 토글 핸들러 (전역 스토어 사용)
   const handleToggleEvent = async (appId: string) => {
-    const isOn = eventApps.includes(appId);
-    const action = isOn ? 'remove' : 'add';
-    console.log(`[Client] Events 토글 시도: ${appId} ${action}`);
+    console.log(`[Client] Events 토글 시도: ${appId}`);
     try {
-      const res = await toggleFeaturedAppStatus(appId, 'events', action);
-      console.log(`[Client] Events 토글 응답:`, JSON.stringify(res, null, 2));
-      if (res) {
-        // 최신 세트 반영
-        setFeaturedApps(res.featured);
-        setEventApps(res.events);
-        
-        // 갤러리 앱 데이터도 업데이트 (featured/events 플래그 반영)
+      // 전역 스토어에서 즉시 토글
+      toggleEvent(appId);
+      
+      // 서버 동기화 (비동기)
+      const app = allApps.find(a => a.id === appId);
+      if (app) {
+        const action = app.isEvent ? 'remove' : 'add';
         try {
-          const existingApps = await loadAppsByTypeFromBlob('gallery');
-          const saveResult = await saveAppsByTypeToBlob('gallery', existingApps, res.featured, res.events);
-          if (saveResult.success && saveResult.data) {
-            setAllApps(saveResult.data);
-            console.log('🔄 갤러리 앱 데이터에 events 플래그 반영 완료');
+          const res = await toggleFeaturedAppStatus(appId, 'events', action);
+          if (res) {
+            console.log('🔄 서버 동기화 완료:', res);
           }
         } catch (error) {
-          console.error('❌ 갤러리 앱 데이터 업데이트 실패:', error);
+          console.error('❌ 서버 동기화 실패:', error);
         }
-        
-        console.log(`[Client] Events 상태 업데이트 완료:`, JSON.stringify({ featured: res.featured, events: res.events }, null, 2));
-      } else {
-        // 실패 시 최신 세트 다시 로드
-        console.log('❌ Events 토글 실패, 데이터 새로고침 시도');
-        await handleRefreshData();
       }
     } catch (e) {
       console.error('❌ Events 토글 오류:', e);
-      await handleRefreshData();
     }
   };
 
@@ -513,7 +496,7 @@ export default function Home() {
     setEditingApp(app);
   };
 
-    // 앱 목록 로드 및 동기화 (Single source + race condition prevention)
+  // 앱 목록 로드 및 동기화 (전역 스토어 사용)
   useEffect(() => {
     // StrictMode 이중 실행 방지
     if (loadedRef.current) return;
@@ -537,7 +520,7 @@ export default function Home() {
           
           // 기존 앱들에 type 속성 추가
           const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-          setAllApps(appsWithType); // Single source update
+          setApps(appsWithType); // 전역 스토어 업데이트
         } else {
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
           const blobApps = await loadAppsFromBlob();
@@ -551,32 +534,9 @@ export default function Home() {
             
             // 기존 앱들에 type 속성 추가
             const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-            setAllApps(appsWithType); // Single source update
+            setApps(appsWithType); // 전역 스토어 업데이트
           } else {
             // Keep existing state - don't reset to empty array
-          }
-        }
-
-        // Featured Apps 로드 (새로운 분리된 함수들 사용)
-        if (isMounted) {
-          try {
-            const [f, e] = await Promise.all([
-              loadFeaturedIds(),
-              loadEventIds()
-            ]);
-            if (isMounted && myId === reqIdRef.current) {
-              setFeaturedApps(f);
-              setEventApps(e);
-              // 플래그 주입은 통합된 useEffect에서 처리
-            }
-          } catch (error) {
-            console.error('❌ Featured/Events 로드 오류:', error);
-            // 저장소 로드 실패 시 빈 배열로 초기화 (카운트 0 표시)
-            if (isMounted && myId === reqIdRef.current) {
-              setFeaturedApps([]);
-              setEventApps([]);
-              console.log('🔄 Featured/Events 빈 배열로 초기화');
-            }
           }
         }
         
@@ -585,7 +545,7 @@ export default function Home() {
         if (isMounted) {
           // 앱 로드 실패
           // 실패시 샘플 데이터 사용
-          setAllApps(sampleApps);
+          setApps(sampleApps);
         }
       }
     };
@@ -596,34 +556,21 @@ export default function Home() {
     return () => {
       isMounted = false;
     };
-  }, []); // 의존성 배열을 빈 배열로 변경하여 한 번만 실행
-
-  // 통합된 상태 동기화: allApps, featuredApps, eventApps가 모두 준비되면 한 번에 플래그 주입
-  useEffect(() => {
-    if (allApps.length > 0) {
-      // 플래그가 있는 경우에만 주입 (중복 호출 방지)
-      const hasFeaturedFlags = allApps.some(app => app.isFeatured !== undefined || app.isEvent !== undefined);
-      const needsFlagInjection = (featuredApps.length > 0 || eventApps.length > 0) && !hasFeaturedFlags;
-      
-      if (needsFlagInjection) {
-        setAllApps(prev => applyFeaturedFlags(prev, featuredApps, eventApps));
-      }
-    }
-  }, [allApps, featuredApps, eventApps]);
+  }, [setApps]); // setApps 의존성 추가
 
   // Featured/Events 매핑 검증 (개발 모드에서만)
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
       if (currentFilter === 'featured') {
-        const anyEventCard = filteredApps.some(a => eventApps.includes(a.id));
+        const anyEventCard = filteredApps.some(a => a.isEvent);
         if (anyEventCard) console.warn('⚠️ Featured 뷰에 Event 카드가 섞여 있습니다. 매핑 확인 필요.');
       }
       if (currentFilter === 'events') {
-        const anyFeaturedCard = filteredApps.some(a => featuredApps.includes(a.id));
+        const anyFeaturedCard = filteredApps.some(a => a.isFeatured);
         if (anyFeaturedCard) console.warn('⚠️ Events 뷰에 Featured 카드가 섞여 있습니다. 매핑 확인 필요.');
       }
     }
-  }, [currentFilter, filteredApps, featuredApps, eventApps]);
+  }, [currentFilter, filteredApps]);
 
   // 기존 앱 데이터에서 불린 플래그 제거 (1회성 정리)
   const cleanAppData = async () => {
@@ -1026,8 +973,6 @@ export default function Home() {
                              onEditApp={handleEditApp}
                              onToggleFeatured={handleToggleFeatured}
                              onToggleEvent={handleToggleEvent}
-                             featuredApps={featuredApps}
-                             eventApps={eventApps}
                              showNumbering={currentFilter === "events"}
                              onRefreshData={handleRefreshData}
                              onCleanData={cleanAppData}
@@ -1190,7 +1135,7 @@ export default function Home() {
                      onMouseEnter={blockTranslationFeedback}
                      translate="no"
                    >
-                     📱 일반 ({allApps.filter(app => !featuredApps.includes(app.id) && !eventApps.includes(app.id)).length})
+                     📱 일반 ({getNormalApps().length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleFeaturedAppsClick)}
@@ -1202,7 +1147,7 @@ export default function Home() {
                      onMouseEnter={blockTranslationFeedback}
                      translate="no"
                    >
-                     ⭐ Featured ({featuredApps.length})
+                     ⭐ Featured ({getFeaturedApps().length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleEventsClick)}
@@ -1214,7 +1159,7 @@ export default function Home() {
                      onMouseEnter={blockTranslationFeedback}
                      translate="no"
                    >
-                     🎉 Events ({eventApps.length})
+                     🎉 Events ({getEventApps().length})
                    </button>
                  </div>
                  
