@@ -88,24 +88,38 @@ export async function POST(request: NextRequest) {
 
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
-      // Blob 저장 우선 시도, 실패 시 메모리 폴백으로도 성공 처리
-      try {
-        
-        await put(FEATURED_FILE_NAME, JSON.stringify(featured, null, 2), {
-          access: 'public',
-          contentType: 'application/json; charset=utf-8',
-          addRandomSuffix: false,
-        });
-        
-        // Blob 저장 성공
-        // 메모리와의 불일치 방지를 위해 메모리도 최신으로 갱신
-        memoryFeatured = { ...featured };
+      // Blob 저장 강화 - 재시도 로직 추가
+      let blobSaved = false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          console.log(`[Featured Blob] 저장 시도 ${attempt}/3`);
+          await put(FEATURED_FILE_NAME, JSON.stringify(featured, null, 2), {
+            access: 'public',
+            contentType: 'application/json; charset=utf-8',
+            addRandomSuffix: false,
+          });
+          console.log(`[Featured Blob] 저장 성공 (시도 ${attempt})`);
+          blobSaved = true;
+          break;
+        } catch (error) {
+          console.error(`[Featured Blob] 저장 실패 (시도 ${attempt}):`, error);
+          if (attempt === 3) {
+            console.error('[Featured Blob] 모든 시도 실패, 메모리 폴백 사용');
+          }
+        }
+      }
+      
+      // 메모리도 항상 업데이트
+      memoryFeatured = { ...featured };
+      
+      if (blobSaved) {
         return NextResponse.json({ success: true, storage: 'blob' });
-      } catch (error) {
-        // Blob 저장 실패: 토큰 누락 등
-        console.warn('[Featured Blob] 저장 실패, 메모리 폴백 사용:', error);
-        memoryFeatured = { ...featured };
-        return NextResponse.json({ success: true, storage: 'memory', warning: 'Blob save failed; using in-memory fallback' });
+      } else {
+        return NextResponse.json({ 
+          success: true, 
+          storage: 'memory', 
+          warning: 'Blob save failed after 3 attempts; using in-memory fallback' 
+        });
       }
     }
 

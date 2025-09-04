@@ -72,26 +72,43 @@ export async function POST(request: NextRequest) {
     const apps = Array.isArray(body) ? (body as AppItem[]) : [];
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
-      // Blob 저장 우선 시도, 실패 시 메모리 폴백으로도 성공 처리
-      try {
-        await put(APPS_FILE_NAME, JSON.stringify(apps, null, 2), {
-          access: 'public',
-          contentType: 'application/json; charset=utf-8',
-          addRandomSuffix: false,
-        });
-        // Blob 저장 성공
-        // 메모리와의 불일치 방지를 위해 메모리도 최신으로 갱신
-        memoryApps = [...apps];
+      // Blob 저장 강화 - 재시도 로직 추가
+      let blobSaved = false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          console.log(`[Apps Blob] 저장 시도 ${attempt}/3`);
+          await put(APPS_FILE_NAME, JSON.stringify(apps, null, 2), {
+            access: 'public',
+            contentType: 'application/json; charset=utf-8',
+            addRandomSuffix: false,
+          });
+          console.log(`[Apps Blob] 저장 성공 (시도 ${attempt})`);
+          blobSaved = true;
+          break;
+        } catch (error) {
+          console.error(`[Apps Blob] 저장 실패 (시도 ${attempt}):`, error);
+          if (attempt === 3) {
+            console.error('[Apps Blob] 모든 시도 실패, 메모리 폴백 사용');
+          }
+        }
+      }
+      
+      // 메모리도 항상 업데이트
+      memoryApps = [...apps];
+      
+      if (blobSaved) {
         return NextResponse.json({ success: true, storage: 'blob' });
-      } catch {
-        // Blob 저장 실패: 토큰 누락 등
-        memoryApps = [...apps];
-        return NextResponse.json({ success: true, storage: 'memory', warning: 'Blob save failed; using in-memory fallback' });
+      } else {
+        return NextResponse.json({ 
+          success: true, 
+          storage: 'memory', 
+          warning: 'Blob save failed after 3 attempts; using in-memory fallback' 
+        });
       }
     }
-    // 로컬 파일 저장 제거 - 글로벌에만 전달되도록 함
-    // await writeToLocal(apps);
-    return NextResponse.json({ success: true, storage: 'global-only' });
+    // 로컬 파일 저장
+    await writeToLocal(apps);
+    return NextResponse.json({ success: true, storage: 'local' });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to save apps' }, { status: 500 });
   }
