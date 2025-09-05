@@ -47,7 +47,18 @@ const isBlobUrl = (url?: string) => {
 const applyFeaturedFlags = (apps: AppItem[], featuredIds: string[], eventIds: string[]) => {
   const f = new Set(featuredIds);
   const e = new Set(eventIds);
-  return apps.map(a => ({ ...a, isFeatured: f.has(a.id), isEvent: e.has(a.id) }));
+  
+  const result = apps.map(a => ({ ...a, isFeatured: f.has(a.id), isEvent: e.has(a.id) }));
+  
+  console.log('🏷️ 플래그 적용 결과:', {
+    totalApps: result.length,
+    featuredCount: result.filter(a => a.isFeatured).length,
+    eventsCount: result.filter(a => a.isEvent).length,
+    featuredApps: result.filter(a => a.isFeatured).map(a => ({ id: a.id, name: a.name })),
+    eventApps: result.filter(a => a.isEvent).map(a => ({ id: a.id, name: a.name }))
+  });
+  
+  return result;
 };
 
 // 빈 앱 데이터 (샘플 앱 제거됨)
@@ -229,7 +240,12 @@ export default function Home() {
           loadFeaturedIds(),
           loadEventIds()
         ]);
-        console.log('🏷️ 플래그 로드 완료:', { featured: featuredIds.length, events: eventIds.length });
+        console.log('🏷️ 플래그 로드 완료:', { 
+          featured: featuredIds.length, 
+          events: eventIds.length,
+          featuredIds: featuredIds,
+          eventIds: eventIds
+        });
         
         // 4. 앱들에 플래그 적용
         const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
@@ -1127,6 +1143,7 @@ export default function Home() {
                              }}
                              isAdmin={isAuthenticated && adminVisible}
                              apps={allApps}
+                             filteredApps={filteredApps}
                              onDeleteApp={handleDeleteApp}
                            />
                            

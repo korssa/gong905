@@ -58,10 +58,11 @@ interface GalleryManagerProps {
   readonly onRefresh?: () => void;
   readonly isAdmin?: boolean;
   readonly apps?: AppItem[];
+  readonly filteredApps?: AppItem[];
   readonly onDeleteApp?: (id: string) => void;
 }
 
-export function GalleryManager({ viewMode, filter, onRefresh, isAdmin = false, apps = [], onDeleteApp }: GalleryManagerProps) {
+export function GalleryManager({ viewMode, filter, onRefresh, isAdmin = false, apps = [], filteredApps = [], onDeleteApp }: GalleryManagerProps) {
   const {
     isLoading,
     lastLoaded,
@@ -168,10 +169,17 @@ export function GalleryManager({ viewMode, filter, onRefresh, isAdmin = false, a
     }
   };
 
-  // 현재 필터에 따른 데이터 가져오기 (앱 데이터 우선 사용)
+  // 현재 필터에 따른 데이터 가져오기 (filteredApps 우선 사용)
   const currentItems = (() => {
+    // 1. filteredApps가 있으면 우선 사용 (메인 페이지의 필터링된 데이터)
+    if (filteredApps.length > 0) {
+      console.log(`📱 갤러리 매니저: filteredApps 사용 (${filteredApps.length}개)`);
+      return convertAppsToGallery(filteredApps);
+    }
+    
+    // 2. filteredApps가 없으면 apps 사용
     if (apps.length > 0) {
-      // 앱 데이터가 있으면 앱 데이터를 갤러리 아이템으로 변환
+      console.log(`📱 갤러리 매니저: apps 사용 (${apps.length}개)`);
       const galleryItems = convertAppsToGallery(apps);
       
       switch (filter) {
@@ -189,10 +197,11 @@ export function GalleryManager({ viewMode, filter, onRefresh, isAdmin = false, a
         default:
           return galleryItems;
       }
-    } else {
-      // 앱 데이터가 없으면 갤러리 스토어에서 가져오기
-      return getFilteredItems(filter);
     }
+    
+    // 3. 둘 다 없으면 갤러리 스토어에서 가져오기
+    console.log(`📱 갤러리 매니저: 갤러리 스토어 사용`);
+    return getFilteredItems(filter);
   })();
 
   if (!isInitialized && isLoading) {
