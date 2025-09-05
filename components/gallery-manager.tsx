@@ -323,21 +323,42 @@ export function GalleryManager({
                 )}
               </CardContent>
 
-              {/* Download Section */}
+              {/* Store Links Section */}
               <div className="w-full bg-[#84CC9A] border-t border-gray-300 px-4 py-2">
-                <div className="flex flex-col items-start space-y-1">
-                  <div className="w-full">
-                    <Button
-                      size="sm"
-                      className="h-6 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 whitespace-nowrap min-w-[120px] justify-start"
-                      onClick={() => setSelectedItem(item)}
-                    >
-                      <User className="h-3 w-3" />
-                      View Details
-                    </Button>
-                  </div>
-                  <div className="h-6 flex items-center">
-                    <span className="text-xs text-gray-600">Gallery Item</span>
+                <div className="flex flex-col items-center space-y-2">
+                  <Button
+                    size="sm"
+                    className="h-6 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 whitespace-nowrap"
+                    onClick={() => {
+                      // 구글플레이 링크로 이동 (임시로 앱 제목을 검색어로 사용)
+                      const searchQuery = encodeURIComponent(item.title);
+                      window.open(`https://play.google.com/store/search?q=${searchQuery}&c=apps`, '_blank');
+                    }}
+                  >
+                    <User className="h-3 w-3" />
+                    See App
+                  </Button>
+                  
+                  {/* Store Badges */}
+                  <div className="flex gap-2">
+                    <img 
+                      src="/google-play-badge.png" 
+                      alt="Get it on Google Play"
+                      className="h-6 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => {
+                        const searchQuery = encodeURIComponent(item.title);
+                        window.open(`https://play.google.com/store/search?q=${searchQuery}&c=apps`, '_blank');
+                      }}
+                    />
+                    <img 
+                      src="/app-store-badge.png" 
+                      alt="Download on the App Store"
+                      className="h-6 cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => {
+                        const searchQuery = encodeURIComponent(item.title);
+                        window.open(`https://apps.apple.com/search?term=${searchQuery}`, '_blank');
+                      }}
+                    />
                   </div>
                 </div>
               </div>
