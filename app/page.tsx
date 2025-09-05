@@ -688,7 +688,7 @@ export default function Home() {
         if (anyFeaturedCard) console.warn('⚠️ Events 뷰에 Featured 카드가 섞여 있습니다. 매핑 확인 필요.');
       }
     }
-  }, [currentFilter, filteredApps]);
+  }, [currentFilter]); // filteredApps 제거 (무한 루프 방지)
 
 
   // 강제 데이터 새로고침 함수
