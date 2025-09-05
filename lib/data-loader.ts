@@ -13,7 +13,6 @@ export async function loadAppsFromBlob(): Promise<AppItem[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('❌ [loadAppsFromBlob] 기존 Blob API 오류:', error);
     // Error loading apps from blob
     return [];
   }
@@ -174,11 +173,6 @@ export async function saveAppsByTypeToBlob(type: 'gallery', apps: AppItem[], fea
         isEvent: eventSet.has(app.id)
       }));
       
-      console.log('🔄 갤러리 앱에 featured/events 플래그 반영:', {
-        total: appsWithFlags.length,
-        featured: appsWithFlags.filter(app => app.isFeatured).length,
-        events: appsWithFlags.filter(app => app.isEvent).length
-      });
     }
     
     const response = await fetch(`/api/apps/type?type=${type}`, {
@@ -228,17 +222,14 @@ export async function loadFeaturedAppsFromBlob(): Promise<{ featured: string[]; 
  */
 export async function saveFeaturedAppsToBlob(featured: string[], events: string[]): Promise<boolean> {
   try {
-    console.log('📤 saveFeaturedAppsToBlob 호출:', { featured, events });
     const response = await fetch('/api/apps/featured', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ featured, events }),
       cache: 'no-store',
     });
-    console.log('📤 saveFeaturedAppsToBlob 응답:', { ok: response.ok, status: response.status });
     return response.ok;
   } catch (error) {
-    console.error('❌ saveFeaturedAppsToBlob 오류:', error);
     return false;
   }
 }
@@ -252,23 +243,19 @@ export async function toggleFeaturedAppStatus(
   action: 'add' | 'remove'
 ): Promise<{ featured: string[]; events: string[] } | null> {
   try {
-    console.log(`[Client] toggleFeaturedAppStatus 호출: ${appId} ${type} ${action}`);
     const response = await fetch('/api/apps/featured', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appId, type, action }),
       cache: 'no-store',
     });
-    console.log(`[Client] toggleFeaturedAppStatus 응답:`, { ok: response.ok, status: response.status });
     if (!response.ok) return null;
     const data = await response.json();
-    console.log(`[Client] toggleFeaturedAppStatus 데이터:`, data);
     return {
       featured: Array.isArray(data.featured) ? data.featured : [],
       events: Array.isArray(data.events) ? data.events : [],
     };
   } catch (error) {
-    console.error(`[Client] toggleFeaturedAppStatus 오류:`, error);
     return null;
   }
 }
@@ -285,7 +272,6 @@ export async function loadFeaturedIds(): Promise<string[]> {
     const data = await res.json();
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error('❌ [loadFeaturedIds] 오류:', error);
     return [];
   }
 }
@@ -300,7 +286,6 @@ export async function loadEventIds(): Promise<string[]> {
     const data = await res.json();
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error('❌ [loadEventIds] 오류:', error);
     return [];
   }
 }
@@ -310,13 +295,11 @@ export async function loadEventIds(): Promise<string[]> {
  */
 export async function saveFeaturedIds(ids: string[]): Promise<{ success: boolean; data?: string[] }> {
   try {
-    console.log('📤 saveFeaturedIds 호출:', ids);
     const res = await fetch('/api/data/featured', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(ids),
     });
-    console.log('📤 saveFeaturedIds 응답:', { ok: res.ok, status: res.status });
     
     if (!res.ok) {
       return { success: false };
@@ -328,7 +311,6 @@ export async function saveFeaturedIds(ids: string[]): Promise<{ success: boolean
       data: result.data || ids // API 응답에서 최종 데이터 반환
     };
   } catch (error) {
-    console.error('❌ saveFeaturedIds 오류:', error);
     return { success: false };
   }
 }
@@ -338,13 +320,11 @@ export async function saveFeaturedIds(ids: string[]): Promise<{ success: boolean
  */
 export async function saveEventIds(ids: string[]): Promise<{ success: boolean; data?: string[] }> {
   try {
-    console.log('📤 saveEventIds 호출:', ids);
     const res = await fetch('/api/data/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(ids),
     });
-    console.log('📤 saveEventIds 응답:', { ok: res.ok, status: res.status });
     
     if (!res.ok) {
       return { success: false };
@@ -356,7 +336,6 @@ export async function saveEventIds(ids: string[]): Promise<{ success: boolean; d
       data: result.data || ids // API 응답에서 최종 데이터 반환
     };
   } catch (error) {
-    console.error('❌ saveEventIds 오류:', error);
     return { success: false };
   }
 }

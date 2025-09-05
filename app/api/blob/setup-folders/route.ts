@@ -3,15 +3,13 @@ import { put } from '@vercel/blob';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('📁 Vercel Blob 폴더 구조 생성 시작...');
-
-    // 각 폴더에 초기 JSON 파일 생성
+    // �??�더??초기 JSON ?�일 ?�성
     const folders = ['gallery', 'events', 'featured'];
     const results = [];
 
     for (const folder of folders) {
       try {
-        // 각 폴더에 빈 배열로 초기화된 JSON 파일 생성
+        // �??�더??�?배열�?초기?�된 JSON ?�일 ?�성
         const initialData = {
           items: [],
           lastUpdated: new Date().toISOString(),
@@ -33,9 +31,7 @@ export async function POST(request: NextRequest) {
           url: blobUrl.url
         });
 
-        console.log(`✅ ${folder} 폴더 생성 완료:`, blobUrl.url);
-      } catch (error) {
-        console.error(`❌ ${folder} 폴더 생성 실패:`, error);
+        } catch (error) {
         results.push({
           folder,
           success: false,
@@ -49,12 +45,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: successCount === totalCount,
-      message: `${successCount}/${totalCount} 폴더 생성 완료`,
+      message: `${successCount}/${totalCount} ?�더 ?�성 ?�료`,
       results
     });
 
   } catch (error) {
-    console.error('❌ 폴더 구조 생성 실패:', error);
     return NextResponse.json(
       { 
         success: false, 

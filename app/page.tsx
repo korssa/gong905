@@ -1,4 +1,4 @@
-ï»¿"use client";
+"use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
 
@@ -33,20 +33,20 @@ const isBlobUrl = (url?: string) => {
   return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
 };
 
-// ID ì„¸íŠ¸ë¡œ ì•±ì„ í•„í„°ë§í•˜ëŠ” ìœ í‹¸ í•¨ìˆ˜ (í˜„ì¬ ì‚¬ìš©í•˜ì§€ ì•ŠìŒ)
+// ID ¼¼Æ®·Î ¾ÛÀ» ÇÊÅÍ¸µÇÏ´Â À¯Æ¿ ÇÔ¼ö (ÇöÀç »ç¿ëÇÏÁö ¾ÊÀ½)
 // const pickByIds = (apps: AppItem[], ids: string[]) => {
 //   const set = new Set(ids);
 //   return apps.filter(a => set.has(a.id));
 // };
 
-// Featured/Events í”Œë˜ê·¸ë¥¼ ì•±ì— ì£¼ì…í•˜ëŠ” ìœ í‹¸ í•¨ìˆ˜
+// Featured/Events ÇÃ·¡±×¸¦ ¾Û¿¡ ÁÖÀÔÇÏ´Â À¯Æ¿ ÇÔ¼ö
 const applyFeaturedFlags = (apps: AppItem[], featuredIds: string[], eventIds: string[]) => {
   const f = new Set(featuredIds);
   const e = new Set(eventIds);
   return apps.map(a => ({ ...a, isFeatured: f.has(a.id), isEvent: e.has(a.id) }));
 };
 
-// ë¹ˆ ì•± ë°ì´í„° (ìƒ˜í”Œ ì•± ì œê±°ë¨)
+// ºó ¾Û µ¥ÀÌÅÍ (»ùÇÃ ¾Û Á¦°ÅµÊ)
 const sampleApps: AppItem[] = [];
 
 export default function Home() {
@@ -60,13 +60,13 @@ export default function Home() {
   const { isAuthenticated: isAdmin } = useAdmin();
   const [adminVisible, setAdminVisible] = useState(false);
 
-  // ì „ì—­ ìŠ¤í† ì–´ ì‚¬ìš©
-  // ë¡œì»¬ ìƒíƒœë¡œ ì•± ë°ì´í„° ê´€ë¦¬ (Zustand ì œê±°)
+  // Àü¿ª ½ºÅä¾î »ç¿ë
+  // ·ÎÄÃ »óÅÂ·Î ¾Û µ¥ÀÌÅÍ °ü¸® (Zustand Á¦°Å)
   const [allApps, setAllApps] = useState<AppItem[]>([]);
   const [featuredIds, setFeaturedIds] = useState<string[]>([]);
   const [eventIds, setEventIds] = useState<string[]>([]);
 
-  // ë¡œì»¬ í† ê¸€ í•¨ìˆ˜ë“¤
+  // ·ÎÄÃ Åä±Û ÇÔ¼öµé
   const toggleFeatured = (appId: string) => {
     setFeaturedIds(prev => 
       prev.includes(appId) 
@@ -109,14 +109,14 @@ export default function Home() {
           .sort((a, b) => 
             new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
           );
-        return latestApps.slice(0, 1); // ê°€ì¥ ìµœê·¼ published ì•± 1ê°œë§Œ ë°˜í™˜
+        return latestApps.slice(0, 1); // °¡Àå ÃÖ±Ù published ¾Û 1°³¸¸ ¹İÈ¯
       }
       case "featured":
         return allApps.filter(app => featuredIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
       case "events":
         return allApps.filter(app => eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
       case "normal":
-        // ì¼ë°˜ ì¹´ë“œë§Œ í‘œì‹œ (featured/eventsì— í¬í•¨ë˜ì§€ ì•Šì€ ì•±ë“¤)
+        // ÀÏ¹İ Ä«µå¸¸ Ç¥½Ã (featured/events¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº ¾Ûµé)
         return allApps.filter(app => !featuredIds.includes(app.id) && !eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
       case "all":
       default:
@@ -128,122 +128,106 @@ export default function Home() {
 
 
 
-  // í‘¸í„° ë§í¬ í´ë¦­ ì‹œ ë²ˆì—­ í”¼ë“œë°± ì°¨ë‹¨ í•¸ë“¤ëŸ¬
+  // ÇªÅÍ ¸µÅ© Å¬¸¯ ½Ã ¹ø¿ª ÇÇµå¹é Â÷´Ü ÇÚµé·¯
   const handleFooterLinkClick = (action?: () => void, event?: React.MouseEvent) => {
-    // ì´ë²¤íŠ¸ ê¸°ë³¸ ë™ì‘ ì°¨ë‹¨
+    // ÀÌº¥Æ® ±âº» µ¿ÀÛ Â÷´Ü
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
     
-    // ë²ˆì—­ í”¼ë“œë°± ì°¨ë‹¨
+    // ¹ø¿ª ÇÇµå¹é Â÷´Ü
     blockTranslationFeedback();
     
-    // ê¸°ì¡´ ì•¡ì…˜ ì‹¤í–‰ (ë‚˜ì¤‘ì— ì‹¤ì œ ë§í¬ ê¸°ëŠ¥ ì¶”ê°€ ì‹œ)
+    // ±âÁ¸ ¾×¼Ç ½ÇÇà (³ªÁß¿¡ ½ÇÁ¦ ¸µÅ© ±â´É Ãß°¡ ½Ã)
     if (action) action();
   };
 
-     // All Apps ë²„íŠ¼ í´ë¦­ í•¸ë“¤ëŸ¬
+     // All Apps ¹öÆ° Å¬¸¯ ÇÚµé·¯
    const handleAllAppsClick = () => {
      setCurrentFilter("all");
-     setCurrentContentType(null); // ë©”ëª¨ì¥ ëª¨ë“œ ì¢…ë£Œ
-     // í˜ì´ì§€ ìƒë‹¨ìœ¼ë¡œ ìŠ¤í¬ë¡¤
+     setCurrentContentType(null); // ¸Ş¸ğÀå ¸ğµå Á¾·á
+     // ÆäÀÌÁö »ó´ÜÀ¸·Î ½ºÅ©·Ñ
      window.scrollTo({ top: 0, behavior: 'smooth' });
    };
 
-   // New Releases ë²„íŠ¼ í´ë¦­ í•¸ë“¤ëŸ¬
+   // New Releases ¹öÆ° Å¬¸¯ ÇÚµé·¯
    const handleNewReleasesClick = () => {
      setCurrentFilter("latest");
-     setCurrentContentType(null); // ë©”ëª¨ì¥ ëª¨ë“œ ì¢…ë£Œ
-     // í˜ì´ì§€ ìƒë‹¨ìœ¼ë¡œ ìŠ¤í¬ë¡¤
+     setCurrentContentType(null); // ¸Ş¸ğÀå ¸ğµå Á¾·á
+     // ÆäÀÌÁö »ó´ÜÀ¸·Î ½ºÅ©·Ñ
      window.scrollTo({ top: 0, behavior: 'smooth' });
    };
 
-  // Featured Apps ë²„íŠ¼ í´ë¦­ í•¸ë“¤ëŸ¬
+  // Featured Apps ¹öÆ° Å¬¸¯ ÇÚµé·¯
   const handleFeaturedAppsClick = () => {
     setCurrentFilter("featured");
     setCurrentContentType(null);
     document.querySelector('main')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Events ë²„íŠ¼ í´ë¦­ í•¸ë“¤ëŸ¬
+  // Events ¹öÆ° Å¬¸¯ ÇÚµé·¯
   const handleEventsClick = () => {
     setCurrentFilter("events");
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // ì¼ë°˜ ì¹´ë“œ í•„í„° í•¸ë“¤ëŸ¬ (ê´€ë¦¬ ëª¨ë“œìš©)
+  // ÀÏ¹İ Ä«µå ÇÊÅÍ ÇÚµé·¯ (°ü¸® ¸ğµå¿ë)
   const handleNormalClick = () => {
     setCurrentFilter("normal");
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // ìˆ˜ë™ ì €ì¥ í•¸ë“¤ëŸ¬ (ê´€ë¦¬ì ì „ìš©)
+  // ¼öµ¿ ÀúÀå ÇÚµé·¯ (°ü¸®ÀÚ Àü¿ë)
   const handleManualSave = async () => {
     try {
       
-      console.log('ğŸ”’ ìˆ˜ë™ ì €ì¥ ì‹œì‘:', { featured: featuredIds, events: eventIds });
       
-      // Featured/Events ìƒíƒœë¥¼ ì €ì¥ì†Œì— ì €ì¥
+      // Featured/Events »óÅÂ¸¦ ÀúÀå¼Ò¿¡ ÀúÀå
       const [featuredResult, eventsResult] = await Promise.all([
         saveFeaturedIds(featuredIds),
         saveEventIds(eventIds)
       ]);
       
       if (featuredResult.success && eventsResult.success) {
-        alert('âœ… Featured/Events ìƒíƒœê°€ ì €ì¥ë˜ì—ˆìŠµë‹ˆë‹¤!');
-        console.log('ğŸ”’ ìˆ˜ë™ ì €ì¥ ì™„ë£Œ');
+        alert('? Featured/Events »óÅÂ°¡ ÀúÀåµÇ¾ú½À´Ï´Ù!');
       } else {
-        alert('âš ï¸ ì €ì¥ ì¤‘ ì¼ë¶€ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.');
-        console.error('âŒ ìˆ˜ë™ ì €ì¥ ì‹¤íŒ¨:', { featured: featuredResult, events: eventsResult });
+        alert('?? ÀúÀå Áß ÀÏºÎ ¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù.');
       }
     } catch (error) {
-      console.error('âŒ ìˆ˜ë™ ì €ì¥ ì˜¤ë¥˜:', error);
-      alert('âŒ ì €ì¥ ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.');
+      alert('? ÀúÀå Áß ¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù.');
     }
   };
 
-  // ë°ì´í„° ë¦¬ë¡œë“œ í•¸ë“¤ëŸ¬ (Featured/Events ìƒíƒœ ë³€ê²½ í›„ ì„œë²„ì—ì„œ ìµœì‹  ë°ì´í„° ê°€ì ¸ì˜¤ê¸°)
+  // µ¥ÀÌÅÍ ¸®·Îµå ÇÚµé·¯ (Featured/Events »óÅÂ º¯°æ ÈÄ ¼­¹ö¿¡¼­ ÃÖ½Å µ¥ÀÌÅÍ °¡Á®¿À±â)
   const handleRefreshData = async () => {
     try {
-      console.log('ğŸ”„ ë°ì´í„° ë¦¬ë¡œë“œ ì‹œì‘...');
       
-      // 1. ì„œë²„ì—ì„œ ìµœì‹  ì•± ë°ì´í„° ë¡œë“œ
+      // 1. ¼­¹ö¿¡¼­ ÃÖ½Å ¾Û µ¥ÀÌÅÍ ·Îµå
       const typeApps = await loadAppsByTypeFromBlob('gallery');
-      console.log('ğŸ“± ì„œë²„ì—ì„œ ì•± ë°ì´í„° ë¡œë“œ:', typeApps.length, 'ê°œ');
       
       if (typeApps.length > 0) {
-        // 2. ì´ë¯¸ì§€ ê²€ì¦
+        // 2. ÀÌ¹ÌÁö °ËÁõ
         const validatedApps = await validateAppsImages(typeApps);
-        console.log('âœ… ì´ë¯¸ì§€ ê²€ì¦ ì™„ë£Œ:', validatedApps.length, 'ê°œ');
-        
-        // 3. Featured/Events í”Œë˜ê·¸ ë¡œë“œ
+        // 3. Featured/Events ÇÃ·¡±× ·Îµå
         const [featuredIds, eventIds] = await Promise.all([
           loadFeaturedIds(),
           loadEventIds()
         ]);
-        console.log('ğŸ·ï¸ í”Œë˜ê·¸ ë¡œë“œ ì™„ë£Œ:', { featured: featuredIds.length, events: eventIds.length });
         
-        // 4. ì•±ë“¤ì— í”Œë˜ê·¸ ì ìš©
+        // 4. ¾Ûµé¿¡ ÇÃ·¡±× Àû¿ë
         const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
         const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
         
-        console.log('ğŸ¯ ìµœì¢… ì•± ë°ì´í„° ì—…ë°ì´íŠ¸:', appsWithType.length, 'ê°œ', {
-          featured: appsWithType.filter(a => a.isFeatured).length,
-          events: appsWithType.filter(a => a.isEvent).length
-        });
         
-        // 5. ì „ì—­ ìŠ¤í† ì–´ ì—…ë°ì´íŠ¸
+        // 5. Àü¿ª ½ºÅä¾î ¾÷µ¥ÀÌÆ®
         setAllApps(appsWithType);
         
-        console.log('âœ… ë°ì´í„° ë¦¬ë¡œë“œ ì™„ë£Œ');
       } else {
-        console.log('âš ï¸ ì„œë²„ì— ì•± ë°ì´í„°ê°€ ì—†ìŠµë‹ˆë‹¤');
       }
     } catch (error) {
-      console.error('âŒ ë°ì´í„° ë¦¬ë¡œë“œ ì˜¤ë¥˜:', error);
     }
   };
 
@@ -252,26 +236,25 @@ export default function Home() {
 
 
 
-   // New Release ì•±ì„ ê°€ì ¸ì˜¤ëŠ” ë³„ë„ í•¨ìˆ˜
+   // New Release ¾ÛÀ» °¡Á®¿À´Â º°µµ ÇÔ¼ö
    const getLatestApp = () => {
      const latestApps = allApps
        .filter(app => app.status === "published")
        .sort((a, b) => 
          new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
        );
-     return latestApps[0]; // ê°€ì¥ ìµœê·¼ published ì•± 1ê°œë§Œ ë°˜í™˜
+     return latestApps[0]; // °¡Àå ÃÖ±Ù published ¾Û 1°³¸¸ ¹İÈ¯
    };
 
   const handleAppUpload = async (data: AppFormData, files: { icon: File; screenshots: File[] }) => {
-    console.log('ğŸ“¤ ì•± ì—…ë¡œë“œ ì‹œì‘:', { name: data.name, appCategory: data.appCategory });
     try {
-      // ì•„ì´ì½˜/ìŠ¤í¬ë¦°ìƒ· íŒŒì¼ ì—…ë¡œë“œ (Vercel Blob ìš°ì„ )
+      // ¾ÆÀÌÄÜ/½ºÅ©¸°¼¦ ÆÄÀÏ ¾÷·Îµå (Vercel Blob ¿ì¼±)
       const iconUrl = await uploadFile(files.icon, "icon");
       const screenshotUrls = await Promise.all(
         files.screenshots.map(file => uploadFile(file, "screenshot"))
       );
 
-      // ìƒˆ ì•± ì•„ì´í…œ ìƒì„±
+      // »õ ¾Û ¾ÆÀÌÅÛ »ı¼º
       const newApp: AppItem = {
         id: generateUniqueId(),
         name: data.name,
@@ -291,32 +274,27 @@ export default function Home() {
         version: data.version,
         size: data.size,
         category: data.category,
-        type: 'gallery', // ê°¤ëŸ¬ë¦¬ ì•± íƒ€ì… ëª…ì‹œ
+        type: 'gallery', // °¶·¯¸® ¾Û Å¸ÀÔ ¸í½Ã
       };
 
-      // í†µí•©ëœ ì €ì¥ ë° ìƒíƒœ ì—…ë°ì´íŠ¸ (ê¸°ì¡´ ë°ì´í„° ë³´ì¡´)
-      // 1. ê¸°ì¡´ ì•± ë°ì´í„° ë¡œë“œ (ì˜¤ë²„ë¼ì´íŠ¸ ë°©ì§€)
+      // ÅëÇÕµÈ ÀúÀå ¹× »óÅÂ ¾÷µ¥ÀÌÆ® (±âÁ¸ µ¥ÀÌÅÍ º¸Á¸)
+      // 1. ±âÁ¸ ¾Û µ¥ÀÌÅÍ ·Îµå (¿À¹ö¶óÀÌÆ® ¹æÁö)
       const existingApps = await loadAppsByTypeFromBlob('gallery');
-      console.log('ğŸ“¥ ê¸°ì¡´ ì•± ë°ì´í„° ë¡œë“œ:', existingApps.length);
-      
-      // 2. ìƒˆ ì•±ì„ ê¸°ì¡´ ë°ì´í„°ì— ì¶”ê°€ (ì¹´í…Œê³ ë¦¬ ì •ë³´ í¬í•¨)
+      // 2. »õ ¾ÛÀ» ±âÁ¸ µ¥ÀÌÅÍ¿¡ Ãß°¡ (Ä«Å×°í¸® Á¤º¸ Æ÷ÇÔ)
       const sanitizedNewApp = { 
         ...newApp, 
         isFeatured: undefined, 
         isEvent: undefined,
-        // ì¹´í…Œê³ ë¦¬ ì •ë³´ë¥¼ ì•± ë°ì´í„°ì— í¬í•¨ (í†µí•© ê´€ë¦¬ìš©)
+        // Ä«Å×°í¸® Á¤º¸¸¦ ¾Û µ¥ÀÌÅÍ¿¡ Æ÷ÇÔ (ÅëÇÕ °ü¸®¿ë)
         appCategory: data.appCategory 
       };
       const updatedApps = [sanitizedNewApp, ...existingApps];
-      console.log('â• ìƒˆ ì•± ì¶”ê°€ í›„ ì´ ì•± ìˆ˜:', updatedApps.length);
-      console.log('ğŸ“‹ ì•± ì¹´í…Œê³ ë¦¬:', data.appCategory);
-      
       try {
         
-        // 3. ì•± ì €ì¥ (ê¸°ì¡´ ë°ì´í„° + ìƒˆ ì•±, featured/events ìƒíƒœ ë°˜ì˜)
-        // ê¸°ì¡´ ì¼ë°˜ ì¹´ë“œë“¤ì˜ ìƒíƒœë„ ìœ ì§€í•˜ë©´ì„œ ìƒˆ ì•±ì˜ ìƒíƒœ ì¶”ê°€
+        // 3. ¾Û ÀúÀå (±âÁ¸ µ¥ÀÌÅÍ + »õ ¾Û, featured/events »óÅÂ ¹İ¿µ)
+        // ±âÁ¸ ÀÏ¹İ Ä«µåµéÀÇ »óÅÂµµ À¯ÁöÇÏ¸é¼­ »õ ¾ÛÀÇ »óÅÂ Ãß°¡
         
-        // ìƒˆ ì•±ì˜ ì¹´í…Œê³ ë¦¬ì— ë”°ë¼ ìƒíƒœ ì¶”ê°€
+        // »õ ¾ÛÀÇ Ä«Å×°í¸®¿¡ µû¶ó »óÅÂ Ãß°¡
         const finalFeaturedIds = [...featuredIds];
         const finalEventIds = [...eventIds];
         
@@ -326,117 +304,88 @@ export default function Home() {
           finalEventIds.push(newApp.id);
         }
         
-        console.log('ğŸ’¾ ì €ì¥í•  ìƒíƒœ:', { 
-          featured: finalFeaturedIds, 
-          events: finalEventIds,
-          newAppCategory: data.appCategory 
-        });
-        
         const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps, finalFeaturedIds, finalEventIds);
         
-        // 2. Featured/Events ìƒíƒœ ì—…ë°ì´íŠ¸ (ì „ì—­ ìŠ¤í† ì–´ ì‚¬ìš©)
+        // 2. Featured/Events »óÅÂ ¾÷µ¥ÀÌÆ® (Àü¿ª ½ºÅä¾î »ç¿ë)
         if (data.appCategory === 'featured' || data.appCategory === 'events') {
-          console.log('ğŸ” ì¹´í…Œê³ ë¦¬ í™•ì¸:', { appCategory: data.appCategory, appId: newApp.id });
-          
-          // ì „ì—­ ìŠ¤í† ì–´ì—ì„œ ì¦‰ì‹œ í† ê¸€
+          // Àü¿ª ½ºÅä¾î¿¡¼­ Áï½Ã Åä±Û
           if (data.appCategory === 'featured') {
             toggleFeatured(newApp.id);
-            console.log('â­ Featured ì „ì—­ ìŠ¤í† ì–´ì— ì¶”ê°€');
-          } else if (data.appCategory === 'events') {
+            } else if (data.appCategory === 'events') {
             toggleEvent(newApp.id);
-            console.log('ğŸ‰ Events ì „ì—­ ìŠ¤í† ì–´ì— ì¶”ê°€');
-          }
+            }
         }
         
-        // 3. ëª¨ë“  ì €ì¥ ì™„ë£Œ í›„ í•œ ë²ˆì— ìƒíƒœ ì—…ë°ì´íŠ¸ (ë¹„ë™ê¸° ê²½í•© ë°©ì§€)
+        // 3. ¸ğµç ÀúÀå ¿Ï·á ÈÄ ÇÑ ¹ø¿¡ »óÅÂ ¾÷µ¥ÀÌÆ® (ºñµ¿±â °æÇÕ ¹æÁö)
         if (saveResult.success && saveResult.data) {
           setAllApps(saveResult.data);
-          console.log(`âœ… ìƒˆ ì•± ì—…ë¡œë“œ ì™„ë£Œ (ì„œë²„ ë°ì´í„° ì‚¬ìš©):`, newApp.id);
+          :`, newApp.id);
         } else {
           setAllApps(updatedApps);
-          console.log(`âœ… ìƒˆ ì•± ì—…ë¡œë“œ ì™„ë£Œ (ë¡œì»¬ ë°ì´í„° ì‚¬ìš©):`, newApp.id);
+          :`, newApp.id);
         }
         
-        // 4. ìƒíƒœ ì—…ë°ì´íŠ¸ í›„ ì ì‹œ ëŒ€ê¸°í•˜ì—¬ ìƒíƒœê°€ ë°˜ì˜ë˜ë„ë¡ í•¨
+        // 4. »óÅÂ ¾÷µ¥ÀÌÆ® ÈÄ Àá½Ã ´ë±âÇÏ¿© »óÅÂ°¡ ¹İ¿µµÇµµ·Ï ÇÔ
         setTimeout(() => {
-          console.log('ğŸ”„ ìµœì¢… ìƒíƒœ í™•ì¸:', { 
-            totalApps: allApps.length + 1,
-            featured: finalFeaturedIds.length, 
-            events: finalEventIds.length,
-            normal: allApps.length + 1 - finalFeaturedIds.length - finalEventIds.length
-          });
-        }, 100);
+          }, 100);
         
       } catch (error) {
-        console.error('ê¸€ë¡œë²Œ ì €ì¥ ì‹¤íŒ¨:', error);
-        // ì €ì¥ ì‹¤íŒ¨ì‹œ ë¡œì»¬ ìƒíƒœë§Œ ì—…ë°ì´íŠ¸
+        // ÀúÀå ½ÇÆĞ½Ã ·ÎÄÃ »óÅÂ¸¸ ¾÷µ¥ÀÌÆ®
         setAllApps(updatedApps);
       }
       
-      // ì•± ì—…ë¡œë“œ ë° ì €ì¥ ì™„ë£Œ
-      alert("âœ… App uploaded successfully!");
+      // ¾Û ¾÷·Îµå ¹× ÀúÀå ¿Ï·á
+      alert("? App uploaded successfully!");
       
-      // ê°¤ëŸ¬ë¦¬ ê°•ì œ ìƒˆë¡œê³ ì¹¨ (ë¦¬í”„ë ˆì‹œ ì—†ì´ë„ ìµœì‹  ë°ì´í„° í‘œì‹œ)
+      // °¶·¯¸® °­Á¦ »õ·Î°íÄ§ (¸®ÇÁ·¹½Ã ¾øÀÌµµ ÃÖ½Å µ¥ÀÌÅÍ Ç¥½Ã)
       await forceRefreshGallery();
       
     } catch {
-      alert("âŒ App upload failed. Please try again.");
+      alert("? App upload failed. Please try again.");
     }
   };
 
      const handleDeleteApp = async (id: string) => {
      try {
-       // 1. ì‚­ì œí•  ì•± ì •ë³´ ì°¾ê¸° (ì›ë³¸ ë°°ì—´ì—ì„œ ì°¾ê¸°)
+       // 1. »èÁ¦ÇÒ ¾Û Á¤º¸ Ã£±â (¿øº» ¹è¿­¿¡¼­ Ã£±â)
        const appToDelete = allApps.find(app => app.id === id);
        if (!appToDelete) {
          return;
        }
 
-       // 2. ìƒˆë¡œìš´ ì•± ëª©ë¡ ê³„ì‚° (ì›ë³¸ ë°°ì—´ ê¸°ë°˜)
+       // 2. »õ·Î¿î ¾Û ¸ñ·Ï °è»ê (¿øº» ¹è¿­ ±â¹İ)
        const newApps = allApps.filter(app => app.id !== id);
        
-             // 3. Featured/Events ì•±ì—ì„œë„ ì œê±° (ë¡œì»¬ ìƒíƒœ ê¸°ë°˜)
+             // 3. Featured/Events ¾Û¿¡¼­µµ Á¦°Å (·ÎÄÃ »óÅÂ ±â¹İ)
       const newFeaturedApps = featuredIds.filter(appId => appId !== id);
       const newEventApps = eventIds.filter(appId => appId !== id);
       
-      // 4. í†µí•©ëœ ì €ì¥ ë° ìƒíƒœ ì—…ë°ì´íŠ¸ (ê¸°ì¡´ ë°ì´í„° ë³´ì¡´)
+      // 4. ÅëÇÕµÈ ÀúÀå ¹× »óÅÂ ¾÷µ¥ÀÌÆ® (±âÁ¸ µ¥ÀÌÅÍ º¸Á¸)
       try {
-        // ê¸°ì¡´ ì•± ë°ì´í„° ë¡œë“œ (ì˜¤ë²„ë¼ì´íŠ¸ ë°©ì§€)
+        // ±âÁ¸ ¾Û µ¥ÀÌÅÍ ·Îµå (¿À¹ö¶óÀÌÆ® ¹æÁö)
         const existingApps = await loadAppsByTypeFromBlob('gallery');
-        console.log('ğŸ“¥ ê¸°ì¡´ ì•± ë°ì´í„° ë¡œë“œ:', existingApps.length);
-        
-        // ì‚­ì œí•  ì•±ì„ ì œì™¸í•œ ìƒˆ ë°°ì—´ ìƒì„±
+        // »èÁ¦ÇÒ ¾ÛÀ» Á¦¿ÜÇÑ »õ ¹è¿­ »ı¼º
         const sanitizedApps = existingApps.filter(app => app.id !== id);
-        console.log('ğŸ—‘ï¸ ì•± ì‚­ì œ í›„ ì´ ì•± ìˆ˜:', sanitizedApps.length);
-        
         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps, newFeaturedApps, newEventApps);
         
-        // 5. ëª¨ë“  ì €ì¥ ì™„ë£Œ í›„ í•œ ë²ˆì— ìƒíƒœ ì—…ë°ì´íŠ¸ (ë¹„ë™ê¸° ê²½í•© ë°©ì§€)
+        // 5. ¸ğµç ÀúÀå ¿Ï·á ÈÄ ÇÑ ¹ø¿¡ »óÅÂ ¾÷µ¥ÀÌÆ® (ºñµ¿±â °æÇÕ ¹æÁö)
         if (saveResult.success && saveResult.data) {
           setAllApps(saveResult.data);
         } else {
           setAllApps(newApps);
         }
          
-                 console.log(`âœ… ì•± ì‚­ì œ ì™„ë£Œ:`, id);
-        console.log('ğŸ”„ ìµœì¢… ìƒíƒœ:', { 
-          apps: saveResult.success ? saveResult.data?.length : newApps.length,
-          featured: newFeaturedApps.length, 
-          events: newEventApps.length 
-        });
-        
-      } catch (error) {
-        console.error('ê¸€ë¡œë²Œ ì €ì¥ ì‹¤íŒ¨:', error);
-        // ì €ì¥ ì‹¤íŒ¨ì‹œ ë¡œì»¬ ìƒíƒœë§Œ ì—…ë°ì´íŠ¸
+                 } catch (error) {
+        // ÀúÀå ½ÇÆĞ½Ã ·ÎÄÃ »óÅÂ¸¸ ¾÷µ¥ÀÌÆ®
         setAllApps(newApps);
       }
 
-       // 5. ìŠ¤í† ë¦¬ì§€ì—ì„œ ì‹¤ì œ íŒŒì¼ë“¤ ì‚­ì œ (Vercel Blob/ë¡œì»¬ ìë™ íŒë‹¨)
+       // 5. ½ºÅä¸®Áö¿¡¼­ ½ÇÁ¦ ÆÄÀÏµé »èÁ¦ (Vercel Blob/·ÎÄÃ ÀÚµ¿ ÆÇ´Ü)
        if (appToDelete.iconUrl) {
          try {
            await deleteFile(appToDelete.iconUrl);
          } catch (error) {
-           // ì•„ì´ì½˜ íŒŒì¼ ì‚­ì œ ì‹¤íŒ¨ ë¬´ì‹œ
+           // ¾ÆÀÌÄÜ ÆÄÀÏ »èÁ¦ ½ÇÆĞ ¹«½Ã
          }
        }
        
@@ -444,46 +393,43 @@ export default function Home() {
          try {
            await Promise.all(appToDelete.screenshotUrls.map(url => deleteFile(url)));
          } catch (error) {
-           // ìŠ¤í¬ë¦°ìƒ· íŒŒì¼ë“¤ ì‚­ì œ ì‹¤íŒ¨ ë¬´ì‹œ
+           // ½ºÅ©¸°¼¦ ÆÄÀÏµé »èÁ¦ ½ÇÆĞ ¹«½Ã
          }
        }
 
-       // 6. Featured/Events Blob ë™ê¸°í™”
+       // 6. Featured/Events Blob µ¿±âÈ­
        try {
          await Promise.all([
            saveFeaturedIds(newFeaturedApps),
            saveEventIds(newEventApps)
          ]);
        } catch (error) {
-         // Featured/Events Blob ë™ê¸°í™” ì‹¤íŒ¨ ë¬´ì‹œ
+         // Featured/Events Blob µ¿±âÈ­ ½ÇÆĞ ¹«½Ã
        }
 
-       // 7. ì‚­ì œ ì™„ë£Œ í™•ì¸
-       // Blob ë™ê¸°í™” í›„ ì ì‹œ ê¸°ë‹¤ë¦° í›„ ë‹¤ì‹œ ë¡œë“œ (ë™ê¸°í™” ì§€ì—° í•´ê²°)
+       // 7. »èÁ¦ ¿Ï·á È®ÀÎ
+       // Blob µ¿±âÈ­ ÈÄ Àá½Ã ±â´Ù¸° ÈÄ ´Ù½Ã ·Îµå (µ¿±âÈ­ Áö¿¬ ÇØ°á)
        setTimeout(async () => {
          try {
            const updatedBlobApps = await loadAppsFromBlob();
-           console.log('ğŸ”„ Blob ë™ê¸°í™” í›„ ì•± ìˆ˜:', updatedBlobApps?.length || 0);
-              
-              // Blob ë™ê¸°í™” ìƒíƒœ í™•ì¸ (ë™ê¸°í™” ì™„ë£Œ ë˜ëŠ” ì§€ì—°)
+           // Blob µ¿±âÈ­ »óÅÂ È®ÀÎ (µ¿±âÈ­ ¿Ï·á ¶Ç´Â Áö¿¬)
             } catch (error) {
-              // Blob ì¬í™•ì¸ ì‹¤íŒ¨ ë¬´ì‹œ
+              // Blob ÀçÈ®ÀÎ ½ÇÆĞ ¹«½Ã
             }
-          }, 1000); // 1ì´ˆ ëŒ€ê¸°
+          }, 1000); // 1ÃÊ ´ë±â
        
      } catch (error) {
-             // ì‹¤íŒ¨ì‹œ UI ìƒíƒœ ë³µì›
+             // ½ÇÆĞ½Ã UI »óÅÂ º¹¿ø
       const savedAppsStr = localStorage.getItem('gallery-apps');
       if (savedAppsStr) {
         try {
           const parsedApps = JSON.parse(savedAppsStr);
           setAllApps(parsedApps);
         } catch {
-          // localStorage íŒŒì‹± ì‹¤íŒ¨ ë¬´ì‹œ
+          // localStorage ÆÄ½Ì ½ÇÆĞ ¹«½Ã
         }
       }
 
-             console.error('âŒ ì•± ì‚­ì œ ì‹¤íŒ¨:', error);
              alert('An error occurred while deleting the app. Please try again.');
     }
   };
@@ -494,36 +440,33 @@ export default function Home() {
 
 
 
-  // ì•± ëª©ë¡ ë¡œë“œ ë° ë™ê¸°í™” (ì „ì—­ ìŠ¤í† ì–´ ì‚¬ìš©)
+  // ¾Û ¸ñ·Ï ·Îµå ¹× µ¿±âÈ­ (Àü¿ª ½ºÅä¾î »ç¿ë)
   useEffect(() => {
-    // StrictMode ì´ì¤‘ ì‹¤í–‰ ë°©ì§€
+    // StrictMode ÀÌÁß ½ÇÇà ¹æÁö
     if (loadedRef.current) return;
     loadedRef.current = true;
 
-    // ê°•í™”ëœ ë²ˆì—­ í”¼ë“œë°± ì°¨ë‹¨ ì‹œì‘
+    // °­È­µÈ ¹ø¿ª ÇÇµå¹é Â÷´Ü ½ÃÀÛ
     startBlockingTranslationFeedback();
 
-    let isMounted = true; // ì»´í¬ë„ŒíŠ¸ ë§ˆìš´íŠ¸ ìƒíƒœ ì¶”ì 
+    let isMounted = true; // ÄÄÆ÷³ÍÆ® ¸¶¿îÆ® »óÅÂ ÃßÀû
     
     const loadAllApps = async () => {
       const myId = ++reqIdRef.current; // Request ID for race condition prevention
       
       try {
-        // ë©”ëª¨ì¥ê³¼ ë™ì¼í•˜ê²Œ íƒ€ì…ë³„ ë¶„ë¦¬ëœ Blob Storageì—ì„œ ë¡œë“œ ì‹œë„
+        // ¸Ş¸ğÀå°ú µ¿ÀÏÇÏ°Ô Å¸ÀÔº° ºĞ¸®µÈ Blob Storage¿¡¼­ ·Îµå ½Ãµµ
         const typeApps = await loadAppsByTypeFromBlob('gallery');
         
         if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
         
         if (typeApps.length > 0) {
-          console.log('ğŸ“± íƒ€ì…ë³„ ì•± ë¡œë“œ ì„±ê³µ:', typeApps.length, 'ê°œ');
-          
-          // ê´€ë¦¬ìì¼ ê²½ìš° ì „ì²´ ì•±, ì¼ë°˜ ì‚¬ìš©ìëŠ” ëª¨ë“  ì•± í‘œì‹œ (AppItemì—ëŠ” isPublished ì†ì„±ì´ ì—†ìŒ)
+          // °ü¸®ÀÚÀÏ °æ¿ì ÀüÃ¼ ¾Û, ÀÏ¹İ »ç¿ëÀÚ´Â ¸ğµç ¾Û Ç¥½Ã (AppItem¿¡´Â isPublished ¼Ó¼ºÀÌ ¾øÀ½)
           const validatedApps = await validateAppsImages(typeApps);
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
-          console.log('âœ… ì´ë¯¸ì§€ ê²€ì¦ ì™„ë£Œ:', validatedApps.length, 'ê°œ');
           
-          // Featured/Events í”Œë˜ê·¸ ì£¼ì…
+          // Featured/Events ÇÃ·¡±× ÁÖÀÔ
           const [loadedFeaturedIds, loadedEventIds] = await Promise.all([
             loadFeaturedIds(),
             loadEventIds()
@@ -531,41 +474,36 @@ export default function Home() {
           
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
-          console.log('ğŸ·ï¸ í”Œë˜ê·¸ ë¡œë“œ ì™„ë£Œ:', { featured: loadedFeaturedIds.length, events: loadedEventIds.length });
-          
-          // ë¡œì»¬ ìƒíƒœì— ID ì €ì¥
+          // ·ÎÄÃ »óÅÂ¿¡ ID ÀúÀå
           setFeaturedIds(loadedFeaturedIds);
           setEventIds(loadedEventIds);
           
-          // ê¸°ì¡´ ì•±ë“¤ì— type ì†ì„±ê³¼ Featured/Events í”Œë˜ê·¸ ì¶”ê°€
+          // ±âÁ¸ ¾Ûµé¿¡ type ¼Ó¼º°ú Featured/Events ÇÃ·¡±× Ãß°¡
           const appsWithFlags = applyFeaturedFlags(validatedApps, loadedFeaturedIds, loadedEventIds);
           const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
           
-          console.log('ğŸ¯ ìµœì¢… ì•± ë°ì´í„°:', appsWithType.length, 'ê°œ', {
-            featured: appsWithType.filter(a => a.isFeatured).length,
+          .length,
             events: appsWithType.filter(a => a.isEvent).length
           });
           
-          setAllApps(appsWithType); // ë¡œì»¬ ìƒíƒœ ì—…ë°ì´íŠ¸
+          setAllApps(appsWithType); // ·ÎÄÃ »óÅÂ ¾÷µ¥ÀÌÆ®
           
-          // ìë™ ë™ê¸°í™” ë¹„í™œì„±í™” (ë°ì´í„° ì†ì‹¤ ë°©ì§€)
-          console.log('âœ… ì•± ë°ì´í„° ë¡œë“œ ì™„ë£Œ (ìë™ ë™ê¸°í™” ë¹„í™œì„±í™”)');
+          // ÀÚµ¿ µ¿±âÈ­ ºñÈ°¼ºÈ­ (µ¥ÀÌÅÍ ¼Õ½Ç ¹æÁö)
+          ');
         } else {
-          // íƒ€ì…ë³„ ë¶„ë¦¬ APIì— ë°ì´í„°ê°€ ì—†ìœ¼ë©´ ê¸°ì¡´ API ì‚¬ìš©
+          // Å¸ÀÔº° ºĞ¸® API¿¡ µ¥ÀÌÅÍ°¡ ¾øÀ¸¸é ±âÁ¸ API »ç¿ë
           const blobApps = await loadAppsFromBlob();
           
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
           if (blobApps && blobApps.length > 0) {
-            console.log('ğŸ“± Blob ì•± ë¡œë“œ ì„±ê³µ:', blobApps.length, 'ê°œ');
-            
             const validatedApps = await validateAppsImages(blobApps);
             
             if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
             
-            console.log('âœ… ì´ë¯¸ì§€ ê²€ì¦ ì™„ë£Œ (fallback):', validatedApps.length, 'ê°œ');
+            :', validatedApps.length, '°³');
             
-            // Featured/Events í”Œë˜ê·¸ ì£¼ì…
+            // Featured/Events ÇÃ·¡±× ÁÖÀÔ
             const [featuredIds, eventIds] = await Promise.all([
               loadFeaturedIds(),
               loadEventIds()
@@ -573,31 +511,30 @@ export default function Home() {
             
             if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
             
-            console.log('ğŸ·ï¸ í”Œë˜ê·¸ ë¡œë“œ ì™„ë£Œ (fallback):', { featured: featuredIds.length, events: eventIds.length });
+            :', { featured: featuredIds.length, events: eventIds.length });
             
-            // ê¸°ì¡´ ì•±ë“¤ì— type ì†ì„±ê³¼ Featured/Events í”Œë˜ê·¸ ì¶”ê°€
+            // ±âÁ¸ ¾Ûµé¿¡ type ¼Ó¼º°ú Featured/Events ÇÃ·¡±× Ãß°¡
             const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
             const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
             
-            console.log('ğŸ¯ ìµœì¢… ì•± ë°ì´í„° (fallback):', appsWithType.length, 'ê°œ', {
+            :', appsWithType.length, '°³', {
               featured: appsWithType.filter(a => a.isFeatured).length,
               events: appsWithType.filter(a => a.isEvent).length
             });
             
-            setAllApps(appsWithType); // ë¡œì»¬ ìƒíƒœ ì—…ë°ì´íŠ¸
+            setAllApps(appsWithType); // ·ÎÄÃ »óÅÂ ¾÷µ¥ÀÌÆ®
             
-            // ìë™ ë™ê¸°í™” ë¹„í™œì„±í™” (ë°ì´í„° ì†ì‹¤ ë°©ì§€)
-            console.log('âœ… ì•± ë°ì´í„° ë¡œë“œ ì™„ë£Œ (fallback, ìë™ ë™ê¸°í™” ë¹„í™œì„±í™”)');
+            // ÀÚµ¿ µ¿±âÈ­ ºñÈ°¼ºÈ­ (µ¥ÀÌÅÍ ¼Õ½Ç ¹æÁö)
+            ');
           } else {
             // Keep existing state - don't reset to empty array
           }
         }
         
       } catch (error) {
-        console.error('âŒ ì•± ë¡œë“œ ì‹¤íŒ¨:', error);
         if (isMounted) {
-          // ì•± ë¡œë“œ ì‹¤íŒ¨
-          // ì‹¤íŒ¨ì‹œ ìƒ˜í”Œ ë°ì´í„° ì‚¬ìš©
+          // ¾Û ·Îµå ½ÇÆĞ
+          // ½ÇÆĞ½Ã »ùÇÃ µ¥ÀÌÅÍ »ç¿ë
           setAllApps(sampleApps);
         }
       }
@@ -605,54 +542,46 @@ export default function Home() {
 
     loadAllApps();
     
-    // í´ë¦°ì—… í•¨ìˆ˜
+    // Å¬¸°¾÷ ÇÔ¼ö
     return () => {
       isMounted = false;
     };
-  }, [setAllApps]); // setAllApps ì˜ì¡´ì„± ì¶”ê°€
+  }, [setAllApps]); // setAllApps ÀÇÁ¸¼º Ãß°¡
 
-  // ë¡œì»¬ ìƒíƒœ ë³€í™” ë¡œê¹… (ê°œë°œ ëª¨ë“œì—ì„œë§Œ)
+  // ·ÎÄÃ »óÅÂ º¯È­ ·Î±ë (°³¹ß ¸ğµå¿¡¼­¸¸)
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
-      console.log('ğŸ”„ ë¡œì»¬ ìƒíƒœ ë³€í™”:', {
-        totalApps: allApps.length,
-        featuredApps: featuredIds.length,
-        eventApps: eventIds.length,
-        normalApps: allApps.length - featuredIds.length - eventIds.length
-      });
-    }
+      }
   }, [allApps, featuredIds, eventIds]);
 
-  // Featured/Events ë§¤í•‘ ê²€ì¦ (ê°œë°œ ëª¨ë“œì—ì„œë§Œ)
+  // Featured/Events ¸ÅÇÎ °ËÁõ (°³¹ß ¸ğµå¿¡¼­¸¸)
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
       if (currentFilter === 'featured') {
         const anyEventCard = filteredApps.some(a => a.isEvent);
-        if (anyEventCard) console.warn('âš ï¸ Featured ë·°ì— Event ì¹´ë“œê°€ ì„ì—¬ ìˆìŠµë‹ˆë‹¤. ë§¤í•‘ í™•ì¸ í•„ìš”.');
-      }
+        if (anyEventCard) }
       if (currentFilter === 'events') {
         const anyFeaturedCard = filteredApps.some(a => a.isFeatured);
-        if (anyFeaturedCard) console.warn('âš ï¸ Events ë·°ì— Featured ì¹´ë“œê°€ ì„ì—¬ ìˆìŠµë‹ˆë‹¤. ë§¤í•‘ í™•ì¸ í•„ìš”.');
-      }
+        if (anyFeaturedCard) }
     }
   }, [currentFilter, filteredApps]);
 
 
-  // ê°•ì œ ë°ì´í„° ìƒˆë¡œê³ ì¹¨ í•¨ìˆ˜
+  // °­Á¦ µ¥ÀÌÅÍ »õ·Î°íÄ§ ÇÔ¼ö
   const forceRefreshGallery = async () => {
     const myId = ++reqIdRef.current; // Request ID for race condition prevention
     
     try {
-      // Blobì—ì„œ ìµœì‹  ë°ì´í„° ê°•ì œ ë¡œë“œ
+      // Blob¿¡¼­ ÃÖ½Å µ¥ÀÌÅÍ °­Á¦ ·Îµå
       const typeApps = await loadAppsByTypeFromBlob('gallery');
       if (typeApps.length > 0 && myId === reqIdRef.current) {
         const validatedApps = await validateAppsImages(typeApps);
         const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-        setAllApps(appsWithType); // ë¡œì»¬ ìƒíƒœ ì—…ë°ì´íŠ¸
-        // ì•± ëª©ë¡ ë™ê¸°í™” ì™„ë£Œ
+        setAllApps(appsWithType); // ·ÎÄÃ »óÅÂ ¾÷µ¥ÀÌÆ®
+        // ¾Û ¸ñ·Ï µ¿±âÈ­ ¿Ï·á
       }
     } catch (error) {
-      // ìƒˆë¡œê³ ì¹¨ ì‹¤íŒ¨ ì‹œ ê¸°ì¡´ ë°ì´í„° ìœ ì§€
+      // »õ·Î°íÄ§ ½ÇÆĞ ½Ã ±âÁ¸ µ¥ÀÌÅÍ À¯Áö
     }
   };
 
@@ -663,7 +592,7 @@ export default function Home() {
 
       const updatedApp = { ...allApps[appIndex] };
 
-      // ê¸°ë³¸ ì •ë³´ ì—…ë°ì´íŠ¸
+      // ±âº» Á¤º¸ ¾÷µ¥ÀÌÆ®
       updatedApp.name = data.name;
       updatedApp.developer = data.developer;
       updatedApp.description = data.description;
@@ -677,12 +606,12 @@ export default function Home() {
       updatedApp.storeUrl = data.storeUrl || undefined;
       updatedApp.tags = data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
 
-      // ìƒˆ ì•„ì´ì½˜ì´ ìˆìœ¼ë©´ ì—…ë°ì´íŠ¸ (ê¸€ë¡œë²Œ ì €ì¥ì†Œ ì‚¬ìš©)
+      // »õ ¾ÆÀÌÄÜÀÌ ÀÖÀ¸¸é ¾÷µ¥ÀÌÆ® (±Û·Î¹ú ÀúÀå¼Ò »ç¿ë)
       if (files?.icon) {
         updatedApp.iconUrl = await uploadFile(files.icon, "icon");
       }
 
-      // ìƒˆ ìŠ¤í¬ë¦°ìƒ·ì´ ìˆìœ¼ë©´ ì—…ë°ì´íŠ¸ (ê¸€ë¡œë²Œ ì €ì¥ì†Œ ì‚¬ìš©)
+      // »õ ½ºÅ©¸°¼¦ÀÌ ÀÖÀ¸¸é ¾÷µ¥ÀÌÆ® (±Û·Î¹ú ÀúÀå¼Ò »ç¿ë)
       if (files?.screenshots && files.screenshots.length > 0) {
         const newScreenshotUrls = await Promise.all(
           files.screenshots.map(file => uploadFile(file, "screenshot"))
@@ -690,66 +619,56 @@ export default function Home() {
         updatedApp.screenshotUrls = newScreenshotUrls;
       }
 
-      // ì•± ëª©ë¡ ì—…ë°ì´íŠ¸
+      // ¾Û ¸ñ·Ï ¾÷µ¥ÀÌÆ®
       const newApps = [...allApps];
       newApps[appIndex] = updatedApp;
 
-      // í†µí•©ëœ ì €ì¥ ë° ìƒíƒœ ì—…ë°ì´íŠ¸ (ê¸°ì¡´ ë°ì´í„° ë³´ì¡´)
+      // ÅëÇÕµÈ ÀúÀå ¹× »óÅÂ ¾÷µ¥ÀÌÆ® (±âÁ¸ µ¥ÀÌÅÍ º¸Á¸)
       try {
-        // ê¸°ì¡´ ì•± ë°ì´í„° ë¡œë“œ (ì˜¤ë²„ë¼ì´íŠ¸ ë°©ì§€)
+        // ±âÁ¸ ¾Û µ¥ÀÌÅÍ ·Îµå (¿À¹ö¶óÀÌÆ® ¹æÁö)
         const existingApps = await loadAppsByTypeFromBlob('gallery');
-        console.log('ğŸ“¥ ê¸°ì¡´ ì•± ë°ì´í„° ë¡œë“œ:', existingApps.length);
-        
-        // ìˆ˜ì •ëœ ì•±ìœ¼ë¡œ ì—…ë°ì´íŠ¸
+        // ¼öÁ¤µÈ ¾ÛÀ¸·Î ¾÷µ¥ÀÌÆ®
         const sanitizedUpdatedApp = { ...updatedApp, isFeatured: undefined, isEvent: undefined };
         const sanitizedApps = existingApps.map(app => 
           app.id === updatedApp.id ? sanitizedUpdatedApp : app
         );
-        console.log('âœï¸ ì•± ìˆ˜ì • í›„ ì´ ì•± ìˆ˜:', sanitizedApps.length);
-        
         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps, featuredIds, eventIds);
         
-        // ëª¨ë“  ì €ì¥ ì™„ë£Œ í›„ í•œ ë²ˆì— ìƒíƒœ ì—…ë°ì´íŠ¸ (ë¹„ë™ê¸° ê²½í•© ë°©ì§€)
+        // ¸ğµç ÀúÀå ¿Ï·á ÈÄ ÇÑ ¹ø¿¡ »óÅÂ ¾÷µ¥ÀÌÆ® (ºñµ¿±â °æÇÕ ¹æÁö)
         if (saveResult.success && saveResult.data) {
           setAllApps(saveResult.data);
         } else {
           setAllApps(newApps);
-          alert("âš ï¸ App updated but cloud synchronization failed.");
+          alert("?? App updated but cloud synchronization failed.");
         }
         
-        console.log(`âœ… ì•± ìˆ˜ì • ì™„ë£Œ:`, updatedApp.id);
-        console.log('ğŸ”„ ìµœì¢… ìƒíƒœ:', { 
-          apps: saveResult.success ? saveResult.data?.length : newApps.length
-        });
-        
-      } catch (error) {
-        console.error('ê¸€ë¡œë²Œ ì €ì¥ ì‹¤íŒ¨:', error);
-        // ì €ì¥ ì‹¤íŒ¨ì‹œ ë¡œì»¬ ìƒíƒœë§Œ ì—…ë°ì´íŠ¸
+        } catch (error) {
+        // ÀúÀå ½ÇÆĞ½Ã ·ÎÄÃ »óÅÂ¸¸ ¾÷µ¥ÀÌÆ®
         setAllApps(newApps);
-        alert("âš ï¸ App updated but cloud synchronization failed.");
+        alert("?? App updated but cloud synchronization failed.");
       }
 
              setEditingApp(null);
-       // ì•± ì—…ë°ì´íŠ¸ ë° ì €ì¥ ì™„ë£Œ
-       alert("âœ… App updated successfully!");
+       // ¾Û ¾÷µ¥ÀÌÆ® ¹× ÀúÀå ¿Ï·á
+       alert("? App updated successfully!");
      } catch {
        
-       alert("âŒ App update failed. Please try again.");
+       alert("? App update failed. Please try again.");
     }
   };
 
   const handleCopyrightClick = () => {
-    // ë‹¤ì´ì–¼ë¡œê·¸ ì—´ê¸° ì „ì— ë” ê¸´ ì§€ì—°ì„ ë‘ì–´ DOM ì•ˆì •í™”
+    // ´ÙÀÌ¾ó·Î±× ¿­±â Àü¿¡ ´õ ±ä Áö¿¬À» µÎ¾î DOM ¾ÈÁ¤È­
     setTimeout(() => {
       setIsAdminDialogOpen(true);
     }, 100);
   };
 
-  // App Story í´ë¦­ í•¸ë“¤ëŸ¬
+  // App Story Å¬¸¯ ÇÚµé·¯
   const handleAppStoryClick = () => {
     setCurrentContentType("appstory");
-    setCurrentFilter("all"); // ê°¤ëŸ¬ë¦¬ í•„í„° ì´ˆê¸°í™”
-    // ë©”ëª¨ì¥ ë³¸ë¬¸ ìœ„ì¹˜ë¡œ ìŠ¤í¬ë¡¤
+    setCurrentFilter("all"); // °¶·¯¸® ÇÊÅÍ ÃÊ±âÈ­
+    // ¸Ş¸ğÀå º»¹® À§Ä¡·Î ½ºÅ©·Ñ
     setTimeout(() => {
       const contentManager = document.querySelector('[data-content-manager]');
       if (contentManager) {
@@ -758,7 +677,7 @@ export default function Home() {
     }, 100);
   };
 
-  // ì „ì—­ admin mode íŠ¸ë¦¬ê±° ë“±ë¡ (AdminUploadDialog ë° HiddenAdminAccessì—ì„œ í˜¸ì¶œ)
+  // Àü¿ª admin mode Æ®¸®°Å µî·Ï (AdminUploadDialog ¹× HiddenAdminAccess¿¡¼­ È£Ãâ)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -789,11 +708,11 @@ export default function Home() {
     };
   }, [isAdmin, adminVisible]);
 
-  // News í´ë¦­ í•¸ë“¤ëŸ¬
+  // News Å¬¸¯ ÇÚµé·¯
   const handleNewsClick = () => {
     setCurrentContentType("news");
-    setCurrentFilter("all"); // ê°¤ëŸ¬ë¦¬ í•„í„° ì´ˆê¸°í™”
-    // ë©”ëª¨ì¥ ë³¸ë¬¸ ìœ„ì¹˜ë¡œ ìŠ¤í¬ë¡¤
+    setCurrentFilter("all"); // °¶·¯¸® ÇÊÅÍ ÃÊ±âÈ­
+    // ¸Ş¸ğÀå º»¹® À§Ä¡·Î ½ºÅ©·Ñ
     setTimeout(() => {
       const contentManager = document.querySelector('[data-content-manager]');
       if (contentManager) {
@@ -806,7 +725,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden" onMouseEnter={blockTranslationFeedback}>
-      {/* ëˆˆ ë‚´ë¦¬ëŠ” ì• ë‹ˆë©”ì´ì…˜ */}
+      {/* ´« ³»¸®´Â ¾Ö´Ï¸ŞÀÌ¼Ç */}
       <SnowAnimation />
       
       <Header 
@@ -837,7 +756,7 @@ export default function Home() {
              <span className="notranslate" translate="no">PRESENT</span>
            </h2>
            
-           {/* ì¶”ê°€ ë²ˆì—­ ìœ„ì ¯ ìœ„ì¹˜ ì˜µì…˜ - íƒ€ì´í‹€ ì•„ë˜ */}
+           {/* Ãß°¡ ¹ø¿ª À§Á¬ À§Ä¡ ¿É¼Ç - Å¸ÀÌÆ² ¾Æ·¡ */}
            {/* <div id="google_translate_element_main" className="mb-4"></div> */}
            
            <p className="text-gray-300" translate="yes" onMouseEnter={blockTranslationFeedback}>
@@ -845,7 +764,7 @@ export default function Home() {
            </p>
          </div>
 
-                            {/* New Releases íŠ¹ë³„ ì„¹ì…˜ */}
+                            {/* New Releases Æ¯º° ¼½¼Ç */}
          {currentFilter === "latest" && (() => {
            const latestApp = getLatestApp();
            if (!latestApp) {
@@ -861,11 +780,11 @@ export default function Home() {
               
                              <div className="flex justify-center px-4 max-w-4xl mx-auto">
                  <div className="relative group w-full max-w-sm">
-                   {/* í™”ë ¤í•œ í…Œë‘ë¦¬ íš¨ê³¼ */}
+                   {/* È­·ÁÇÑ Å×µÎ¸® È¿°ú */}
                    <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
                    <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse" style={{animationDelay: '0.5s'}}></div>
                    
-                   {/* ë©”ì¸ ì¹´ë“œ - ê¸°ì¡´ ê°¤ëŸ¬ë¦¬ ì¹´ë“œì™€ ì™„ì „íˆ ë™ì¼í•œ ë°˜ì‘í˜• ì‚¬ì´ì¦ˆ */}
+                   {/* ¸ŞÀÎ Ä«µå - ±âÁ¸ °¶·¯¸® Ä«µå¿Í ¿ÏÀüÈ÷ µ¿ÀÏÇÑ ¹İÀÀÇü »çÀÌÁî */}
                    <div className="relative group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 new-release-card w-full" style={{ backgroundColor: '#D1E2EA' }}>
                      <div className="relative">
                                                {/* Screenshot/App Preview */}
@@ -880,7 +799,7 @@ export default function Home() {
                              />
                           ) : (
                             <div className="absolute inset-0 w-full h-full flex items-center justify-center text-6xl">
-                              ğŸ“±
+                              ??
                             </div>
                           )}
                         </div>
@@ -918,7 +837,7 @@ export default function Home() {
                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                          <div className="flex items-center space-x-2">
                            <div className="flex items-center gap-1">
-                             <span className="text-yellow-400">â˜…</span>
+                             <span className="text-yellow-400">¡Ú</span>
                              <span>{latestApp.rating}</span>
                            </div>
                            <span>{latestApp.downloads}</span>
@@ -955,16 +874,16 @@ export default function Home() {
                              disabled={!latestApp.storeUrl}
                              onMouseEnter={startBlockingTranslationFeedback}
                            >
-                             <span>â¬‡ï¸</span>
+                             <span>??</span>
                              <span className="notranslate" translate="no">Download</span>
                            </button>
                            
-                           {/* ìŠ¤í† ì–´ ë°°ì§€ ì´ë¯¸ì§€ */}
+                           {/* ½ºÅä¾î ¹èÁö ÀÌ¹ÌÁö */}
                            <div className="h-7 flex items-center" onMouseEnter={blockTranslationFeedback}>
                              {latestApp.store === "google-play" ? (
                                <Image 
                                    src="/google-play-badge.png" 
-                                   alt="Google Playì—ì„œ ë‹¤ìš´ë¡œë“œ"
+                                   alt="Google Play¿¡¼­ ´Ù¿î·Îµå"
                                    width={120}
                                    height={28}
                                    unoptimized={isBlobUrl('/google-play-badge.png')}
@@ -974,7 +893,7 @@ export default function Home() {
                              ) : (
                                <Image 
                                  src="/app-store-badge.png" 
-                                 alt="App Storeì—ì„œ ë‹¤ìš´ë¡œë“œ"
+                                 alt="App Store¿¡¼­ ´Ù¿î·Îµå"
                                  width={120}
                                  height={28}
                                  unoptimized={isBlobUrl('/app-store-badge.png')}
@@ -993,18 +912,18 @@ export default function Home() {
            );
          })()}
 
-                   {/* ì½˜í…ì¸  íƒ€ì…ì— ë”°ë¥¸ ì¡°ê±´ë¶€ ë Œë”ë§ */}
+                   {/* ÄÜÅÙÃ÷ Å¸ÀÔ¿¡ µû¸¥ Á¶°ÇºÎ ·»´õ¸µ */}
                    {currentContentType ? (
-                     // App Story ë˜ëŠ” News ëª¨ë“œ
+                     // App Story ¶Ç´Â News ¸ğµå
                      <div className="space-y-6" data-content-manager>
                        {currentContentType === "appstory" ? (
-                         // App StoryëŠ” ìƒˆë¡œìš´ ë¦¬ìŠ¤íŠ¸ ë·° ì‚¬ìš©
+                         // App Story´Â »õ·Î¿î ¸®½ºÆ® ºä »ç¿ë
                          <AppStoryList
                            type={currentContentType}
                            onBack={() => setCurrentContentType(null)}
                          />
                        ) : (
-                         // Newsë„ ìƒˆë¡œìš´ ë¦¬ìŠ¤íŠ¸ ë·° ì‚¬ìš©
+                         // Newsµµ »õ·Î¿î ¸®½ºÆ® ºä »ç¿ë
                          <NewsList
                            type={currentContentType}
                            onBack={() => setCurrentContentType(null)}
@@ -1012,9 +931,9 @@ export default function Home() {
                        )}
                      </div>
                    ) : (
-                     // ì¼ë°˜ ê°¤ëŸ¬ë¦¬ ëª¨ë“œ
+                     // ÀÏ¹İ °¶·¯¸® ¸ğµå
                      <>
-                       {/* Featured Apps ì„¹ì…˜ */}
+                       {/* Featured Apps ¼½¼Ç */}
                        {currentFilter === "featured" && (
                          <div className="space-y-6">
                            <div className="text-center" onMouseEnter={blockTranslationFeedback}>
@@ -1032,7 +951,7 @@ export default function Home() {
                          </div>
                        )}
                        
-                       {/* Events ì„¹ì…˜ */}
+                       {/* Events ¼½¼Ç */}
                        {currentFilter === "events" && (
                          <div className="space-y-6">
                            <div className="text-center" onMouseEnter={blockTranslationFeedback}>
@@ -1055,7 +974,7 @@ export default function Home() {
                                <div className="max-w-md mx-auto">
                                  <MailForm
                                    type="events"
-                                   buttonText="ğŸ‰ Events ğŸ“§ Touch Here ğŸ‰"
+                                   buttonText="?? Events ?? Touch Here ??"
                                    buttonDescription="Choose one of the apps above as your free gift. The gift will be delivered to your email. By accepting, you agree to receive occasional news and offers from us via that email address."
                                    onMouseEnter={startBlockingTranslationFeedback}
                                  />
@@ -1065,10 +984,10 @@ export default function Home() {
                          </div>
                        )}
 
-                       {/* ì¼ë°˜ ê°¤ëŸ¬ë¦¬ - New Release ëª¨ë“œì—ì„œëŠ” ìˆ¨ê¹€ */}
+                       {/* ÀÏ¹İ °¶·¯¸® - New Release ¸ğµå¿¡¼­´Â ¼û±è */}
                        {currentFilter !== "latest" && currentFilter !== "featured" && currentFilter !== "events" && (
                          <>
-                           {/* ê¸°ì¡´ ì•± ê°¤ëŸ¬ë¦¬ ì‚¬ìš© */}
+                           {/* ±âÁ¸ ¾Û °¶·¯¸® »ç¿ë */}
                            <AppGallery 
                              apps={filteredApps} 
                              viewMode="grid"
@@ -1081,7 +1000,7 @@ export default function Home() {
                    )}
        </main>
 
-                    {/* í‘¸í„° */}
+                    {/* ÇªÅÍ */}
         <footer className="border-t py-8 mt-16 bg-black" onMouseEnter={blockTranslationFeedback}>
                      <div className="container mx-auto text-center max-w-6xl" style={{ maxWidth: '1152px' }}>
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1160,7 +1079,7 @@ export default function Home() {
                </div>
                      </div>
            
-                       {/* ì¤‘ì•™ ì´ë¯¸ì§€ */}
+                       {/* Áß¾Ó ÀÌ¹ÌÁö */}
             <div className="flex items-center justify-center py-8">
               <Image 
                 src="/monk_cr.png" 
@@ -1171,13 +1090,13 @@ export default function Home() {
               />
             </div>
             
-            {/* ì´ë¯¸ì§€ ë°”ë¡œ ë°‘ ìŠ¬ë¡œê±´ ë° Since 2025 */}
+            {/* ÀÌ¹ÌÁö ¹Ù·Î ¹Ø ½½·Î°Ç ¹× Since 2025 */}
             <div className="text-center mt-0" onMouseEnter={blockTranslationFeedback}>
               <p className="text-lg font-medium text-amber-400 mb-1" translate="yes" onMouseEnter={blockTranslationFeedback}>
                 &quot;We&apos;re just. that kind of group!&quot;
               </p>
               <p className="text-sm text-gray-400 notranslate mb-1" translate="no" style={{translate: 'no'}} onMouseEnter={blockTranslationFeedback}>
-                â€” Since 2025
+                ? Since 2025
               </p>
               <div className="flex justify-center">
                 <button
@@ -1186,7 +1105,7 @@ export default function Home() {
                   className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-1"
                   translate="yes"
                 >
-                  ğŸ‘‰ See That Group
+                  ?? See That Group
                 </button>
               </div>
             </div>
@@ -1195,15 +1114,15 @@ export default function Home() {
             <span 
               onClick={createAdminButtonHandler(handleCopyrightClick)}
               className="cursor-pointer hover:text-gray-300 transition-colors text-sm text-white"
-              title="ê´€ë¦¬ì ëª¨ë“œ"
+              title="°ü¸®ÀÚ ¸ğµå"
             >
-              <span className="notranslate" translate="no">Â© 2025 gongmyung.com. All rights reserved.</span>
+              <span className="notranslate" translate="no">¨Ï 2025 gongmyung.com. All rights reserved.</span>
             </span>
             
-                         {/* ê´€ë¦¬ì ëª¨ë“œì¼ ë•Œë§Œ í‘œì‹œë˜ëŠ” ì—…ë¡œë“œ ë²„íŠ¼ ë° ì¹´í…Œê³ ë¦¬ í•„í„° */}
+                         {/* °ü¸®ÀÚ ¸ğµåÀÏ ¶§¸¸ Ç¥½ÃµÇ´Â ¾÷·Îµå ¹öÆ° ¹× Ä«Å×°í¸® ÇÊÅÍ */}
                              {isAdmin && adminVisible && (
                <div className="mt-4 space-y-4">
-                 {/* ì¹´í…Œê³ ë¦¬ë³„ í•„í„° ë²„íŠ¼ */}
+                 {/* Ä«Å×°í¸®º° ÇÊÅÍ ¹öÆ° */}
                  <div className="flex justify-center gap-2 flex-wrap">
                    <button
                      onClick={createAdminButtonHandler(() => setCurrentFilter("all"))}
@@ -1215,7 +1134,7 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ğŸ“± ì „ì²´ ({allApps.length})
+                     ?? ÀüÃ¼ ({allApps.length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleNormalClick)}
@@ -1227,7 +1146,7 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ğŸ“± ì¼ë°˜ ({allApps.length - featuredIds.length - eventIds.length})
+                     ?? ÀÏ¹İ ({allApps.length - featuredIds.length - eventIds.length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleFeaturedAppsClick)}
@@ -1239,7 +1158,7 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     â­ Featured ({featuredIds.length})
+                     ? Featured ({featuredIds.length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleEventsClick)}
@@ -1251,11 +1170,11 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ğŸ‰ Events ({eventIds.length})
+                     ?? Events ({eventIds.length})
                    </button>
                  </div>
                  
-                 {/* ìˆ˜ë™ ì €ì¥ ë° ë™ê¸°í™” ë²„íŠ¼ */}
+                 {/* ¼öµ¿ ÀúÀå ¹× µ¿±âÈ­ ¹öÆ° */}
                  <div className="flex justify-center gap-4">
                    <button
                      onClick={createAdminButtonHandler(handleManualSave)}
@@ -1263,7 +1182,7 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ğŸ”’ ë³€ê²½ì‚¬í•­ ì €ì¥
+                     ?? º¯°æ»çÇ× ÀúÀå
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleRefreshData)}
@@ -1271,11 +1190,11 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ğŸ”„ ë°ì´í„° ìƒˆë¡œê³ ì¹¨
+                     ?? µ¥ÀÌÅÍ »õ·Î°íÄ§
                    </button>
                  </div>
                  
-                 {/* ì—…ë¡œë“œ ë²„íŠ¼ */}
+                 {/* ¾÷·Îµå ¹öÆ° */}
                  <div className="flex justify-center">
                    <AdminUploadDialog 
                      onUpload={handleAppUpload}
@@ -1283,7 +1202,7 @@ export default function Home() {
                        size: "lg",
                        className: "bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
                      }}
-                     buttonText="ğŸ“± ìƒˆ ì•± ì—…ë¡œë“œ"
+                     buttonText="?? »õ ¾Û ¾÷·Îµå"
                    />
                  </div>
                </div>
@@ -1295,18 +1214,18 @@ export default function Home() {
         
       </footer>
 
-      {/* ìˆ¨ê²¨ì§„ ê´€ë¦¬ì ì ‘ê·¼ ë‹¤ì´ì–¼ë¡œê·¸ */}
+      {/* ¼û°ÜÁø °ü¸®ÀÚ Á¢±Ù ´ÙÀÌ¾ó·Î±× */}
       <HiddenAdminAccess 
         isOpen={isAdminDialogOpen}
         onClose={() => {
-          // ë‹¤ì´ì–¼ë¡œê·¸ ë‹«ê¸° ì „ì— ë” ê¸´ ì§€ì—°ì„ ë‘ì–´ DOM ì•ˆì •í™”
+          // ´ÙÀÌ¾ó·Î±× ´İ±â Àü¿¡ ´õ ±ä Áö¿¬À» µÎ¾î DOM ¾ÈÁ¤È­
           setTimeout(() => {
             setIsAdminDialogOpen(false);
           }, 150);
         }}
       />
 
-      {/* ì•± í¸ì§‘ ë‹¤ì´ì–¼ë¡œê·¸ */}
+      {/* ¾Û ÆíÁı ´ÙÀÌ¾ó·Î±× */}
       <EditAppDialog
         app={editingApp}
         isOpen={!!editingApp}

@@ -55,7 +55,6 @@ export function GalleryManager({
         setItems(data.filter((item: GalleryItem) => item.isPublished));
       }
     } catch (error) {
-      console.error('갤러리 로드 실패:', error);
     }
   };
 

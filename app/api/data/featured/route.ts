@@ -3,11 +3,11 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { put, list } from '@vercel/blob';
 
-// Featured 앱 정보만 저장하는 전용 파일
+// Featured ???�보�??�?�하???�용 ?�일
 const FEATURED_FILENAME = 'featured.json';
 const LOCAL_FEATURED_PATH = path.join(process.cwd(), 'data', 'featured.json');
 
-// Vercel 환경에서의 임시 메모리 저장소 (Blob 실패 시 폴백)
+// Vercel ?�경?�서???�시 메모�??�?�소 (Blob ?�패 ???�백)
 let memoryFeatured: string[] = [];
 
 async function ensureLocalFile() {
@@ -31,27 +31,25 @@ async function writeToLocal(featured: string[]) {
   await fs.writeFile(LOCAL_FEATURED_PATH, JSON.stringify(featured, null, 2));
 }
 
-// GET: 로컬 파일 우선, Blob 폴백으로 Featured 앱 정보 반환
+// GET: 로컬 ?�일 ?�선, Blob ?�백?�로 Featured ???�보 반환
 export async function GET() {
   try {
-    // 1) 먼저 로컬 파일에서 읽기 (개발/배포 환경 모두)
+    // 1) 먼�? 로컬 ?�일?�서 ?�기 (개발/배포 ?�경 모두)
     try {
       const local = await readFromLocal();
       if (local && local.length > 0) {
-        console.log(`[Featured API] 로컬 파일에서 ${local.length}개 Featured 앱 로드`);
         return NextResponse.json(local);
       }
     } catch (error) {
-      console.log('[Featured API] 로컬 파일 읽기 실패:', error);
-    }
+      }
 
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
-      // 2) Blob에서 최신 JSON 파일 시도
+      // 2) Blob?�서 최신 JSON ?�일 ?�도
       try {
         const { blobs } = await list({ prefix: FEATURED_FILENAME, limit: 100 });
         if (blobs && blobs.length > 0) {
-          // 최신순 정렬 (uploadedAt 기준)
+          // 최신???�렬 (uploadedAt 기�?)
           blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
           const latestBlob = blobs[0];
           
@@ -59,35 +57,29 @@ export async function GET() {
           if (res.ok) {
             const json = await res.json();
             const data = Array.isArray(json) ? json : [];
-            console.log(`[Featured API] Blob에서 ${data.length}개 Featured 앱 로드`);
-            
-            // 메모리와 동기화
+            // 메모리�? ?�기??
             memoryFeatured = [...data];
             
             return NextResponse.json(data);
           }
         }
       } catch (error) {
-        console.warn('[Featured API] Blob 조회 실패:', error);
-      }
+        }
 
-      // 3) 메모리 폴백
+      // 3) 메모�??�백
       if (memoryFeatured.length > 0) {
-        console.log(`[Featured API] 메모리에서 ${memoryFeatured.length}개 Featured 앱 로드`);
         return NextResponse.json(memoryFeatured);
       }
     }
 
-    // 4) 모든 방법 실패 시 빈 배열
-    console.log('[Featured API] 모든 로드 방법 실패, 빈 배열 반환');
+    // 4) 모든 방법 ?�패 ??�?배열
     return NextResponse.json([]);
   } catch (error) {
-    console.error('[Featured API] GET 오류:', error);
     return NextResponse.json([], { status: 200 });
   }
 }
 
-// POST: Featured 앱 정보를 받아 기존 데이터와 병합 후 저장 (오버라이트 방지)
+// POST: Featured ???�보�?받아 기존 ?�이?��? 병합 ???�??(?�버?�이??방�?)
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as unknown;
@@ -95,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
-      // 1. 기존 Featured 데이터 로드 (오버라이트 방지)
+      // 1. 기존 Featured ?�이??로드 (?�버?�이??방�?)
       let currentFeatured: string[] = [];
       try {
         const { blobs } = await list({ prefix: FEATURED_FILENAME, limit: 1 });
@@ -107,62 +99,57 @@ export async function POST(request: NextRequest) {
           }
         }
       } catch (error) {
-        console.warn('[Featured Blob] 기존 데이터 로드 실패, 메모리 사용:', error);
         currentFeatured = memoryFeatured;
       }
       
-      // 2. 기존 데이터와 새 데이터 병합 (중복 제거)
+      // 2. 기존 ?�이?��? ???�이??병합 (중복 ?�거)
       const mergedFeatured = Array.from(new Set([...currentFeatured, ...newFeatured]));
-      console.log(`[Featured Blob] 병합 완료: 기존 ${currentFeatured.length} + 새 ${newFeatured.length} = 총 ${mergedFeatured.length}`);
-      
-      // 3. 병합된 데이터 저장
+      // 3. 병합???�이???�??
       let blobSaved = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          console.log(`[Featured Blob] 저장 시도 ${attempt}/3`);
           await put(FEATURED_FILENAME, JSON.stringify(mergedFeatured, null, 2), {
             access: 'public',
             contentType: 'application/json; charset=utf-8',
             addRandomSuffix: false,
           });
-          console.log(`[Featured Blob] 저장 성공 (시도 ${attempt})`);
+          `);
           blobSaved = true;
           break;
         } catch (error) {
-          console.error(`[Featured Blob] 저장 실패 (시도 ${attempt}):`, error);
+          :`, error);
           if (attempt === 3) {
-            console.error('[Featured Blob] 모든 시도 실패, 메모리 폴백 사용');
-          }
+            }
         }
       }
       
-      // 메모리도 항상 업데이트
+      // 메모리도 ??�� ?�데?�트
       memoryFeatured = [...mergedFeatured];
       
       if (blobSaved) {
         return NextResponse.json({ 
           success: true, 
           storage: 'blob',
-          data: mergedFeatured // 병합된 최종 데이터 반환
+          data: mergedFeatured // 병합??최종 ?�이??반환
         });
       } else {
         return NextResponse.json({ 
           success: true, 
           storage: 'memory',
-          data: mergedFeatured, // 병합된 최종 데이터 반환
+          data: mergedFeatured, // 병합??최종 ?�이??반환
           warning: 'Blob save failed after 3 attempts; using in-memory fallback' 
         });
       }
     }
 
-    // 로컬 파일 저장 (병합 로직)
+    // 로컬 ?�일 ?�??(병합 로직)
     const currentLocal = await readFromLocal();
     const mergedLocal = Array.from(new Set([...currentLocal, ...newFeatured]));
     await writeToLocal(mergedLocal);
     return NextResponse.json({ 
       success: true, 
       storage: 'local',
-      data: mergedLocal // 병합된 최종 데이터 반환
+      data: mergedLocal // 병합??최종 ?�이??반환
     });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to save featured apps' }, { status: 500 });

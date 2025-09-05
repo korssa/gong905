@@ -3,11 +3,11 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { put, list } from '@vercel/blob';
 
-// 단일 파일로 Featured/Events 앱 정보를 저장
+// ?�일 ?�일�?Featured/Events ???�보�??�??
 const FEATURED_FILE_NAME = 'featured-apps.json';
 const LOCAL_FEATURED_PATH = path.join(process.cwd(), 'data', 'featured-apps.json');
 
-// Vercel 환경에서의 임시 메모리 저장소 (Blob 실패 시 폴백)
+// Vercel ?�경?�서???�시 메모�??�?�소 (Blob ?�패 ???�백)
 let memoryFeatured: { featured: string[]; events: string[] } = { featured: [], events: [] };
 
 async function ensureLocalFile() {
@@ -31,17 +31,17 @@ async function writeToLocal(featured: { featured: string[]; events: string[] }) 
   await fs.writeFile(LOCAL_FEATURED_PATH, JSON.stringify(featured, null, 2));
 }
 
-// GET: Blob 또는 로컬에서 Featured/Events 앱 정보 반환
+// GET: Blob ?�는 로컬?�서 Featured/Events ???�보 반환
 export async function GET() {
   try {
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
 
     if (isProd) {
-      // 1) Blob에서 최신 JSON 파일 시도
+      // 1) Blob?�서 최신 JSON ?�일 ?�도
       try {
         const { blobs } = await list({ prefix: FEATURED_FILE_NAME, limit: 100 });
         if (blobs && blobs.length > 0) {
-          // 최신순 정렬 (uploadedAt 기준)
+          // 최신???�렬 (uploadedAt 기�?)
           blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
           const latestBlob = blobs[0];
           
@@ -51,26 +51,25 @@ export async function GET() {
             const json = await res.json();
             const data = json.featured && json.events ? json : { featured: [], events: [] };
             
-            // 메모리와 동기화
+            // 메모리�? ?�기??
             memoryFeatured = { ...data };
             
             return NextResponse.json(data);
           }
         }
       } catch (error) {
-        console.warn('[Featured Blob] 조회 실패:', error);
-      }
+        }
 
-      // 2) 메모리 폴백
+      // 2) 메모�??�백
       if (memoryFeatured.featured.length > 0 || memoryFeatured.events.length > 0) {
         return NextResponse.json(memoryFeatured);
       }
 
-      // 3) 모든 소스에서 데이터가 없으면 기본값
+      // 3) 모든 ?�스?�서 ?�이?��? ?�으�?기본�?
       return NextResponse.json({ featured: [], events: [] });
     }
 
-    // 개발 환경: 로컬 파일
+    // 개발 ?�경: 로컬 ?�일
     const local = await readFromLocal();
     return NextResponse.json(local);
   } catch {
@@ -78,7 +77,7 @@ export async function GET() {
   }
 }
 
-// POST: Featured/Events 앱 정보를 받아 Blob(또는 로컬)에 저장
+// POST: Featured/Events ???�보�?받아 Blob(?�는 로컬)???�??
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as unknown;
@@ -88,28 +87,26 @@ export async function POST(request: NextRequest) {
 
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
-      // Blob 저장 강화 - 재시도 로직 추가
+      // Blob ?�??강화 - ?�시??로직 추�?
       let blobSaved = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          console.log(`[Featured Blob] 저장 시도 ${attempt}/3`);
           await put(FEATURED_FILE_NAME, JSON.stringify(featured, null, 2), {
             access: 'public',
             contentType: 'application/json; charset=utf-8',
             addRandomSuffix: false,
           });
-          console.log(`[Featured Blob] 저장 성공 (시도 ${attempt})`);
+          `);
           blobSaved = true;
           break;
         } catch (error) {
-          console.error(`[Featured Blob] 저장 실패 (시도 ${attempt}):`, error);
+          :`, error);
           if (attempt === 3) {
-            console.error('[Featured Blob] 모든 시도 실패, 메모리 폴백 사용');
-          }
+            }
         }
       }
       
-      // 메모리도 항상 업데이트
+      // 메모리도 ??�� ?�데?�트
       memoryFeatured = { ...featured };
       
       if (blobSaved) {
@@ -123,7 +120,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 로컬 파일 저장
+    // 로컬 ?�일 ?�??
     await writeToLocal(featured);
     return NextResponse.json({ success: true, storage: 'local' });
   } catch (error) {

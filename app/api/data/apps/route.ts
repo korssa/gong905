@@ -7,7 +7,7 @@ import type { AppItem } from '@/types';
 const APPS_FILE_NAME = 'apps.json';
 const LOCAL_APPS_PATH = path.join(process.cwd(), 'data', APPS_FILE_NAME);
 
-// Vercel 환경에서의 임시 메모리 저장소 (Blob 실패 시 폴백)
+// Vercel ?�경?�서???�시 메모�??�?�소 (Blob ?�패 ???�백)
 let memoryApps: AppItem[] = [];
 
 async function ensureLocalFile() {
@@ -35,19 +35,17 @@ export async function GET() {
   try {
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     
-    // 1) 먼저 로컬 파일에서 읽기 (개발/배포 환경 모두)
+    // 1) 먼�? 로컬 ?�일?�서 ?�기 (개발/배포 ?�경 모두)
     try {
       const local = await readFromLocal();
       if (local && local.length > 0) {
-        console.log(`[Apps API] 로컬 파일에서 ${local.length}개 앱 로드`);
         return NextResponse.json(local);
       }
     } catch (error) {
-      console.log('[Apps API] 로컬 파일 읽기 실패:', error);
-    }
+      }
 
     if (isProd) {
-      // 2) Blob에서 최신 JSON 시도
+      // 2) Blob?�서 최신 JSON ?�도
       try {
         const { blobs } = await list({ prefix: APPS_FILE_NAME, limit: 1 });
         if (blobs && blobs.length > 0) {
@@ -56,26 +54,21 @@ export async function GET() {
           if (res.ok) {
             const json = await res.json();
             const data = Array.isArray(json) ? (json as AppItem[]) : [];
-            console.log(`[Apps API] Blob에서 ${data.length}개 앱 로드`);
             return NextResponse.json(data);
           }
         }
       } catch (error) {
-        console.log('[Apps API] Blob 조회 실패:', error);
-      }
+        }
 
-      // 3) 메모리 폴백
+      // 3) 메모�??�백
       if (memoryApps.length > 0) {
-        console.log(`[Apps API] 메모리에서 ${memoryApps.length}개 앱 로드`);
         return NextResponse.json(memoryApps);
       }
     }
 
-    // 4) 모든 방법 실패 시 빈 배열
-    console.log('[Apps API] 모든 로드 방법 실패, 빈 배열 반환');
+    // 4) 모든 방법 ?�패 ??�?배열
     return NextResponse.json([]);
   } catch (error) {
-    console.error('[Apps API] GET 오류:', error);
     return NextResponse.json([], { status: 200 });
   }
 }
@@ -86,51 +79,49 @@ export async function POST(request: NextRequest) {
     const apps = Array.isArray(body) ? (body as AppItem[]) : [];
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
-      // Blob 저장 강화 - 재시도 로직 추가
+      // Blob ?�??강화 - ?�시??로직 추�?
       let blobSaved = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          console.log(`[Apps Blob] 저장 시도 ${attempt}/3`);
           await put(APPS_FILE_NAME, JSON.stringify(apps, null, 2), {
             access: 'public',
             contentType: 'application/json; charset=utf-8',
             addRandomSuffix: false,
           });
-          console.log(`[Apps Blob] 저장 성공 (시도 ${attempt})`);
+          `);
           blobSaved = true;
           break;
         } catch (error) {
-          console.error(`[Apps Blob] 저장 실패 (시도 ${attempt}):`, error);
+          :`, error);
           if (attempt === 3) {
-            console.error('[Apps Blob] 모든 시도 실패, 메모리 폴백 사용');
-          }
+            }
         }
       }
       
-      // 메모리도 항상 업데이트
+      // 메모리도 ??�� ?�데?�트
       memoryApps = [...apps];
       
       if (blobSaved) {
         return NextResponse.json({ 
           success: true, 
           storage: 'blob',
-          data: apps // 최종 저장된 데이터 반환
+          data: apps // 최종 ?�?�된 ?�이??반환
         });
       } else {
         return NextResponse.json({ 
           success: true, 
           storage: 'memory', 
-          data: apps, // 최종 저장된 데이터 반환
+          data: apps, // 최종 ?�?�된 ?�이??반환
           warning: 'Blob save failed after 3 attempts; using in-memory fallback' 
         });
       }
     }
-    // 로컬 파일 저장
+    // 로컬 ?�일 ?�??
     await writeToLocal(apps);
     return NextResponse.json({ 
       success: true, 
       storage: 'local',
-      data: apps // 최종 저장된 데이터 반환
+      data: apps // 최종 ?�?�된 ?�이??반환
     });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to save apps' }, { status: 500 });

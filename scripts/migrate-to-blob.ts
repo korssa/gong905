@@ -5,7 +5,7 @@ import { saveAppsToBlob, saveContentsToBlob } from '../lib/data-loader';
 async function migrateToBlob() {
   try {
     
-    // 로컬 JSON 파일 읽기
+    // 로컬 JSON ?�일 ?�기
     const appsPath = path.join(process.cwd(), 'data', 'apps.json');
     const contentsPath = path.join(process.cwd(), 'data', 'contents.json');
     
@@ -22,7 +22,7 @@ async function migrateToBlob() {
       contents = JSON.parse(contentsData);
     }
     
-    // Vercel Blob Storage에 저장
+    // Vercel Blob Storage???�??
     if (apps.length > 0) {
       const appsSuccess = await saveAppsToBlob(apps);
     }
@@ -32,9 +32,8 @@ async function migrateToBlob() {
     }
     
   } catch (error) {
-    console.error('❌ 마이그레이션 중 오류 발생:', error);
-  }
+    }
 }
 
-// 스크립트 실행
+// ?�크립트 ?�행
 migrateToBlob();

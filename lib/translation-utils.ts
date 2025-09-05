@@ -83,7 +83,6 @@ export const startBlockingTranslationFeedback = () => {
         style.style.zIndex = '-9999';
       });
     } catch (err) {
-      console.warn('Error hiding translation feedback:', err);
     }
   };
 

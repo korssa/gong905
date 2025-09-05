@@ -4,18 +4,18 @@ import path from 'path';
 import { put, list } from '@vercel/blob';
 import type { ContentItem } from '@/types';
 
-// 단일 파일로 모든 타입의 콘텐츠를 저장
+// ?�일 ?�일�?모든 ?�?�의 콘텐츠�? ?�??
 const CONTENTS_FILE_NAME = 'contents.json';
 const LOCAL_CONTENTS_PATH = path.join(process.cwd(), 'data', 'contents.json');
 
-// Vercel 환경에서의 임시 메모리 저장소 (Blob 실패 시 폴백)
-// /api/content의 메모리와 동기화하기 위한 공유 저장소
+// Vercel ?�경?�서???�시 메모�??�?�소 (Blob ?�패 ???�백)
+// /api/content??메모리�? ?�기?�하�??�한 공유 ?�?�소
 let memoryContents: ContentItem[] = [];
 
-// /api/content의 메모리와 동기화하는 함수
+// /api/content??메모리�? ?�기?�하???�수
 async function syncWithContentMemory(): Promise<ContentItem[]> {
   try {
-    // /api/content에서 현재 메모리 상태 조회
+    // /api/content?�서 ?�재 메모�??�태 조회
     const origin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
     const res = await fetch(`${origin}/api/content`, { cache: 'no-store' });
     if (res.ok) {
@@ -26,8 +26,7 @@ async function syncWithContentMemory(): Promise<ContentItem[]> {
       }
     }
   } catch (error) {
-    console.warn('Failed to sync with /api/content memory:', error);
-  }
+    }
   return memoryContents;
 }
 
@@ -52,17 +51,17 @@ async function writeToLocal(contents: ContentItem[]) {
   await fs.writeFile(LOCAL_CONTENTS_PATH, JSON.stringify(contents, null, 2));
 }
 
-// GET: Blob 또는 로컬에서 콘텐츠 배열 반환
+// GET: Blob ?�는 로컬?�서 콘텐�?배열 반환
 export async function GET() {
   try {
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
 
     if (isProd) {
-      // 1) Blob에서 최신 JSON 파일 시도 (여러 개 가져와서 최신 것 선택)
+      // 1) Blob?�서 최신 JSON ?�일 ?�도 (?�러 �?가?��???최신 �??�택)
       try {
         const { blobs } = await list({ prefix: CONTENTS_FILE_NAME, limit: 100 });
         if (blobs && blobs.length > 0) {
-          // 최신순 정렬 (uploadedAt 기준)
+          // 최신???�렬 (uploadedAt 기�?)
           blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
           const latestBlob = blobs[0];
           
@@ -72,7 +71,7 @@ export async function GET() {
             const json = await res.json();
             const data = Array.isArray(json) ? (json as ContentItem[]) : [];
             
-            // App Story 전용 디버깅
+            // App Story ?�용 ?�버�?
             const appStoryCount = data.filter(c => c.type === 'appstory').length;
             const newsCount = data.filter(c => c.type === 'news').length;
             
@@ -80,25 +79,24 @@ export async function GET() {
           }
         }
       } catch (error) {
-        console.warn('[Blob] 조회 실패:', error);
-        // Blob 조회 실패 시 무시하고 폴백 진행
+        // Blob 조회 ?�패 ??무시?�고 ?�백 진행
       }
 
-      // 2) 메모리 폴백
+      // 2) 메모�??�백
       if (memoryContents.length > 0) {
         
-        // App Story 전용 디버깅
+        // App Story ?�용 ?�버�?
         const appStoryCount = memoryContents.filter(c => c.type === 'appstory').length;
         const newsCount = memoryContents.filter(c => c.type === 'news').length;
         
         return NextResponse.json(memoryContents);
       }
 
-      // 4) 모든 소스에서 데이터가 없으면 빈 배열
+      // 4) 모든 ?�스?�서 ?�이?��? ?�으�?�?배열
       return NextResponse.json([]);
     }
 
-    // 개발 환경: 로컬 파일
+    // 개발 ?�경: 로컬 ?�일
     const local = await readFromLocal();
     return NextResponse.json(local);
   } catch {
@@ -106,7 +104,7 @@ export async function GET() {
   }
 }
 
-// POST: 전체 콘텐츠 배열을 받아 Blob(또는 로컬)에 저장
+// POST: ?�체 콘텐�?배열??받아 Blob(?�는 로컬)???�??
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as unknown;
@@ -114,34 +112,29 @@ export async function POST(request: NextRequest) {
 
     const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     if (isProd) {
-      // Blob 저장 강화 - 재시도 로직 추가
+      // Blob ?�??강화 - ?�시??로직 추�?
       let blobSaved = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          console.log(`[Contents Blob] 저장 시도 ${attempt}/3`);
-          
-          // App Story 전용 디버깅
+          // App Story ?�용 ?�버�?
           const appStoryCount = contents.filter(c => c.type === 'appstory').length;
           const newsCount = contents.filter(c => c.type === 'news').length;
-          console.log(`[Contents Blob] App Story: ${appStoryCount}, News: ${newsCount}`);
-          
           await put(CONTENTS_FILE_NAME, JSON.stringify(contents, null, 2), {
             access: 'public',
             contentType: 'application/json; charset=utf-8',
             addRandomSuffix: false,
           });
-          console.log(`[Contents Blob] 저장 성공 (시도 ${attempt})`);
+          `);
           blobSaved = true;
           break;
         } catch (error) {
-          console.error(`[Contents Blob] 저장 실패 (시도 ${attempt}):`, error);
+          :`, error);
           if (attempt === 3) {
-            console.error('[Contents Blob] 모든 시도 실패, 메모리 폴백 사용');
-          }
+            }
         }
       }
       
-      // 메모리도 항상 업데이트
+      // 메모리도 ??�� ?�데?�트
       memoryContents = [...contents];
       
       if (blobSaved) {

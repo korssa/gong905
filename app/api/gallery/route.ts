@@ -50,7 +50,6 @@ export async function GET(request: NextRequest) {
           }
         }
       } catch (error) {
-        console.error(`JSON 파일 로드 실패: ${jsonFile.pathname}`, error);
       }
     }
 
@@ -60,7 +59,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(publishedItems);
 
   } catch (error) {
-    console.error('갤러리 조회 오류:', error);
     return NextResponse.json({ error: '갤러리 조회 실패' }, { status: 500 });
   }
 }
@@ -132,7 +130,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('갤러리 생성 오류:', error);
     return NextResponse.json({ error: '갤러리 생성 실패' }, { status: 500 });
   }
 }

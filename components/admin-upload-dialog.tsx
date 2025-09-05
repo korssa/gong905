@@ -231,14 +231,11 @@ export function AdminUploadDialog({
         });
 
         if (response.ok) {
-          console.log(`✅ 갤러리 ${targetGallery}에 업로드 성공`);
           onUploadSuccess();
         } else {
-          console.error('❌ 갤러리 업로드 실패');
           alert('업로드에 실패했습니다.');
         }
       } catch (error) {
-        console.error('❌ 갤러리 업로드 오류:', error);
         alert('업로드 중 오류가 발생했습니다.');
       }
     } else if (onUpload) {
