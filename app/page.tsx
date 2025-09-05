@@ -8,7 +8,6 @@ declare global {
   }
 }
 import { Header } from "@/components/layout/header";
-import { AppGallery } from "@/components/app-gallery";
 import { HiddenAdminAccess } from "@/components/hidden-admin-access";
 import { EditAppDialog } from "@/components/edit-app-dialog";
 import { AdminUploadDialog } from "@/components/admin-upload-dialog";
@@ -28,6 +27,10 @@ import { uploadFile, deleteFile } from "@/lib/storage-adapter";
 import { loadAppsFromBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, saveAppsByTypeToBlob, loadFeaturedIds, loadEventIds, saveFeaturedIds, saveEventIds } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { useAppStore } from "@/store/useAppStore";
+import { useFooterStore } from "@/store/useFooterStore";
+import { GalleryManager } from "@/components/gallery-manager";
+import { initializeBlobFolders } from "@/lib/gallery-loader";
+import { saveGalleryToBlob } from "@/lib/gallery-converter";
 import Image from "next/image";
 
 const isBlobUrl = (url?: string) => {
@@ -71,6 +74,9 @@ export default function Home() {
     getEventApps, 
     getNormalApps 
   } = useAppStore();
+
+  // 풋터 스토어 사용
+  const { recordButtonClick } = useFooterStore();
 
   // Request ID for preventing race conditions
   const reqIdRef = useRef(0);
@@ -136,6 +142,7 @@ export default function Home() {
 
      // All Apps 버튼 클릭 핸들러
    const handleAllAppsClick = () => {
+     recordButtonClick("All Apps", "See everything");
      setCurrentFilter("all");
      setCurrentContentType(null); // 메모장 모드 종료
      // 페이지 상단으로 스크롤
@@ -144,6 +151,7 @@ export default function Home() {
 
    // New Releases 버튼 클릭 핸들러
    const handleNewReleasesClick = () => {
+     recordButtonClick("New Releases", "Just launched");
      setCurrentFilter("latest");
      setCurrentContentType(null); // 메모장 모드 종료
      // 페이지 상단으로 스크롤
@@ -152,6 +160,7 @@ export default function Home() {
 
   // Featured Apps 버튼 클릭 핸들러 (자동 생성 제거)
   const handleFeaturedAppsClick = () => {
+    recordButtonClick("Featured Apps", "Recommended picks");
     // ❌ 자동 생성 로직 제거: featured가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("featured");
     setCurrentContentType(null);
@@ -160,6 +169,7 @@ export default function Home() {
 
   // Events 버튼 클릭 핸들러 (자동 생성 제거)
   const handleEventsClick = () => {
+    recordButtonClick("Events", "Discounts via email");
     // ❌ 자동 생성 로직 제거: events가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("events");
     setCurrentContentType(null);
@@ -514,6 +524,56 @@ export default function Home() {
     setEditingApp(app);
   };
 
+  // Vercel Blob 폴더 구조 초기화 및 앱 데이터 동기화
+  useEffect(() => {
+    const initializeBlob = async () => {
+      try {
+        console.log('🚀 Vercel Blob 폴더 구조 초기화 시도...');
+        const result = await initializeBlobFolders();
+        if (result.success) {
+          console.log('✅ Vercel Blob 폴더 구조 초기화 완료');
+        } else {
+          console.log('⚠️ Vercel Blob 폴더 구조 초기화 실패 또는 이미 존재');
+        }
+      } catch (error) {
+        console.error('❌ Vercel Blob 폴더 구조 초기화 오류:', error);
+      }
+    };
+
+    initializeBlob();
+  }, []);
+
+  // 앱 데이터를 갤러리 데이터로 동기화
+  const syncAppsToGallery = async () => {
+    try {
+      console.log('🔄 앱 데이터를 갤러리로 동기화 시작...');
+      
+      // 전체 앱 데이터를 갤러리로 저장
+      if (allApps.length > 0) {
+        await saveGalleryToBlob(allApps, 'gallery');
+        console.log('✅ 전체 앱 데이터를 갤러리로 동기화 완료');
+      }
+      
+      // Featured 앱 데이터를 갤러리로 저장
+      const featuredApps = getFeaturedApps();
+      if (featuredApps.length > 0) {
+        await saveGalleryToBlob(featuredApps, 'featured');
+        console.log('✅ Featured 앱 데이터를 갤러리로 동기화 완료');
+      }
+      
+      // Events 앱 데이터를 갤러리로 저장
+      const eventApps = getEventApps();
+      if (eventApps.length > 0) {
+        await saveGalleryToBlob(eventApps, 'events');
+        console.log('✅ Events 앱 데이터를 갤러리로 동기화 완료');
+      }
+      
+      console.log('🎉 모든 앱 데이터 동기화 완료');
+    } catch (error) {
+      console.error('❌ 앱 데이터 동기화 실패:', error);
+    }
+  };
+
   // 앱 목록 로드 및 동기화 (전역 스토어 사용)
   useEffect(() => {
     // StrictMode 이중 실행 방지
@@ -560,6 +620,11 @@ export default function Home() {
           });
           
           setApps(appsWithType); // 전역 스토어 업데이트
+          
+          // 앱 데이터를 갤러리로 동기화
+          setTimeout(() => {
+            syncAppsToGallery();
+          }, 1000);
         } else {
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
           const blobApps = await loadAppsFromBlob();
@@ -595,6 +660,11 @@ export default function Home() {
             });
             
             setApps(appsWithType); // 전역 스토어 업데이트
+            
+            // 앱 데이터를 갤러리로 동기화
+            setTimeout(() => {
+              syncAppsToGallery();
+            }, 1000);
           } else {
             // Keep existing state - don't reset to empty array
           }
@@ -773,7 +843,8 @@ export default function Home() {
 
   // App Story 클릭 핸들러
   const handleAppStoryClick = () => {
-            setCurrentContentType("appstory");
+    recordButtonClick("App Story", "How it was made");
+    setCurrentContentType("appstory");
     setCurrentFilter("all"); // 갤러리 필터 초기화
     // 메모장 본문 위치로 스크롤
     setTimeout(() => {
@@ -817,6 +888,7 @@ export default function Home() {
 
   // News 클릭 핸들러
   const handleNewsClick = () => {
+    recordButtonClick("News", "Latest updates");
     setCurrentContentType("news");
     setCurrentFilter("all"); // 갤러리 필터 초기화
     // 메모장 본문 위치로 스크롤
@@ -1040,16 +1112,14 @@ export default function Home() {
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
                        {currentFilter !== "latest" && (
                          <>
-                           <AppGallery 
-                             apps={filteredApps} 
-                             viewMode={viewMode} 
-                             onDeleteApp={handleDeleteApp}
-                             onEditApp={handleEditApp}
-                             onToggleFeatured={handleToggleFeatured}
-                             onToggleEvent={handleToggleEvent}
-                             showNumbering={currentFilter === "events"}
-                             onRefreshData={handleRefreshData}
-                             onCleanData={cleanAppData}
+                           {/* 새로운 갤러리 매니저 사용 */}
+                           <GalleryManager 
+                             viewMode={viewMode}
+                             filter={currentFilter === "all" ? "all" : currentFilter === "featured" ? "featured" : "events"}
+                             onRefresh={() => {
+                               // 갤러리 새로고침 시 기존 앱 데이터도 새로고침
+                               handleRefreshData();
+                             }}
                            />
                            
                            {/* Events 모드일 때 설명문구와 메일폼 추가 */}
@@ -1237,8 +1307,8 @@ export default function Home() {
                    </button>
                  </div>
                  
-                 {/* 수동 저장 버튼 */}
-                 <div className="flex justify-center">
+                 {/* 수동 저장 및 동기화 버튼 */}
+                 <div className="flex justify-center gap-4">
                    <button
                      onClick={createAdminButtonHandler(handleManualSave)}
                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 text-sm font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105 notranslate"
@@ -1246,6 +1316,14 @@ export default function Home() {
                      translate="no"
                    >
                      🔒 변경사항 저장
+                   </button>
+                   <button
+                     onClick={createAdminButtonHandler(syncAppsToGallery)}
+                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-sm font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105 notranslate"
+                     onMouseEnter={blockTranslationFeedback}
+                     translate="no"
+                   >
+                     🖼️ 갤러리 동기화
                    </button>
                  </div>
                  
