@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Mail, Send, X } from "lucide-react";
-import { blockTranslationFeedback, createAdminButtonHandler, createAdminFormHandler } from "@/lib/translation-utils";
+import { blockTranslationFeedback, createAdminButtonHandler, createAdminFormHandler, startBlockingTranslationFeedback } from "@/lib/translation-utils";
 
 interface MailFormProps {
   type: "events" | "feedback" | "contact";
@@ -26,6 +26,13 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 다이얼로그가 열릴 때 강화된 번역 피드백 차단 시작
+  useEffect(() => {
+    if (isOpen) {
+      startBlockingTranslationFeedback();
+    }
+  }, [isOpen]);
 
   const getTitle = () => {
     switch (type) {
