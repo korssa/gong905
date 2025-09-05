@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { list } from '@vercel/blob';
 import type { GalleryItem } from '@/components/gallery-card';
+import type { AppItem } from '@/types';
 
 // JSON 파일에서 데이터를 로드하는 헬퍼 함수
 async function loadDataFromFile(file: { url: string; pathname: string }): Promise<GalleryItem[]> {
@@ -21,7 +22,35 @@ async function loadDataFromFile(file: { url: string; pathname: string }): Promis
   }
 }
 
-// 특정 타입의 갤러리 데이터를 로드하는 헬퍼 함수
+// 실제 앱 데이터를 로드하는 헬퍼 함수 (이미지 URL 포함)
+async function loadAppsByType(type: string): Promise<AppItem[]> {
+  try {
+    // 앱 데이터 로드 (이미지 URL 포함)
+    const { loadAppsByTypeFromBlob } = await import('@/lib/data-loader');
+    const apps = await loadAppsByTypeFromBlob(type);
+    
+    // Featured/Events 플래그 적용
+    const { loadFeaturedIds, loadEventIds } = await import('@/lib/data-loader');
+    const [featuredIds, eventIds] = await Promise.all([
+      loadFeaturedIds(),
+      loadEventIds()
+    ]);
+    
+    const f = new Set(featuredIds);
+    const e = new Set(eventIds);
+    
+    return apps.map(app => ({ 
+      ...app, 
+      isFeatured: f.has(app.id), 
+      isEvent: e.has(app.id) 
+    }));
+  } catch (error) {
+    console.error(`❌ 앱 데이터 로드 실패 (${type}):`, error);
+    return [];
+  }
+}
+
+// 특정 타입의 갤러리 데이터를 로드하는 헬퍼 함수 (레거시 지원)
 async function loadGalleryByType(type: string): Promise<GalleryItem[]> {
   const { blobs } = await list({
     prefix: `${type}/`,
@@ -59,23 +88,47 @@ export async function GET(request: NextRequest) {
     // URL 파라미터에서 타입 확인
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') ?? 'all';
+    const format = searchParams.get('format') ?? 'apps'; // 'apps' 또는 'gallery'
 
-    let items: GalleryItem[] = [];
+    if (format === 'apps') {
+      // 실제 앱 데이터 반환 (이미지 URL 포함)
+      let apps: AppItem[] = [];
+      
+      if (type === 'all') {
+        apps = await loadAppsByType('gallery');
+      } else {
+        apps = await loadAppsByType(type);
+      }
 
-    if (type === 'all') {
-      items = await loadGalleryByType('gallery');
+      console.log(`✅ 앱 데이터 로드 완료: ${apps.length}개 앱`);
+
+      return NextResponse.json({
+        success: true,
+        data: apps,
+        count: apps.length,
+        type,
+        format: 'apps'
+      });
     } else {
-      items = await loadGalleryByType(type);
+      // 레거시 갤러리 데이터 반환
+      let items: GalleryItem[] = [];
+
+      if (type === 'all') {
+        items = await loadGalleryByType('gallery');
+      } else {
+        items = await loadGalleryByType(type);
+      }
+
+      console.log(`✅ 갤러리 데이터 로드 완료: ${items.length}개 항목`);
+
+      return NextResponse.json({
+        success: true,
+        data: items,
+        count: items.length,
+        type,
+        format: 'gallery'
+      });
     }
-
-    console.log(`✅ 갤러리 데이터 로드 완료: ${items.length}개 항목`);
-
-    return NextResponse.json({
-      success: true,
-      data: items,
-      count: items.length,
-      type
-    });
 
   } catch (error) {
     console.error('❌ 갤러리 데이터 로드 실패:', error);
