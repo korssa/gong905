@@ -1149,9 +1149,17 @@ export default function Home() {
               <p className="text-lg font-medium text-amber-400 mb-1" translate="yes" onMouseEnter={blockTranslationFeedback}>
                 &quot;We&apos;re just. that kind of group!&quot;
               </p>
-              <p className="text-sm text-gray-400 notranslate" translate="no" style={{translate: 'no'}} onMouseEnter={blockTranslationFeedback}>
+              <p className="text-sm text-gray-400 notranslate mb-1" translate="no" style={{translate: 'no'}} onMouseEnter={blockTranslationFeedback}>
                 — Since 2025
               </p>
+              <button
+                onClick={(e) => handleFooterLinkClick(handleAppStoryClick, e)}
+                onMouseEnter={blockTranslationFeedback}
+                className="text-sm text-blue-400 hover:text-blue-300 underline transition-colors duration-200"
+                translate="yes"
+              >
+                See That Group
+              </button>
             </div>
            
            <div className="border-t border-gray-600 pt-6 mt-6 text-center">
