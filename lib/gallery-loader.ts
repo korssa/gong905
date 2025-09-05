@@ -1,7 +1,18 @@
 import type { GalleryItem } from "@/components/gallery-card";
 
+// Vercel Blob 폴더 초기화 결과 타입
+interface BlobFolderResult {
+  folder: string;
+  success: boolean;
+  url?: string;
+  error?: string;
+}
+
+// 갤러리 타입 정의
+type GalleryType = 'all' | 'gallery' | 'featured' | 'events';
+
 // 갤러리 데이터 로드 함수
-export async function loadGalleryData(type: 'all' | 'gallery' | 'featured' | 'events' = 'all'): Promise<GalleryItem[]> {
+export async function loadGalleryData(type: GalleryType = 'all'): Promise<GalleryItem[]> {
   try {
     console.log(`📱 갤러리 데이터 로드 시작: ${type}`);
     
@@ -24,7 +35,7 @@ export async function loadGalleryData(type: 'all' | 'gallery' | 'featured' | 'ev
 // 갤러리 데이터 저장 함수
 export async function saveGalleryData(
   items: GalleryItem[], 
-  type: 'gallery' | 'featured' | 'events' = 'gallery'
+  type: Exclude<GalleryType, 'all'> = 'gallery'
 ): Promise<{ success: boolean; url?: string; count?: number }> {
   try {
     console.log(`📤 갤러리 데이터 저장 시작: ${type}, ${items.length}개 항목`);
@@ -55,7 +66,7 @@ export async function saveGalleryData(
 // 갤러리 항목 삭제 함수
 export async function deleteGalleryItem(
   id: string, 
-  type: 'gallery' | 'featured' | 'events' = 'gallery'
+  type: Exclude<GalleryType, 'all'> = 'gallery'
 ): Promise<{ success: boolean; url?: string; count?: number }> {
   try {
     console.log(`🗑️ 갤러리 항목 삭제 시작: ${id} (${type})`);
@@ -80,7 +91,7 @@ export async function deleteGalleryItem(
 }
 
 // Vercel Blob 폴더 구조 초기화 함수
-export async function initializeBlobFolders(): Promise<{ success: boolean; results?: any[] }> {
+export async function initializeBlobFolders(): Promise<{ success: boolean; results?: BlobFolderResult[] }> {
   try {
     console.log('📁 Vercel Blob 폴더 구조 초기화 시작...');
     
@@ -106,7 +117,7 @@ export async function initializeBlobFolders(): Promise<{ success: boolean; resul
 // 갤러리 데이터 동기화 함수 (로컬 스토어와 서버 동기화)
 export async function syncGalleryData(
   localItems: GalleryItem[],
-  type: 'gallery' | 'featured' | 'events' = 'gallery'
+  type: Exclude<GalleryType, 'all'> = 'gallery'
 ): Promise<{ success: boolean; serverItems?: GalleryItem[] }> {
   try {
     console.log(`🔄 갤러리 데이터 동기화 시작: ${type}`);
