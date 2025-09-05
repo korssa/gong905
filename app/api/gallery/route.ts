@@ -1,290 +1,132 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { list } from '@vercel/blob';
-import type { GalleryItem } from '@/components/gallery-card';
-import type { AppItem } from '@/types';
+import { list, put } from '@vercel/blob';
 
-// JSON 파일에서 데이터를 로드하는 헬퍼 함수
-async function loadDataFromFile(file: { url: string; pathname: string }): Promise<GalleryItem[]> {
-  try {
-    const response = await fetch(file.url);
-    if (!response.ok) return [];
-    
-    const data = await response.json();
-    if (Array.isArray(data)) {
-      return data;
-    } else if (data.items && Array.isArray(data.items)) {
-      return data.items;
-    }
-    return [];
-  } catch (error) {
-    console.error(`❌ 파일 로드 실패: ${file.pathname}`, error);
-    return [];
-  }
+// 갤러리 아이템 타입
+export interface GalleryItem {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  imageUrl?: string;
+  publishDate: string;
+  tags?: string[];
+  isPublished: boolean;
+  type: 'gallery' | 'featured' | 'events';
 }
 
-// 실제 앱 데이터를 로드하는 헬퍼 함수 (이미지 URL 포함)
-async function loadAppsByType(type: string): Promise<AppItem[]> {
-  try {
-    // 앱 데이터 로드 (이미지 URL 포함) - gallery 타입만 지원
-    const { loadAppsByTypeFromBlob } = await import('@/lib/data-loader');
-    const apps = await loadAppsByTypeFromBlob('gallery');
-    
-    // Featured/Events 플래그 적용
-    const { loadFeaturedIds, loadEventIds } = await import('@/lib/data-loader');
-    const [featuredIds, eventIds] = await Promise.all([
-      loadFeaturedIds(),
-      loadEventIds()
-    ]);
-    
-    const f = new Set(featuredIds);
-    const e = new Set(eventIds);
-    
-    // 타입에 따라 필터링
-    const appsWithFlags = apps.map(app => ({ 
-      ...app, 
-      isFeatured: f.has(app.id), 
-      isEvent: e.has(app.id) 
-    }));
-    
-    // 타입별 필터링
-    switch (type) {
-      case 'featured':
-        return appsWithFlags.filter(app => app.isFeatured);
-      case 'events':
-        return appsWithFlags.filter(app => app.isEvent);
-      case 'all':
-      case 'gallery':
-      default:
-        return appsWithFlags;
-    }
-  } catch (error) {
-    console.error(`❌ 앱 데이터 로드 실패 (${type}):`, error);
-    return [];
-  }
-}
-
-// 특정 타입의 갤러리 데이터를 로드하는 헬퍼 함수 (레거시 지원)
-async function loadGalleryByType(type: string): Promise<GalleryItem[]> {
-  const { blobs } = await list({
-    prefix: `${type}/`,
-    limit: 1000
-  });
-
-  // data.json 파일을 우선적으로 찾기
-  const dataJsonFile = blobs.find(blob => blob.pathname === `${type}/data.json`);
-  
-  if (dataJsonFile) {
-    console.log(`📁 ${type}/data.json 파일 발견, 데이터 로드 중...`);
-    const items = await loadDataFromFile(dataJsonFile);
-    return items;
-  }
-
-  // data.json이 없으면 다른 JSON 파일들에서 로드
-  const jsonFiles = blobs.filter(blob => 
-    blob.pathname.endsWith('.json') && 
-    blob.pathname !== `${type}/data.json`
-  );
-
-  const allItems: GalleryItem[] = [];
-  for (const file of jsonFiles) {
-    const items = await loadDataFromFile(file);
-    allItems.push(...items);
-  }
-  
-  return allItems;
-}
-
+// GET: 갤러리 아이템 목록 조회
 export async function GET(request: NextRequest) {
   try {
-    console.log('📱 갤러리 데이터 로드 시작...');
-
-    // URL 파라미터에서 타입 확인
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') ?? 'all';
-    const format = searchParams.get('format') ?? 'apps'; // 'apps' 또는 'gallery'
+    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | null;
 
-    if (format === 'apps') {
-      // 실제 앱 데이터 반환 (이미지 URL 포함)
-      let apps: AppItem[] = [];
-      
-      if (type === 'all') {
-        apps = await loadAppsByType('gallery');
-      } else {
-        apps = await loadAppsByType(type);
-      }
-
-      console.log(`✅ 앱 데이터 로드 완료: ${apps.length}개 앱`);
-
-      return NextResponse.json({
-        success: true,
-        data: apps,
-        count: apps.length,
-        type,
-        format: 'apps'
-      });
-    } else {
-      // 레거시 갤러리 데이터 반환
-      let items: GalleryItem[] = [];
-
-      if (type === 'all') {
-        items = await loadGalleryByType('gallery');
-      } else {
-        items = await loadGalleryByType(type);
-      }
-
-      console.log(`✅ 갤러리 데이터 로드 완료: ${items.length}개 항목`);
-
-      return NextResponse.json({
-        success: true,
-        data: items,
-        count: items.length,
-        type,
-        format: 'gallery'
-      });
+    if (!type) {
+      return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
     }
 
+    // Vercel Blob에서 해당 타입의 폴더 조회
+    const folderPath = `gallery-${type}`;
+    const { blobs } = await list({
+      prefix: `${folderPath}/`,
+    });
+
+    // JSON 파일들만 필터링
+    const jsonFiles = blobs.filter(blob => blob.pathname.endsWith('.json'));
+    
+    const items: GalleryItem[] = [];
+
+    // 각 JSON 파일에서 데이터 로드
+    for (const jsonFile of jsonFiles) {
+      try {
+        const response = await fetch(jsonFile.url);
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            items.push(...data);
+          } else if (data.id) {
+            items.push(data);
+          }
+        }
+      } catch (error) {
+        console.error(`JSON 파일 로드 실패: ${jsonFile.pathname}`, error);
+      }
+    }
+
+    // 발행된 아이템만 반환
+    const publishedItems = items.filter(item => item.isPublished);
+    
+    return NextResponse.json(publishedItems);
+
   } catch (error) {
-    console.error('❌ 갤러리 데이터 로드 실패:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        data: []
-      },
-      { status: 500 }
-    );
+    console.error('갤러리 조회 오류:', error);
+    return NextResponse.json({ error: '갤러리 조회 실패' }, { status: 500 });
   }
 }
 
+// POST: 갤러리 아이템 생성/업데이트
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { items, type = 'gallery' } = body;
-
-    if (!Array.isArray(items)) {
-      return NextResponse.json(
-        { success: false, error: 'Items must be an array' },
-        { status: 400 }
-      );
-    }
-
-    console.log(`📤 갤러리 데이터 저장 시작: ${type} 타입, ${items.length}개 항목`);
-
-    // 기존 데이터와 병합
-    const existingResponse = await fetch(`${request.nextUrl.origin}/api/gallery?type=${type}`);
-    const existingData = await existingResponse.json();
-    const existingItems = existingData.success ? existingData.data : [];
-
-    // 중복 제거 (ID 기준)
-    const existingIds = new Set(existingItems.map((item: GalleryItem) => item.id));
-    const newItems = items.filter((item: GalleryItem) => !existingIds.has(item.id));
-    const mergedItems = [...newItems, ...existingItems];
-
-    // Vercel Blob에 저장
-    const { put } = await import('@vercel/blob');
-    
-    const dataToSave = {
-      items: mergedItems,
-      lastUpdated: new Date().toISOString(),
-      version: 1,
-      count: mergedItems.length
-    };
-
-    const blobUrl = await put(
-      `${type}/data.json`,
-      JSON.stringify(dataToSave, null, 2),
-      {
-        access: 'public',
-        contentType: 'application/json'
-      }
-    );
-
-    console.log(`✅ 갤러리 데이터 저장 완료: ${blobUrl.url}`);
-
-    return NextResponse.json({
-      success: true,
-      url: blobUrl.url,
-      count: mergedItems.length,
-      type
-    });
-
-  } catch (error) {
-    console.error('❌ 갤러리 데이터 저장 실패:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    const type = searchParams.get('type') ?? 'gallery';
+    const type = searchParams.get('type') as 'gallery' | 'featured' | 'events' | null;
 
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: 'ID is required' },
-        { status: 400 }
-      );
+    if (!type) {
+      return NextResponse.json({ error: 'Type parameter is required' }, { status: 400 });
     }
 
-    console.log(`🗑️ 갤러리 항목 삭제: ${id} (${type})`);
+    const formData = await request.formData();
+    const title = formData.get('title') as string;
+    const content = formData.get('content') as string;
+    const author = formData.get('author') as string;
+    const tags = formData.get('tags') as string;
+    const isPublished = formData.get('isPublished') === 'true';
+    const file = formData.get('file') as File | null;
 
-    // 기존 데이터 로드
-    const existingResponse = await fetch(`${request.nextUrl.origin}/api/gallery?type=${type}`);
-    const existingData = await existingResponse.json();
-    
-    if (!existingData.success) {
-      return NextResponse.json(
-        { success: false, error: 'Failed to load existing data' },
-        { status: 500 }
-      );
+    if (!title || !content || !author) {
+      return NextResponse.json({ error: '필수 필드가 누락되었습니다' }, { status: 400 });
     }
 
-    // 항목 제거
-    const updatedItems = existingData.data.filter((item: GalleryItem) => item.id !== id);
+    // 고유 ID 생성
+    const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // 업데이트된 데이터 저장
-    const { put } = await import('@vercel/blob');
-    
-    const dataToSave = {
-      items: updatedItems,
-      lastUpdated: new Date().toISOString(),
-      version: 1,
-      count: updatedItems.length
+    let imageUrl: string | undefined;
+
+    // 이미지 업로드
+    if (file) {
+      const filename = `${id}.${file.name.split('.').pop()}`;
+      const blob = await put(`${type}/${filename}`, file, {
+        access: 'public',
+      });
+      imageUrl = blob.url;
+    }
+
+    // 갤러리 아이템 생성
+    const galleryItem: GalleryItem = {
+      id,
+      title,
+      content,
+      author,
+      imageUrl,
+      publishDate: new Date().toISOString(),
+      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      isPublished,
+      type,
     };
 
-    const blobUrl = await put(
-      `${type}/data.json`,
-      JSON.stringify(dataToSave, null, 2),
-      {
-        access: 'public',
-        contentType: 'application/json'
-      }
-    );
+    // JSON 파일로 저장
+    const jsonFilename = `${id}.json`;
+    const jsonBlob = await put(`gallery-${type}/${jsonFilename}`, JSON.stringify(galleryItem, null, 2), {
+      access: 'public',
+      contentType: 'application/json',
+    });
 
-    console.log(`✅ 갤러리 항목 삭제 완료: ${blobUrl.url}`);
-
-    return NextResponse.json({
-      success: true,
-      url: blobUrl.url,
-      count: updatedItems.length,
-      type
+    return NextResponse.json({ 
+      success: true, 
+      item: galleryItem,
+      jsonUrl: jsonBlob.url 
     });
 
   } catch (error) {
-    console.error('❌ 갤러리 항목 삭제 실패:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      },
-      { status: 500 }
-    );
+    console.error('갤러리 생성 오류:', error);
+    return NextResponse.json({ error: '갤러리 생성 실패' }, { status: 500 });
   }
 }

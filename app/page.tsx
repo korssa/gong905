@@ -29,6 +29,7 @@ import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/transl
 import { useAppStore } from "@/store/useAppStore";
 import { useFooterStore } from "@/store/useFooterStore";
 import { AppGallery } from "@/components/app-gallery";
+import { GalleryManager } from "@/components/gallery-manager";
 import Image from "next/image";
 
 const isBlobUrl = (url?: string) => {
@@ -59,7 +60,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentContentType, setCurrentContentType] = useState<ContentType | null>(null);
   const { t } = useLanguage();
-  const { isAuthenticated } = useAdmin();
+  const { isAuthenticated: isAdmin } = useAdmin();
   const [adminVisible, setAdminVisible] = useState(false);
 
   // 전역 스토어 사용
@@ -771,7 +772,7 @@ export default function Home() {
     const initial = (() => {
       try {
         const sessionActive = sessionStorage.getItem('admin-session-active') === '1';
-        const isAuth = isAuthenticated;
+        const isAuth = isAdmin;
         return sessionActive && isAuth;
       } catch {
         return false;
@@ -792,7 +793,7 @@ export default function Home() {
         // ignore
       }
     };
-  }, [isAuthenticated, adminVisible]);
+  }, [isAdmin, adminVisible]);
 
   // News 클릭 핸들러
   const handleNewsClick = () => {
@@ -1017,8 +1018,27 @@ export default function Home() {
                    ) : (
                      // 일반 갤러리 모드
                      <>
+                       {/* 갤러리 매니저 사용 (featured, events) */}
+                       {currentFilter === "featured" && (
+                         <GalleryManager
+                           type="featured"
+                           title="Featured Apps"
+                           description="추천 앱들을 확인해보세요"
+                           isAdmin={isAdmin}
+                         />
+                       )}
+                       
+                       {currentFilter === "events" && (
+                         <GalleryManager
+                           type="events"
+                           title="Events"
+                           description="이벤트 정보를 확인해보세요"
+                           isAdmin={isAdmin}
+                         />
+                       )}
+
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
-                       {currentFilter !== "latest" && (
+                       {currentFilter !== "latest" && currentFilter !== "featured" && currentFilter !== "events" && (
                          <>
                            {/* 기존 앱 갤러리 사용 */}
                            <AppGallery 
@@ -1027,22 +1047,6 @@ export default function Home() {
                              onEditApp={handleEditApp}
                              onDeleteApp={handleDeleteApp}
                            />
-                           
-                           {/* Events 모드일 때 설명문구와 메일폼 추가 */}
-                           {currentFilter === "events" && (
-                             <div className="mt-12 text-center max-w-4xl mx-auto">
-                               <div className="max-w-2xl mx-auto">
-                                 <div className="max-w-md mx-auto">
-                                   <MailForm
-                                     type="events"
-                                     buttonText="🎉 Events 📧 Touch Here 🎉"
-                                     buttonDescription="Choose one of the apps above as your free gift. The gift will be delivered to your email. By accepting, you agree to receive occasional news and offers from us via that email address."
-                                     onMouseEnter={handleFooterHover}
-                                   />
-                                 </div>
-                               </div>
-                             </div>
-                           )}
                          </>
                        )}
                      </>
@@ -1159,7 +1163,7 @@ export default function Home() {
             </span>
             
                          {/* 관리자 모드일 때만 표시되는 업로드 버튼 및 카테고리 필터 */}
-              {isAuthenticated && adminVisible && (
+                             {isAdmin && adminVisible && (
                <div className="mt-4 space-y-4">
                  {/* 카테고리별 필터 버튼 */}
                  <div className="flex justify-center gap-2 flex-wrap">

@@ -71,7 +71,7 @@ interface AdminUploadDialogProps {
   isOpen?: boolean;
   onClose?: () => void;
   onUploadSuccess?: () => void;
-  targetGallery?: 'a' | 'b' | 'c';
+  targetGallery?: 'gallery' | 'featured' | 'events';
 }
 
 export function AdminUploadDialog({ 
@@ -211,9 +211,12 @@ export function AdminUploadDialog({
         const formDataToSend = new FormData();
         formDataToSend.append('file', iconFile);
         formDataToSend.append('title', formData.name);
+        formDataToSend.append('content', formData.description || '');
         formDataToSend.append('author', formData.developer);
+        formDataToSend.append('tags', formData.tags || '');
+        formDataToSend.append('isPublished', 'true');
         
-        const response = await fetch(`/api/gallery/${targetGallery}/upload`, {
+        const response = await fetch(`/api/gallery?type=${targetGallery}`, {
           method: 'POST',
           body: formDataToSend,
         });
