@@ -113,16 +113,19 @@ export async function POST(request: NextRequest) {
       let blobSaved = false;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
+          console.log(`🔄 Events Blob 저장 시도 ${attempt}/3`);
           await put(EVENTS_FILENAME, JSON.stringify(mergedEvents, null, 2), {
             access: 'public',
             contentType: 'application/json; charset=utf-8',
             addRandomSuffix: false,
           });
+          console.log('✅ Events Blob 저장 성공');
           blobSaved = true;
           break;
         } catch (error) {
+          console.error(`❌ Events Blob 저장 실패 (시도 ${attempt}/3):`, error);
           if (attempt === 3) {
-            // 모든 시도 실패, 메모리 폴백 사용
+            console.error('❌ 모든 Events Blob 저장 시도 실패, 메모리 폴백 사용');
           }
         }
       }
