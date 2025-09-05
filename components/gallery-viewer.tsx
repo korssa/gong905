@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useGalleryStore, type GalleryType } from '@/store/useGalleryStore';
 import { GalleryGrid } from '@/components/gallery-grid';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ImageIcon, Grid, List, Upload, Plus } from 'lucide-react';
+import { ImageIcon, Grid, List, Plus } from 'lucide-react';
+import { AdminUploadDialog } from '@/components/admin-upload-dialog';
 
 interface GalleryItem {
   id: string;
@@ -23,10 +23,7 @@ export function GalleryViewer() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [uploading, setUploading] = useState(false);
-  const [showUploadForm, setShowUploadForm] = useState(false);
-  const [uploadTitle, setUploadTitle] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showAdminUpload, setShowAdminUpload] = useState(false);
 
   // 선택된 갤러리 데이터 로드
   const loadGalleryData = async (type: GalleryType) => {
@@ -55,46 +52,6 @@ export function GalleryViewer() {
     loadGalleryData(selected);
   }, [selected]);
 
-  // 파일 업로드 핸들러
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('title', uploadTitle || file.name.split('.')[0]);
-      formData.append('author', '공명');
-
-      const response = await fetch(`/api/gallery/${selected}/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        console.log('✅ 업로드 성공:', result.data);
-        // 갤러리 데이터 새로고침
-        await loadGalleryData(selected);
-        // 폼 초기화
-        setUploadTitle('');
-        setShowUploadForm(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      } else {
-        console.error('❌ 업로드 실패:', result.error);
-        alert(`업로드 실패: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('❌ 업로드 오류:', error);
-      alert('업로드 중 오류가 발생했습니다.');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const galleryTypes: { type: GalleryType; label: string; color: string }[] = [
     { type: 'a', label: '갤러리 A', color: 'bg-blue-500' },
@@ -125,11 +82,11 @@ export function GalleryViewer() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowUploadForm(!showUploadForm)}
+            onClick={() => setShowAdminUpload(true)}
             className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
           >
             <Plus className="w-4 h-4 mr-1" />
-            업로드
+            Featured 카드 업로드
           </Button>
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
@@ -148,54 +105,6 @@ export function GalleryViewer() {
         </div>
       </div>
 
-      {/* 업로드 폼 */}
-      {showUploadForm && (
-        <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-          <h3 className="text-lg font-semibold mb-3 text-green-800">
-            {galleryTypes.find(g => g.type === selected)?.label}에 이미지 업로드
-          </h3>
-          <div className="space-y-3">
-            <Input
-              type="text"
-              placeholder="이미지 제목 (선택사항)"
-              value={uploadTitle}
-              onChange={(e) => setUploadTitle(e.target.value)}
-              className="w-full"
-            />
-            <div className="flex items-center space-x-3">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                disabled={uploading}
-              />
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                {uploading ? '업로드 중...' : '파일 선택'}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowUploadForm(false);
-                  setUploadTitle('');
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                  }
-                }}
-                disabled={uploading}
-              >
-                취소
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 대표 썸네일 표시 */}
       {featuredThumbnails[selected] && (
@@ -246,6 +155,20 @@ export function GalleryViewer() {
             </div>
           )}
         </div>
+      )}
+
+      {/* 관리자 업로드 다이얼로그 */}
+      {showAdminUpload && (
+        <AdminUploadDialog
+          isOpen={showAdminUpload}
+          onClose={() => setShowAdminUpload(false)}
+          onUploadSuccess={() => {
+            console.log('✅ Featured 카드 업로드 완료');
+            // 갤러리 데이터 새로고침
+            loadGalleryData(selected);
+            setShowAdminUpload(false);
+          }}
+        />
       )}
     </div>
   );
