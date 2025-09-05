@@ -66,21 +66,55 @@ export default function Home() {
   const [featuredIds, setFeaturedIds] = useState<string[]>([]);
   const [eventIds, setEventIds] = useState<string[]>([]);
 
-  // 로컬 토글 함수들
-  const toggleFeatured = (appId: string) => {
-    setFeaturedIds(prev => 
-      prev.includes(appId) 
-        ? prev.filter(id => id !== appId)
-        : [...prev, appId]
-    );
+  // 로컬 토글 함수들 (즉시 저장 포함)
+  const toggleFeatured = async (appId: string) => {
+    const newFeaturedIds = featuredIds.includes(appId) 
+      ? featuredIds.filter(id => id !== appId)
+      : [...featuredIds, appId];
+    
+    // 로컬 상태 즉시 업데이트
+    setFeaturedIds(newFeaturedIds);
+    
+    // 즉시 저장
+    try {
+      const result = await saveFeaturedIds(newFeaturedIds);
+      if (result.success) {
+        console.log('✅ Featured 상태 즉시 저장 완료:', appId);
+      } else {
+        console.error('❌ Featured 상태 저장 실패:', result);
+        // 실패 시 원래 상태로 되돌리기
+        setFeaturedIds(featuredIds);
+      }
+    } catch (error) {
+      console.error('❌ Featured 상태 저장 오류:', error);
+      // 오류 시 원래 상태로 되돌리기
+      setFeaturedIds(featuredIds);
+    }
   };
 
-  const toggleEvent = (appId: string) => {
-    setEventIds(prev => 
-      prev.includes(appId) 
-        ? prev.filter(id => id !== appId)
-        : [...prev, appId]
-    );
+  const toggleEvent = async (appId: string) => {
+    const newEventIds = eventIds.includes(appId) 
+      ? eventIds.filter(id => id !== appId)
+      : [...eventIds, appId];
+    
+    // 로컬 상태 즉시 업데이트
+    setEventIds(newEventIds);
+    
+    // 즉시 저장
+    try {
+      const result = await saveEventIds(newEventIds);
+      if (result.success) {
+        console.log('✅ Event 상태 즉시 저장 완료:', appId);
+      } else {
+        console.error('❌ Event 상태 저장 실패:', result);
+        // 실패 시 원래 상태로 되돌리기
+        setEventIds(eventIds);
+      }
+    } catch (error) {
+      console.error('❌ Event 상태 저장 오류:', error);
+      // 오류 시 원래 상태로 되돌리기
+      setEventIds(eventIds);
+    }
   };
 
   // Request ID for preventing race conditions
