@@ -802,7 +802,7 @@ export default function Home() {
 
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white relative overflow-hidden" onMouseEnter={blockTranslationFeedback}>
       {/* 눈 내리는 애니메이션 */}
       <SnowAnimation />
       
@@ -813,9 +813,9 @@ export default function Home() {
         onSearchChange={setSearchQuery}
       />
       
-                           <main className="container mx-auto py-6 max-w-6xl" style={{ maxWidth: '1152px' }}>
-         <div className="mb-6 text-center">
-           <h1 className="relative inline-block text-4xl font-extrabold tracking-tight text-transparent bg-clip-text shine-text mb-0">
+                           <main className="container mx-auto py-6 max-w-6xl" style={{ maxWidth: '1152px' }} onMouseEnter={blockTranslationFeedback}>
+         <div className="mb-6 text-center" onMouseEnter={blockTranslationFeedback}>
+           <h1 className="relative inline-block text-4xl font-extrabold tracking-tight text-transparent bg-clip-text shine-text mb-0" onMouseEnter={blockTranslationFeedback}>
              <span className="notranslate" translate="no">GPT X GONGMYUNG.COM</span>
              <span className="shine-sparkle">
                <span className="shine-dots"></span>
@@ -830,7 +830,7 @@ export default function Home() {
            </h1>
            
            
-           <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3 mt-0">
+           <h2 className="text-2xl font-semibold text-amber-200 tracking-wide opacity-90 mb-3 mt-0" onMouseEnter={blockTranslationFeedback}>
              <span className="notranslate" translate="no">PRESENT</span>
            </h2>
            
@@ -851,9 +851,9 @@ export default function Home() {
             
             return (
             <div className="mb-12">
-                             <div className="text-center mb-8">
-                 <h3 className="text-3xl font-bold text-amber-400 mb-2 notranslate" translate="no">NEW RELEASE</h3>
-                 <p className="text-gray-400">Just launched - Check it out!</p>
+                             <div className="text-center mb-8" onMouseEnter={blockTranslationFeedback}>
+                 <h3 className="text-3xl font-bold text-amber-400 mb-2 notranslate" translate="no" onMouseEnter={blockTranslationFeedback}>NEW RELEASE</h3>
+                 <p className="text-gray-400" translate="yes" onMouseEnter={blockTranslationFeedback}>Just launched - Check it out!</p>
                </div>
               
                              <div className="flex justify-center px-4 max-w-4xl mx-auto">
@@ -883,16 +883,16 @@ export default function Home() {
                         </div>
 
                        {/* Store Badge */}
-                       <div className="absolute bottom-2 left-2">
-                         <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">
+                       <div className="absolute bottom-2 left-2" onMouseEnter={blockTranslationFeedback}>
+                         <span className="bg-green-500 text-white text-xs px-2 py-1 rounded" translate="yes" onMouseEnter={blockTranslationFeedback}>
                            {t(latestApp.status as keyof typeof t)}
                          </span>
                        </div>
                      </div>
 
-                     <div className="p-3" style={{ backgroundColor: '#D1E2EA' }}>
+                     <div className="p-3" style={{ backgroundColor: '#D1E2EA' }} onMouseEnter={blockTranslationFeedback}>
                        {/* App Icon and Basic Info */}
-                       <div className="flex items-start space-x-3 mb-2">
+                       <div className="flex items-start space-x-3 mb-2" onMouseEnter={blockTranslationFeedback}>
                                                    <Image
                             src={latestApp.iconUrl}
                             alt={latestApp.name}
@@ -905,9 +905,9 @@ export default function Home() {
                               target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjZjNmNGY2Ii8+CjxwYXRoIGQ9Ik0xMiA2QzEwLjM0IDYgOSA3LjM0IDkgOUM5IDEwLjY2IDEwLjM0IDEyIDEyIDEyQzEzLjY2IDEyIDE1IDEwLjY2IDE1IDlDMTUgNy4zNCAxMy42NiA2IDEyIDZaTTEyIDRDMTQuNzYgNCAxNyA2LjI0IDE3IDlDMTcgMTEuNzYgMTQuNzYgMTQgMTIgMTRDOS4yNCAxNCA3IDExLjc2IDcgOUM3IDYuMjQgOS4yNCA0IDEyIDRaTTEyIDE2QzEwLjM0IDE2IDkgMTcuMzQgOSAxOUg3QzcgMTYuMjQgOS4yNCAxNCAxMiAxNEMxNC43NiAxNCAxNyAxNi4yNCAxNyAxOUgxNUMxNSAxNy4zNCAxMy42NiAxNiAxMiAxNloiIGZpbGw9IiM5Y2EzYWYiLz4KPC9zdmc+";
                             }}
                           />
-                         <div className="flex-1 min-w-0">
-                           <h3 className="font-medium text-sm mb-1 truncate notranslate" translate="no">{latestApp.name}</h3>
-                           <p className="text-xs text-muted-foreground truncate notranslate" translate="no">{latestApp.developer}</p>
+                         <div className="flex-1 min-w-0" onMouseEnter={blockTranslationFeedback}>
+                           <h3 className="font-medium text-sm mb-1 truncate notranslate" translate="no" onMouseEnter={blockTranslationFeedback}>{latestApp.name}</h3>
+                           <p className="text-xs text-muted-foreground truncate notranslate" translate="no" onMouseEnter={blockTranslationFeedback}>{latestApp.developer}</p>
                          </div>
                        </div>
 
@@ -940,8 +940,8 @@ export default function Home() {
                        )}
 
                        {/* Download Section */}
-                       <div className="mt-0 border-t border-gray-300" style={{ backgroundColor: '#84CC9A' }}>
-                         <div className="flex items-center justify-between p-3 w-full">
+                       <div className="mt-0 border-t border-gray-300" style={{ backgroundColor: '#84CC9A' }} onMouseEnter={blockTranslationFeedback}>
+                         <div className="flex items-center justify-between p-3 w-full" onMouseEnter={blockTranslationFeedback}>
                            <button
                              className="h-7 px-3 text-xs bg-green-700 hover:bg-green-800 text-white flex items-center gap-1 rounded"
                              onClick={() => {
@@ -950,6 +950,7 @@ export default function Home() {
                                }
                              }}
                              disabled={!latestApp.storeUrl}
+                             onMouseEnter={blockTranslationFeedback}
                            >
                              <span>⬇️</span>
                              <span className="notranslate" translate="no">Download</span>
@@ -1013,9 +1014,9 @@ export default function Home() {
                        {/* Featured Apps 섹션 */}
                        {currentFilter === "featured" && (
                          <div className="space-y-6">
-                           <div className="text-center">
-                             <h2 className="text-3xl font-bold text-amber-400 mb-2">Featured Apps</h2>
-                             <p className="text-gray-400">Discover our curated selection of recommended apps</p>
+                           <div className="text-center" onMouseEnter={blockTranslationFeedback}>
+                             <h2 className="text-3xl font-bold text-amber-400 mb-2" translate="yes" onMouseEnter={blockTranslationFeedback}>Featured Apps</h2>
+                             <p className="text-gray-400" translate="yes" onMouseEnter={blockTranslationFeedback}>Discover our curated selection of recommended apps</p>
                            </div>
                            <AppGallery 
                              apps={filteredApps} 
