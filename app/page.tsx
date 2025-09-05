@@ -662,19 +662,19 @@ export default function Home() {
     return () => {
       isMounted = false;
     };
-  }, [setAllApps]); // setAllApps 의존성 추가
+  }, []); // 의존성 배열 비우기 (setAllApps는 안정적인 함수)
 
-  // 로컬 상태 변화 로깅 (개발 모드에서만)
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('🔄 로컬 상태 변화:', {
-        totalApps: allApps.length,
-        featuredApps: featuredIds.length,
-        eventApps: eventIds.length,
-        normalApps: allApps.length - featuredIds.length - eventIds.length
-      });
-    }
-  }, [allApps, featuredIds, eventIds]);
+  // 로컬 상태 변화 로깅 (개발 모드에서만) - 무한 루프 방지를 위해 제거
+  // useEffect(() => {
+  //   if (process.env.NODE_ENV !== 'production') {
+  //     console.log('🔄 로컬 상태 변화:', {
+  //       totalApps: allApps.length,
+  //       featuredApps: featuredIds.length,
+  //       eventApps: eventIds.length,
+  //       normalApps: allApps.length - featuredIds.length - eventIds.length
+  //     });
+  //   }
+  // }, [allApps, featuredIds, eventIds]);
 
   // Featured/Events 매핑 검증 (개발 모드에서만)
   useEffect(() => {
