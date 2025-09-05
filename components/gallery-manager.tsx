@@ -241,52 +241,106 @@ export function GalleryManager({
         )}
       </div>
 
-      {/* 카드 리스트 */}
-      <div className="grid gap-4">
+      {/* 갤러리 카드 그리드 - 기본 갤러리 카드와 동일한 모양 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {items.length === 0 ? (
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-8 text-center text-gray-400">
-              아직 업로드된 갤러리 아이템이 없습니다.
-            </CardContent>
-          </Card>
+          <div className="col-span-full">
+            <Card className="bg-gray-800 border-gray-700">
+              <CardContent className="p-8 text-center text-gray-400">
+                아직 업로드된 갤러리 아이템이 없습니다.
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           items.map((item) => (
             <Card
               key={item.id}
-              className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
-              onClick={() => setSelectedItem(item)}
+              className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              style={{ backgroundColor: '#D1E2EA' }}
               onMouseEnter={blockTranslationFeedback}
             >
-              <CardHeader>
-                <CardTitle className="text-white" translate="no">{item.title}</CardTitle>
-                <CardDescription className="text-gray-400 flex items-center gap-4 mt-2">
-                  <span className="flex items-center gap-1"><User className="h-3 w-3" /><span translate="no">{item.author}</span></span>
-                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(item.publishDate).toLocaleDateString()}</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {item.imageUrl && (
-                  <div className="mb-4 flex justify-center">
+              <div className="relative">
+                {/* Screenshot/App Preview */}
+                <div className="aspect-square overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 relative">
+                  {item.imageUrl ? (
                     <img
                       src={item.imageUrl}
                       alt={item.title}
-                      className="w-1/4 rounded-lg object-contain"
+                      className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
                     />
+                  ) : (
+                    <div className="absolute inset-0 w-full h-full flex items-center justify-center text-6xl">
+                      📱
+                    </div>
+                  )}
+                </div>
+
+                {/* Status Badge */}
+                <div className="absolute bottom-2 left-2">
+                  <Badge className="bg-green-500 text-white text-xs">
+                    {item.type}
+                  </Badge>
+                </div>
+              </div>
+
+              <CardContent className="px-2 py-0" style={{ backgroundColor: '#D1E2EA' }}>
+                {/* App Icon and Basic Info */}
+                <div className="flex items-start space-x-3 mb-2">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-2xl">📱</span>
                   </div>
-                )}
-                <pre className="text-gray-300 whitespace-pre-wrap font-mono">
-                  {item.content}
-                </pre>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base mb-1 truncate notranslate" translate="no">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground truncate notranslate" translate="no">{item.author}</p>
+                  </div>
+                </div>
+
+                {/* Rating and Stats */}
+                <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span>{new Date(item.publishDate).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <span className="text-xs">Gallery</span>
+                </div>
+
+                {/* Tags */}
                 {item.tags && item.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {item.tags.map((tag, idx) => (
-                      <span key={idx} className="text-xs px-2 py-0 rounded" style={{ backgroundColor: '#fff', color: '#000' }}>
+                  <div className="flex flex-wrap gap-1 mb-0">
+                    {item.tags.slice(0, 2).map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs px-2 py-0">
                         {tag}
-                      </span>
+                      </Badge>
                     ))}
+                    {item.tags.length > 2 && (
+                      <span className="text-xs text-muted-foreground">
+                        +{item.tags.length - 2}
+                      </span>
+                    )}
                   </div>
                 )}
               </CardContent>
+
+              {/* Download Section */}
+              <div className="w-full bg-[#84CC9A] border-t border-gray-300 px-4 py-2">
+                <div className="flex flex-col items-start space-y-1">
+                  <div className="w-full">
+                    <Button
+                      size="sm"
+                      className="h-6 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 whitespace-nowrap min-w-[120px] justify-start"
+                      onClick={() => setSelectedItem(item)}
+                    >
+                      <User className="h-3 w-3" />
+                      View Details
+                    </Button>
+                  </div>
+                  <div className="h-6 flex items-center">
+                    <span className="text-xs text-gray-600">Gallery Item</span>
+                  </div>
+                </div>
+              </div>
             </Card>
           ))
         )}
