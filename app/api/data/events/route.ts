@@ -1,157 +1,136 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { put, list } from '@vercel/blob';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { put, list } from '@vercel/blob';
 
-// Events ???�보�??�?�하???�용 ?�일
+// 캐시 설정
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
+// 상수
 const EVENTS_FILENAME = 'events.json';
 const LOCAL_EVENTS_PATH = path.join(process.cwd(), 'data', 'events.json');
 
-// Vercel ?�경?�서???�시 메모�??�?�소 (Blob ?�패 ???�백)
+// 메모리 폴백
 let memoryEvents: string[] = [];
 
-async function ensureLocalFile() {
-  const dir = path.dirname(LOCAL_EVENTS_PATH);
-  await fs.mkdir(dir, { recursive: true });
+// 로컬 파일 읽기
+async function readLocalFile(): Promise<string[] | null> {
   try {
-    await fs.access(LOCAL_EVENTS_PATH);
+    const data = await fs.readFile(LOCAL_EVENTS_PATH, 'utf-8');
+    return JSON.parse(data);
   } catch {
-    await fs.writeFile(LOCAL_EVENTS_PATH, JSON.stringify([]));
+    return null;
   }
 }
 
-async function readFromLocal(): Promise<string[]> {
-  await ensureLocalFile();
-  const data = await fs.readFile(LOCAL_EVENTS_PATH, 'utf-8');
-  return JSON.parse(data || '[]');
-}
-
-async function writeToLocal(events: string[]) {
-  await ensureLocalFile();
-  await fs.writeFile(LOCAL_EVENTS_PATH, JSON.stringify(events, null, 2));
-}
-
-// GET: 로컬 ?�일 ?�선, Blob ?�백?�로 Events ???�보 반환
+// GET: Events 앱 목록 조회
 export async function GET() {
   try {
-    // 1) 먼�? 로컬 ?�일?�서 ?�기 (개발/배포 ?�경 모두)
+    // 1) 로컬 파일에서 읽기 (개발/배포 환경 모두)
     try {
-      const local = await readFromLocal();
+      const local = await readLocalFile();
       if (local && local.length > 0) {
         return NextResponse.json(local);
       }
     } catch (error) {
-      }
+      // 로컬 파일 읽기 실패 무시
+    }
 
-    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
-    if (isProd) {
-      // 2) Blob?�서 최신 JSON ?�일 ?�도
+    // 2) Vercel 환경에서는 Blob에서 읽기
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       try {
-        const { blobs } = await list({ prefix: EVENTS_FILENAME, limit: 100 });
+        const { blobs } = await list({ prefix: EVENTS_FILENAME, limit: 1 });
         if (blobs && blobs.length > 0) {
-          // 최신???�렬 (uploadedAt 기�?)
-          blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
-          const latestBlob = blobs[0];
-          
-          const res = await fetch(latestBlob.url, { cache: 'no-store' });
-          if (res.ok) {
-            const json = await res.json();
+          const latest = blobs[0];
+          const response = await fetch(latest.url, { cache: 'no-store' });
+          if (response.ok) {
+            const json = await response.json();
             const data = Array.isArray(json) ? json : [];
-            // 메모리�? ?�기??
-            memoryEvents = [...data];
             
+            memoryEvents = data;
             return NextResponse.json(data);
           }
         }
       } catch (error) {
-        }
-
-      // 3) 메모�??�백
-      if (memoryEvents.length > 0) {
-        return NextResponse.json(memoryEvents);
+        // Blob 조회 실패 무시
       }
     }
 
-    // 4) 모든 방법 ?�패 ??�?배열
+    // 3) 메모리에서 읽기
+    if (memoryEvents.length > 0) {
+      return NextResponse.json(memoryEvents);
+    }
+
+    // 4) 모든 방법 실패 시 빈 배열
     return NextResponse.json([]);
   } catch (error) {
     return NextResponse.json([], { status: 200 });
   }
 }
 
-// POST: Events ???�보�?받아 기존 ?�이?��? 병합 ???�??(?�버?�이??방�?)
+// POST: Events 앱 목록 저장
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as unknown;
-    const newEvents = Array.isArray(body) ? body : [];
+    const body = await request.json();
+    const newEvents = Array.isArray(body?.events) ? body.events : [];
 
-    const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
-    if (isProd) {
-      // 1. 기존 Events ?�이??로드 (?�버?�이??방�?)
-      let currentEvents: string[] = [];
+    if (!Array.isArray(newEvents)) {
+      return NextResponse.json(
+        { success: false, error: 'events 배열이 필요합니다.' },
+        { status: 400 }
+      );
+    }
+
+    // 기존 데이터 로드
+    let currentEvents: string[] = [];
+    try {
+      const { blobs } = await list({ prefix: EVENTS_FILENAME, limit: 1 });
+      if (blobs && blobs.length > 0) {
+        const latest = blobs[0];
+        const response = await fetch(latest.url, { cache: 'no-store' });
+        if (response.ok) {
+          currentEvents = await response.json();
+        }
+      }
+    } catch (error) {
+      // 기존 데이터 로드 실패, 메모리 사용
+      currentEvents = memoryEvents;
+    }
+
+    // 병합 (중복 제거)
+    const mergedEvents = Array.from(new Set([...currentEvents, ...newEvents]));
+    
+    // Blob에 저장 (재시도 로직)
+    let blobSaved = false;
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        const { blobs } = await list({ prefix: EVENTS_FILENAME, limit: 1 });
-        if (blobs && blobs.length > 0) {
-          const res = await fetch(blobs[0].url, { cache: 'no-store' });
-          if (res.ok) {
-            const json = await res.json();
-            currentEvents = Array.isArray(json) ? json : [];
-          }
-        }
+        await put(EVENTS_FILENAME, JSON.stringify(mergedEvents, null, 2), {
+          access: 'public',
+          addRandomSuffix: false
+        });
+        blobSaved = true;
+        break;
       } catch (error) {
-        currentEvents = memoryEvents;
-      }
-      
-      // 2. 기존 ?�이?��? ???�이??병합 (중복 ?�거)
-      const mergedEvents = Array.from(new Set([...currentEvents, ...newEvents]));
-      // 3. 병합???�이???�??
-      let blobSaved = false;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          await put(EVENTS_FILENAME, JSON.stringify(mergedEvents, null, 2), {
-            access: 'public',
-            contentType: 'application/json; charset=utf-8',
-            addRandomSuffix: false,
-          });
-          `);
-          blobSaved = true;
-          break;
-        } catch (error) {
-          :`, error);
-          if (attempt === 3) {
-            }
+        if (attempt === 3) {
+          // 모든 시도 실패, 메모리 폴백 사용
         }
-      }
-      
-      // 메모리도 ??�� ?�데?�트
-      memoryEvents = [...mergedEvents];
-      
-      if (blobSaved) {
-        return NextResponse.json({ 
-          success: true, 
-          storage: 'blob',
-          data: mergedEvents // 병합??최종 ?�이??반환
-        });
-      } else {
-        return NextResponse.json({ 
-          success: true, 
-          storage: 'memory',
-          data: mergedEvents, // 병합??최종 ?�이??반환
-          warning: 'Blob save failed after 3 attempts; using in-memory fallback' 
-        });
       }
     }
 
-    // 로컬 ?�일 ?�??(병합 로직)
-    const currentLocal = await readFromLocal();
-    const mergedLocal = Array.from(new Set([...currentLocal, ...newEvents]));
-    await writeToLocal(mergedLocal);
-    return NextResponse.json({ 
-      success: true, 
-      storage: 'local',
-      data: mergedLocal // 병합??최종 ?�이??반환
+    // 메모리 업데이트
+    memoryEvents = mergedEvents;
+
+    return NextResponse.json({
+      success: true,
+      count: mergedEvents.length,
+      storage: blobSaved ? 'blob' : 'memory'
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Failed to save events apps' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Events 저장에 실패했습니다.' 
+    }, { status: 500 });
   }
 }
