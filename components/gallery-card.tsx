@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Download, Share2, MoreHorizontal } from "lucide-react";
+import { Heart, Download, Share2, MoreHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 export interface GalleryItem {
@@ -19,15 +19,23 @@ export interface GalleryItem {
 interface GalleryCardProps {
   item: GalleryItem;
   viewMode: "grid" | "list";
+  onDelete?: (id: string) => void;
+  isAdmin?: boolean;
 }
 
-export function GalleryCard({ item, viewMode }: GalleryCardProps) {
+export function GalleryCard({ item, viewMode, onDelete, isAdmin = false }: GalleryCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(item.likes);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
     setLikes(prev => isLiked ? prev - 1 : prev + 1);
+  };
+
+  const handleDelete = () => {
+    if (onDelete && confirm(`"${item.title}"을(를) 삭제하시겠습니까?`)) {
+      onDelete(item.id);
+    }
   };
 
   if (viewMode === "list") {
@@ -80,6 +88,16 @@ export function GalleryCard({ item, viewMode }: GalleryCardProps) {
               <Button variant="ghost" size="sm">
                 <Share2 className="h-4 w-4" />
               </Button>
+              {isAdmin && onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDelete}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
               <Button variant="ghost" size="sm">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -114,6 +132,16 @@ export function GalleryCard({ item, viewMode }: GalleryCardProps) {
             <Button variant="secondary" size="sm" className="backdrop-blur-sm">
               <Download className="h-4 w-4" />
             </Button>
+            {isAdmin && onDelete && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleDelete}
+                className="backdrop-blur-sm text-red-500 hover:text-red-700"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 

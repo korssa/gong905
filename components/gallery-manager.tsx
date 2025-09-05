@@ -58,9 +58,10 @@ interface GalleryManagerProps {
   readonly onRefresh?: () => void;
   readonly isAdmin?: boolean;
   readonly apps?: AppItem[];
+  readonly onDeleteApp?: (id: string) => void;
 }
 
-export function GalleryManager({ viewMode, filter, onRefresh, isAdmin = false, apps = [] }: GalleryManagerProps) {
+export function GalleryManager({ viewMode, filter, onRefresh, isAdmin = false, apps = [], onDeleteApp }: GalleryManagerProps) {
   const {
     isLoading,
     lastLoaded,
@@ -257,7 +258,12 @@ export function GalleryManager({ viewMode, filter, onRefresh, isAdmin = false, a
       )}
 
       {/* 갤러리 그리드 */}
-      <GalleryGrid items={currentItems} viewMode={viewMode} />
+      <GalleryGrid 
+        items={currentItems} 
+        viewMode={viewMode} 
+        onDelete={onDeleteApp}
+        isAdmin={isAdmin}
+      />
       
       {/* 빈 상태 메시지 */}
       {currentItems.length === 0 && !isLoading && (

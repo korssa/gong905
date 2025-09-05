@@ -1127,6 +1127,7 @@ export default function Home() {
                              }}
                              isAdmin={isAuthenticated && adminVisible}
                              apps={allApps}
+                             onDeleteApp={handleDeleteApp}
                            />
                            
                            {/* Events 모드일 때 설명문구와 메일폼 추가 */}
