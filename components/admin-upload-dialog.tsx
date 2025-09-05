@@ -209,9 +209,9 @@ export function AdminUploadDialog({
       try {
         // 갤러리별 업로드 API 호출
         const formDataToSend = new FormData();
-        formDataToSend.append('image', iconFile);
+        formDataToSend.append('file', iconFile);
         formDataToSend.append('title', formData.name);
-        formDataToSend.append('description', formData.description);
+        formDataToSend.append('author', formData.developer);
         
         const response = await fetch(`/api/gallery/${targetGallery}/upload`, {
           method: 'POST',

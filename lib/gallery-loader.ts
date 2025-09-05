@@ -95,7 +95,7 @@ export async function initializeBlobFolders(): Promise<{ success: boolean; resul
   try {
     console.log('📁 Vercel Blob 폴더 구조 초기화 시작...');
     
-    const response = await fetch('/api/blob/setup-folders', {
+    const response = await fetch('/api/gallery/setup', {
       method: 'POST',
     });
     
