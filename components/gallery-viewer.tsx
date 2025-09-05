@@ -19,7 +19,7 @@ interface GalleryItem {
 }
 
 export function GalleryViewer() {
-  const { selected, setSelected, featuredThumbnails } = useGalleryStore();
+  const { selected, setSelected } = useGalleryStore();
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -54,9 +54,9 @@ export function GalleryViewer() {
 
 
   const galleryTypes: { type: GalleryType; label: string; color: string }[] = [
-    { type: 'a', label: '갤러리 A', color: 'bg-blue-500' },
-    { type: 'b', label: '갤러리 B', color: 'bg-green-500' },
-    { type: 'c', label: '갤러리 C', color: 'bg-purple-500' },
+    { type: 'a', label: 'All Apps (기본 갤러리)', color: 'bg-blue-500' },
+    { type: 'b', label: 'Featured Apps', color: 'bg-green-500' },
+    { type: 'c', label: 'Events', color: 'bg-purple-500' },
   ];
 
   return (
@@ -80,13 +80,13 @@ export function GalleryViewer() {
         {/* 뷰 모드 토글 및 업로드 버튼 */}
         <div className="flex items-center space-x-2">
           <Button
-            variant="outline"
-            size="sm"
             onClick={() => setShowAdminUpload(true)}
-            className="bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+            className="bg-green-600 hover:bg-green-700 text-white mr-2"
           >
-            <Plus className="w-4 h-4 mr-1" />
-            Featured 카드 업로드
+            <Plus className="w-4 h-4 mr-2" />
+            {selected === 'a' && '기본 갤러리 카드 업로드'}
+            {selected === 'b' && 'Featured 카드 업로드'}
+            {selected === 'c' && 'Events 카드 업로드'}
           </Button>
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
@@ -106,17 +106,6 @@ export function GalleryViewer() {
       </div>
 
 
-      {/* 대표 썸네일 표시 */}
-      {featuredThumbnails[selected] && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">대표 이미지</h3>
-          <img 
-            src={featuredThumbnails[selected]} 
-            alt="대표 이미지"
-            className="w-32 h-32 object-cover rounded-lg"
-          />
-        </div>
-      )}
 
       {/* 로딩 상태 */}
       {loading && (
@@ -163,11 +152,12 @@ export function GalleryViewer() {
           isOpen={showAdminUpload}
           onClose={() => setShowAdminUpload(false)}
           onUploadSuccess={() => {
-            console.log('✅ Featured 카드 업로드 완료');
+            console.log(`✅ ${selected === 'a' ? '기본 갤러리' : selected === 'b' ? 'Featured' : 'Events'} 카드 업로드 완료`);
             // 갤러리 데이터 새로고침
             loadGalleryData(selected);
             setShowAdminUpload(false);
           }}
+          targetGallery={selected}
         />
       )}
     </div>

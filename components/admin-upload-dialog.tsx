@@ -61,16 +61,31 @@ const adminTexts = {
 };
 
 interface AdminUploadDialogProps {
-  onUpload: (data: AppFormData, files: { icon: File; screenshots: File[] }) => void;
+  onUpload?: (data: AppFormData, files: { icon: File; screenshots: File[] }) => void;
   buttonProps?: {
     size?: "sm" | "lg" | "default";
     className?: string;
   };
   buttonText?: string;
+  // 갤러리에서 사용하는 props
+  isOpen?: boolean;
+  onClose?: () => void;
+  onUploadSuccess?: () => void;
+  targetGallery?: 'a' | 'b' | 'c';
 }
 
-export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload" }: AdminUploadDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function AdminUploadDialog({ 
+  onUpload, 
+  buttonProps, 
+  buttonText = "Upload",
+  isOpen: externalIsOpen,
+  onClose,
+  onUploadSuccess,
+  targetGallery
+}: AdminUploadDialogProps) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = externalIsOpen !== undefined ? (onClose || (() => {})) : setInternalIsOpen;
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [password, setPassword] = useState("");
   const [iconFile, setIconFile] = useState<File | null>(null);
@@ -183,16 +198,44 @@ export function AdminUploadDialog({ onUpload, buttonProps, buttonText = "Upload"
     setScreenshotFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!iconFile) {
       alert("Please select an app icon");
       return;
     }
 
-    onUpload(formData, {
-      icon: iconFile,
-      screenshots: screenshotFiles,
-    });
+    // 갤러리 업로드인 경우
+    if (targetGallery && onUploadSuccess) {
+      try {
+        // 갤러리별 업로드 API 호출
+        const formDataToSend = new FormData();
+        formDataToSend.append('image', iconFile);
+        formDataToSend.append('title', formData.name);
+        formDataToSend.append('description', formData.description);
+        
+        const response = await fetch(`/api/gallery/${targetGallery}/upload`, {
+          method: 'POST',
+          body: formDataToSend,
+        });
+
+        if (response.ok) {
+          console.log(`✅ 갤러리 ${targetGallery}에 업로드 성공`);
+          onUploadSuccess();
+        } else {
+          console.error('❌ 갤러리 업로드 실패');
+          alert('업로드에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('❌ 갤러리 업로드 오류:', error);
+        alert('업로드 중 오류가 발생했습니다.');
+      }
+    } else if (onUpload) {
+      // 기존 업로드 방식
+      onUpload(formData, {
+        icon: iconFile,
+        screenshots: screenshotFiles,
+      });
+    }
 
     // Reset form
     setIsOpen(false);

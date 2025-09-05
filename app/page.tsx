@@ -28,6 +28,7 @@ import { loadAppsFromBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, save
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { useAppStore } from "@/store/useAppStore";
 import { useFooterStore } from "@/store/useFooterStore";
+import { useGalleryStore } from "@/store/useGalleryStore";
 import { GalleryViewer } from "@/components/gallery-viewer";
 import { initializeBlobFolders } from "@/lib/gallery-loader";
 import { saveGalleryToBlob } from "@/lib/gallery-converter";
@@ -77,6 +78,9 @@ export default function Home() {
 
   // 풋터 스토어 사용
   const { recordButtonClick } = useFooterStore();
+  
+  // 갤러리 스토어 사용
+  const { setSelected: setGallerySelected } = useGalleryStore();
 
   // Request ID for preventing race conditions
   const reqIdRef = useRef(0);
@@ -145,6 +149,7 @@ export default function Home() {
      recordButtonClick("All Apps", "See everything");
      setCurrentFilter("all");
      setCurrentContentType(null); // 메모장 모드 종료
+     setGallerySelected('a'); // 갤러리 A (기본 갤러리) 선택
      // 페이지 상단으로 스크롤
      window.scrollTo({ top: 0, behavior: 'smooth' });
    };
@@ -163,6 +168,7 @@ export default function Home() {
     recordButtonClick("Featured Apps", "Recommended picks");
     // ❌ 자동 생성 로직 제거: featured가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("featured");
+    setGallerySelected('b'); // 갤러리 B (Featured) 선택
     setCurrentContentType(null);
     document.querySelector('main')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -172,6 +178,7 @@ export default function Home() {
     recordButtonClick("Events", "Discounts via email");
     // ❌ 자동 생성 로직 제거: events가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("events");
+    setGallerySelected('c'); // 갤러리 C (Events) 선택
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
