@@ -27,7 +27,6 @@ import { uploadFile, deleteFile } from "@/lib/storage-adapter";
 import { loadAppsFromBlob, loadAppsByTypeFromBlob, saveAppsByTypeToBlob, loadFeaturedIds, loadEventIds, saveFeaturedIds, saveEventIds } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { AppGallery } from "@/components/app-gallery";
-import { GalleryManager } from "@/components/gallery-manager";
 import Image from "next/image";
 
 const isBlobUrl = (url?: string) => {
@@ -104,23 +103,21 @@ export default function Home() {
 
     // Type filter using global store
     switch (currentFilter) {
-      case "latest":
+      case "latest": {
         const latestApps = filtered
           .filter(app => app.status === "published")
           .sort((a, b) => 
             new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
           );
         return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
-      case "featured": {
+      }
+      case "featured":
         return allApps.filter(app => featuredIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
-      }
-      case "events": {
+      case "events":
         return allApps.filter(app => eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
-      }
-      case "normal": {
+      case "normal":
         // 일반 카드만 표시 (featured/events에 포함되지 않은 앱들)
         return allApps.filter(app => !featuredIds.includes(app.id) && !eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
-      }
       case "all":
       default:
         return allApps.sort((a, b) => a.name.localeCompare(b.name));
@@ -252,10 +249,6 @@ export default function Home() {
 
 
 
-  // 푸터 호버 시 번역 피드백 차단 핸들러
-  const handleFooterHover = () => {
-    blockTranslationFeedback();
-  };
 
 
 
@@ -322,12 +315,10 @@ export default function Home() {
         
         // 3. 앱 저장 (기존 데이터 + 새 앱, featured/events 상태 반영)
         // 기존 일반 카드들의 상태도 유지하면서 새 앱의 상태 추가
-        const currentFeaturedIds = featuredIds;
-        const currentEventIds = eventIds;
         
         // 새 앱의 카테고리에 따라 상태 추가
-        const finalFeaturedIds = [...currentFeaturedIds];
-        const finalEventIds = [...currentEventIds];
+        const finalFeaturedIds = [...featuredIds];
+        const finalEventIds = [...eventIds];
         
         if (data.appCategory === 'featured' && !finalFeaturedIds.includes(newApp.id)) {
           finalFeaturedIds.push(newApp.id);
@@ -713,8 +704,6 @@ export default function Home() {
         );
         console.log('✏️ 앱 수정 후 총 앱 수:', sanitizedApps.length);
         
-        const currentFeaturedIds = featuredIds;
-        const currentEventIds = eventIds;
         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps, featuredIds, eventIds);
         
         // 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
@@ -856,7 +845,9 @@ export default function Home() {
                             {/* New Releases 특별 섹션 */}
          {currentFilter === "latest" && (() => {
            const latestApp = getLatestApp();
-           if (!latestApp) return null;
+           if (!latestApp) {
+             return null;
+           }
             
             return (
             <div className="mb-12">
@@ -935,8 +926,8 @@ export default function Home() {
                        {/* Tags */}
                        {latestApp.tags && latestApp.tags.length > 0 && (
                          <div className="flex flex-wrap gap-1 mb-2">
-                           {latestApp.tags.slice(0, 2).map((tag, index) => (
-                             <span key={index} className="text-xs px-2 py-0 bg-gray-200 text-gray-700 rounded">
+                           {latestApp.tags.slice(0, 2).map((tag) => (
+                             <span key={tag} className="text-xs px-2 py-0 bg-gray-200 text-gray-700 rounded">
                                {tag}
                              </span>
                            ))}
@@ -1019,23 +1010,40 @@ export default function Home() {
                    ) : (
                      // 일반 갤러리 모드
                      <>
-                       {/* 갤러리 매니저 사용 (featured, events) */}
+                       {/* Featured Apps 섹션 */}
                        {currentFilter === "featured" && (
-                         <GalleryManager
-                           type="featured"
-                           title="Featured Apps"
-                           description="Discover our curated selection of recommended apps"
-                           isAdmin={isAdmin}
-                         />
+                         <div className="space-y-6">
+                           <div className="text-center">
+                             <h2 className="text-3xl font-bold text-amber-400 mb-2">Featured Apps</h2>
+                             <p className="text-gray-400">Discover our curated selection of recommended apps</p>
+                           </div>
+                           <AppGallery 
+                             apps={filteredApps} 
+                             viewMode="grid"
+                             onEditApp={handleEditApp}
+                             onDeleteApp={handleDeleteApp}
+                             onToggleFeatured={toggleFeatured}
+                             onToggleEvent={toggleEvent}
+                           />
+                         </div>
                        )}
                        
+                       {/* Events 섹션 */}
                        {currentFilter === "events" && (
-                         <GalleryManager
-                           type="events"
-                           title="Events"
-                           description="Stay updated with the latest app events and special offers"
-                           isAdmin={isAdmin}
-                         />
+                         <div className="space-y-6">
+                           <div className="text-center">
+                             <h2 className="text-3xl font-bold text-amber-400 mb-2">Events</h2>
+                             <p className="text-gray-400">Stay updated with the latest app events and special offers</p>
+                           </div>
+                           <AppGallery 
+                             apps={filteredApps} 
+                             viewMode="grid"
+                             onEditApp={handleEditApp}
+                             onDeleteApp={handleDeleteApp}
+                             onToggleFeatured={toggleFeatured}
+                             onToggleEvent={toggleEvent}
+                           />
+                         </div>
                        )}
 
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
@@ -1155,10 +1163,10 @@ export default function Home() {
               <button
                 onClick={(e) => handleFooterLinkClick(handleAppStoryClick, e)}
                 onMouseEnter={blockTranslationFeedback}
-                className="text-sm text-blue-400 hover:text-blue-300 underline transition-colors duration-200"
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-1"
                 translate="yes"
               >
-                See That Group
+                👉 See That Group
               </button>
             </div>
            
