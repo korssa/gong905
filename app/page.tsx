@@ -28,6 +28,7 @@ import { loadAppsFromBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, save
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { useAppStore } from "@/store/useAppStore";
 import { useFooterStore } from "@/store/useFooterStore";
+import { AppGallery } from "@/components/app-gallery";
 import Image from "next/image";
 
 const isBlobUrl = (url?: string) => {
@@ -250,55 +251,6 @@ export default function Home() {
   };
 
 
-  // Featured 앱 토글 핸들러 (전역 스토어 사용)
-  const handleToggleFeatured = async (appId: string) => {
-    console.log(`[Client] Featured 토글 시도: ${appId}`);
-    try {
-      // 전역 스토어에서 즉시 토글
-      toggleFeatured(appId);
-      
-      // 서버 동기화 (비동기)
-      const app = allApps.find(a => a.id === appId);
-      if (app) {
-        const action = app.isFeatured ? 'remove' : 'add';
-        try {
-          const res = await toggleFeaturedAppStatus(appId, 'featured', action);
-          if (res) {
-            console.log('🔄 서버 동기화 완료:', res);
-          }
-        } catch (error) {
-          console.error('❌ 서버 동기화 실패:', error);
-        }
-      }
-    } catch (e) {
-      console.error('❌ Featured 토글 오류:', e);
-    }
-  };
-
-  // Event 앱 토글 핸들러 (전역 스토어 사용)
-  const handleToggleEvent = async (appId: string) => {
-    console.log(`[Client] Events 토글 시도: ${appId}`);
-    try {
-      // 전역 스토어에서 즉시 토글
-      toggleEvent(appId);
-      
-      // 서버 동기화 (비동기)
-      const app = allApps.find(a => a.id === appId);
-      if (app) {
-        const action = app.isEvent ? 'remove' : 'add';
-        try {
-          const res = await toggleFeaturedAppStatus(appId, 'events', action);
-          if (res) {
-            console.log('🔄 서버 동기화 완료:', res);
-          }
-        } catch (error) {
-          console.error('❌ 서버 동기화 실패:', error);
-        }
-      }
-    } catch (e) {
-      console.error('❌ Events 토글 오류:', e);
-    }
-  };
 
   // 푸터 호버 시 번역 피드백 차단 핸들러
   const handleFooterHover = () => {
@@ -520,6 +472,7 @@ export default function Home() {
        setTimeout(async () => {
          try {
            const updatedBlobApps = await loadAppsFromBlob();
+           console.log('🔄 Blob 동기화 후 앱 수:', updatedBlobApps?.length || 0);
               
               // Blob 동기화 상태 확인 (동기화 완료 또는 지연)
             } catch (error) {
@@ -534,11 +487,12 @@ export default function Home() {
         try {
           const parsedApps = JSON.parse(savedAppsStr);
           setApps(parsedApps);
-        } catch (parseError) {
+        } catch {
           // localStorage 파싱 실패 무시
         }
       }
 
+             console.error('❌ 앱 삭제 실패:', error);
              alert('An error occurred while deleting the app. Please try again.');
     }
   };
@@ -685,23 +639,6 @@ export default function Home() {
     }
   }, [currentFilter, filteredApps]);
 
-  // 기존 앱 데이터에서 불린 플래그 제거 (1회성 정리)
-  const cleanAppData = async () => {
-    try {
-      const apps = await loadAppsByTypeFromBlob('gallery');
-      const cleaned = apps.map(({ isFeatured, isEvent, ...rest }) => rest);
-      await saveAppsByTypeToBlob('gallery', cleaned);
-      console.log('✅ 앱 데이터에서 불린 플래그 제거 완료');
-      
-      // 정리 후 데이터 다시 로드
-      const refreshedApps = await loadAppsByTypeFromBlob('gallery');
-      if (refreshedApps.length > 0) {
-        setApps(refreshedApps);
-      }
-    } catch (error) {
-      console.error('❌ 앱 데이터 정리 실패:', error);
-    }
-  };
 
   // 강제 데이터 새로고침 함수
   const forceRefreshGallery = async () => {
