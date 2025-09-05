@@ -840,7 +840,7 @@ export default function Home() {
         // ignore
       }
     };
-  }, [isAdmin, adminVisible]);
+  }, [isAdmin]); // adminVisible 제거 (무한 루프 방지)
 
   // News 클릭 핸들러
   const handleNewsClick = () => {
