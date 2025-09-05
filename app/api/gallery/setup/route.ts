@@ -4,6 +4,15 @@ import { put } from '@vercel/blob';
 export async function POST(request: NextRequest) {
   try {
     console.log('📁 3개 갤러리 폴더 초기화 시작...');
+    
+    // Vercel Blob 토큰 확인
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('❌ BLOB_READ_WRITE_TOKEN이 설정되지 않았습니다.');
+      return NextResponse.json(
+        { success: false, error: 'Vercel Blob 토큰이 설정되지 않았습니다.' },
+        { status: 500 }
+      );
+    }
 
     const galleryTypes = ['a', 'b', 'c'];
     const results = [];

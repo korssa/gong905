@@ -8,6 +8,15 @@ export async function POST(
   try {
     const { type } = await params;
     
+    // Vercel Blob 토큰 확인
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('❌ BLOB_READ_WRITE_TOKEN이 설정되지 않았습니다.');
+      return NextResponse.json(
+        { success: false, error: 'Vercel Blob 토큰이 설정되지 않았습니다.' },
+        { status: 500 }
+      );
+    }
+    
     // 유효한 갤러리 타입인지 확인
     if (!['a', 'b', 'c'].includes(type)) {
       return NextResponse.json(
@@ -106,10 +115,16 @@ export async function POST(
 
   } catch (error) {
     console.error('❌ 갤러리 업로드 실패:', error);
+    console.error('❌ 에러 상세:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
     return NextResponse.json(
       { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.stack : undefined
       },
       { status: 500 }
     );
