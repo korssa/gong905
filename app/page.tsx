@@ -213,21 +213,42 @@ export default function Home() {
   // 데이터 리로드 핸들러 (Featured/Events 상태 변경 후 서버에서 최신 데이터 가져오기)
   const handleRefreshData = async () => {
     try {
-      const [f, e] = await Promise.all([
-        loadFeaturedIds(),
-        loadEventIds()
-      ]);
+      console.log('🔄 데이터 리로드 시작...');
       
-      // 전역 스토어의 앱들에 플래그 적용
-      const updatedApps = allApps.map(app => ({
-        ...app,
-        isFeatured: f.includes(app.id),
-        isEvent: e.includes(app.id)
-      }));
+      // 1. 서버에서 최신 앱 데이터 로드
+      const typeApps = await loadAppsByTypeFromBlob('gallery');
+      console.log('📱 서버에서 앱 데이터 로드:', typeApps.length, '개');
       
-      setApps(updatedApps);
+      if (typeApps.length > 0) {
+        // 2. 이미지 검증
+        const validatedApps = await validateAppsImages(typeApps);
+        console.log('✅ 이미지 검증 완료:', validatedApps.length, '개');
+        
+        // 3. Featured/Events 플래그 로드
+        const [featuredIds, eventIds] = await Promise.all([
+          loadFeaturedIds(),
+          loadEventIds()
+        ]);
+        console.log('🏷️ 플래그 로드 완료:', { featured: featuredIds.length, events: eventIds.length });
+        
+        // 4. 앱들에 플래그 적용
+        const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
+        const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
+        
+        console.log('🎯 최종 앱 데이터 업데이트:', appsWithType.length, '개', {
+          featured: appsWithType.filter(a => a.isFeatured).length,
+          events: appsWithType.filter(a => a.isEvent).length
+        });
+        
+        // 5. 전역 스토어 업데이트
+        setApps(appsWithType);
+        
+        console.log('✅ 데이터 리로드 완료');
+      } else {
+        console.log('⚠️ 서버에 앱 데이터가 없습니다');
+      }
     } catch (error) {
-      console.error('❌ Featured/Events 데이터 리로드 오류:', error);
+      console.error('❌ 데이터 리로드 오류:', error);
     }
   };
 
@@ -548,34 +569,17 @@ export default function Home() {
     initializeBlob();
   }, []);
 
-  // 앱 데이터를 갤러리 데이터로 동기화
+  // 앱 데이터를 갤러리 데이터로 동기화 (비활성화 - 데이터 손실 방지)
   const syncAppsToGallery = async () => {
     try {
-      console.log('🔄 앱 데이터를 갤러리로 동기화 시작...');
+      console.log('🔄 갤러리 동기화 대신 데이터 리로드 수행...');
       
-      // 전체 앱 데이터를 갤러리로 저장
-      if (allApps.length > 0) {
-        await saveGalleryToBlob(allApps, 'gallery');
-        console.log('✅ 전체 앱 데이터를 갤러리로 동기화 완료');
-      }
+      // 갤러리 데이터를 덮어쓰지 않고, 대신 서버에서 최신 데이터를 리로드
+      await handleRefreshData();
       
-      // Featured 앱 데이터를 갤러리로 저장
-      const featuredApps = getFeaturedApps();
-      if (featuredApps.length > 0) {
-        await saveGalleryToBlob(featuredApps, 'featured');
-        console.log('✅ Featured 앱 데이터를 갤러리로 동기화 완료');
-      }
-      
-      // Events 앱 데이터를 갤러리로 저장
-      const eventApps = getEventApps();
-      if (eventApps.length > 0) {
-        await saveGalleryToBlob(eventApps, 'events');
-        console.log('✅ Events 앱 데이터를 갤러리로 동기화 완료');
-      }
-      
-      console.log('🎉 모든 앱 데이터 동기화 완료');
+      console.log('✅ 데이터 리로드 완료 (동기화 대신)');
     } catch (error) {
-      console.error('❌ 앱 데이터 동기화 실패:', error);
+      console.error('❌ 데이터 리로드 실패:', error);
     }
   };
 
@@ -626,10 +630,8 @@ export default function Home() {
           
           setApps(appsWithType); // 전역 스토어 업데이트
           
-          // 앱 데이터를 갤러리로 동기화
-          setTimeout(() => {
-            syncAppsToGallery();
-          }, 1000);
+          // 자동 동기화 비활성화 (데이터 손실 방지)
+          console.log('✅ 앱 데이터 로드 완료 (자동 동기화 비활성화)');
         } else {
           // 타입별 분리 API에 데이터가 없으면 기존 API 사용
           const blobApps = await loadAppsFromBlob();
@@ -666,10 +668,8 @@ export default function Home() {
             
             setApps(appsWithType); // 전역 스토어 업데이트
             
-            // 앱 데이터를 갤러리로 동기화
-            setTimeout(() => {
-              syncAppsToGallery();
-            }, 1000);
+            // 자동 동기화 비활성화 (데이터 손실 방지)
+            console.log('✅ 앱 데이터 로드 완료 (fallback, 자동 동기화 비활성화)');
           } else {
             // Keep existing state - don't reset to empty array
           }

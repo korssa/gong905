@@ -147,28 +147,20 @@ export function GalleryManager({ viewMode, filter, onRefresh, isAdmin = false, a
     }
   };
 
-  // 데이터 동기화
+  // 데이터 동기화 (메인 페이지의 동기화 로직 사용)
   const handleSync = async () => {
     setLoading(true);
     
     try {
       console.log('🔄 갤러리 데이터 동기화 시작...');
       
-      const currentItems = getFilteredItems(filter);
-      const syncResult = await syncGalleryData(currentItems, filter === 'all' ? 'gallery' : filter);
-      
-      if (syncResult.success && syncResult.serverItems) {
-        if (filter === 'all') {
-          setGalleryItems(syncResult.serverItems);
-        } else if (filter === 'featured') {
-          setFeaturedItems(syncResult.serverItems);
-        } else if (filter === 'events') {
-          setEventItems(syncResult.serverItems);
-        }
-        
-        setLastLoaded(Date.now());
-        console.log('✅ 갤러리 데이터 동기화 완료');
+      // 메인 페이지의 새로고침 로직 사용
+      if (onRefresh) {
+        await onRefresh();
+        console.log('✅ 갤러리 데이터 동기화 완료 (메인 페이지 로직 사용)');
       }
+      
+      setLastLoaded(Date.now());
     } catch (error) {
       console.error('❌ 갤러리 데이터 동기화 실패:', error);
     } finally {
