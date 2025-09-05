@@ -29,6 +29,7 @@ import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/transl
 import { useAppStore } from "@/store/useAppStore";
 import { useFooterStore } from "@/store/useFooterStore";
 import { GalleryManager } from "@/components/gallery-manager";
+import { GalleryViewer } from "@/components/gallery-viewer";
 import { initializeBlobFolders } from "@/lib/gallery-loader";
 import { saveGalleryToBlob } from "@/lib/gallery-converter";
 import Image from "next/image";
@@ -1117,15 +1118,8 @@ export default function Home() {
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
                        {currentFilter !== "latest" && (
                          <>
-                           {/* 새로운 갤러리 매니저 사용 */}
-                           <GalleryManager 
-                             viewMode={viewMode}
-                             filter={currentFilter === "all" ? "all" : currentFilter === "featured" ? "featured" : "events"}
-                             onRefresh={handleRefreshData}
-                             isAdmin={isAuthenticated && adminVisible}
-                             filteredApps={filteredApps}
-                             onDeleteApp={handleDeleteApp}
-                           />
+                           {/* 새로운 갤러리 뷰어 사용 */}
+                           <GalleryViewer />
                            
                            {/* Events 모드일 때 설명문구와 메일폼 추가 */}
                            {currentFilter === "events" && (
