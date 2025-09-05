@@ -28,10 +28,6 @@ import { loadAppsFromBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, save
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { useAppStore } from "@/store/useAppStore";
 import { useFooterStore } from "@/store/useFooterStore";
-import { useGalleryStore } from "@/store/useGalleryStore";
-import { GalleryViewer } from "@/components/gallery-viewer";
-import { initializeBlobFolders } from "@/lib/gallery-loader";
-import { saveGalleryToBlob } from "@/lib/gallery-converter";
 import Image from "next/image";
 
 const isBlobUrl = (url?: string) => {
@@ -78,9 +74,6 @@ export default function Home() {
 
   // 풋터 스토어 사용
   const { recordButtonClick } = useFooterStore();
-  
-  // 갤러리 스토어 사용
-  const { setSelected: setGallerySelected } = useGalleryStore();
 
   // Request ID for preventing race conditions
   const reqIdRef = useRef(0);
@@ -149,7 +142,6 @@ export default function Home() {
      recordButtonClick("All Apps", "See everything");
      setCurrentFilter("all");
      setCurrentContentType(null); // 메모장 모드 종료
-     setGallerySelected('a'); // 갤러리 A (기본 갤러리) 선택
      // 페이지 상단으로 스크롤
      window.scrollTo({ top: 0, behavior: 'smooth' });
    };
@@ -168,7 +160,6 @@ export default function Home() {
     recordButtonClick("Featured Apps", "Recommended picks");
     // ❌ 자동 생성 로직 제거: featured가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("featured");
-    setGallerySelected('b'); // 갤러리 B (Featured) 선택
     setCurrentContentType(null);
     document.querySelector('main')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -178,7 +169,6 @@ export default function Home() {
     recordButtonClick("Events", "Discounts via email");
     // ❌ 자동 생성 로직 제거: events가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("events");
-    setGallerySelected('c'); // 갤러리 C (Events) 선택
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -557,38 +547,7 @@ export default function Home() {
     setEditingApp(app);
   };
 
-  // Vercel Blob 폴더 구조 초기화 및 앱 데이터 동기화
-  useEffect(() => {
-    const initializeBlob = async () => {
-      try {
-        console.log('🚀 Vercel Blob 폴더 구조 초기화 시도...');
-        const result = await initializeBlobFolders();
-        if (result.success) {
-          console.log('✅ Vercel Blob 폴더 구조 초기화 완료');
-        } else {
-          console.log('⚠️ Vercel Blob 폴더 구조 초기화 실패 또는 이미 존재');
-        }
-      } catch (error) {
-        console.error('❌ Vercel Blob 폴더 구조 초기화 오류:', error);
-      }
-    };
 
-    initializeBlob();
-  }, []);
-
-  // 앱 데이터를 갤러리 데이터로 동기화 (비활성화 - 데이터 손실 방지)
-  const syncAppsToGallery = async () => {
-    try {
-      console.log('🔄 갤러리 동기화 대신 데이터 리로드 수행...');
-      
-      // 갤러리 데이터를 덮어쓰지 않고, 대신 서버에서 최신 데이터를 리로드
-      await handleRefreshData();
-      
-      console.log('✅ 데이터 리로드 완료 (동기화 대신)');
-    } catch (error) {
-      console.error('❌ 데이터 리로드 실패:', error);
-    }
-  };
 
   // 앱 목록 로드 및 동기화 (전역 스토어 사용)
   useEffect(() => {
@@ -1124,8 +1083,14 @@ export default function Home() {
                        {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
                        {currentFilter !== "latest" && (
                          <>
-                           {/* 새로운 갤러리 뷰어 사용 */}
-                           <GalleryViewer />
+                           {/* 기존 앱 갤러리 사용 */}
+                           <AppGallery 
+                             apps={filteredApps} 
+                             onAppClick={handleAppClick}
+                             onEditApp={handleEditApp}
+                             onDeleteApp={handleDeleteApp}
+                             isAdmin={isAdmin}
+                           />
                            
                            {/* Events 모드일 때 설명문구와 메일폼 추가 */}
                            {currentFilter === "events" && (
