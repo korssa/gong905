@@ -3,7 +3,7 @@ import { put } from '@vercel/blob';
 
 export async function POST(request: NextRequest) {
   try {
-    // 폴더별 초기 JSON 파일 생성
+    // 각 폴더에 초기 JSON 파일 생성
     const folders = ['gallery', 'events', 'featured'];
     const results = [];
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
           JSON.stringify(initialData, null, 2),
           {
             access: 'public',
-            addRandomSuffix: false
+            contentType: 'application/json'
           }
         );
 
@@ -40,19 +40,19 @@ export async function POST(request: NextRequest) {
     }
 
     const successCount = results.filter(r => r.success).length;
-    const failureCount = results.filter(r => !r.success).length;
+    const totalCount = results.length;
 
     return NextResponse.json({
-      success: successCount > 0,
-      message: `폴더 구조 생성 완료: 성공 ${successCount}개, 실패 ${failureCount}개`,
+      success: successCount === totalCount,
+      message: `${successCount}/${totalCount} 폴더 생성 완료`,
       results
     });
+
   } catch (error) {
     return NextResponse.json(
-      {
-        success: false,
-        error: '폴더 구조 생성 실패',
-        details: error instanceof Error ? error.message : 'Unknown error'
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       },
       { status: 500 }
     );

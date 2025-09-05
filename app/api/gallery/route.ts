@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
           }
         }
       } catch (error) {
+        // JSON 파일 로드 실패 무시
       }
     }
 

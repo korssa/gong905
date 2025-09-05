@@ -10,7 +10,7 @@ const APPS_FILE_PATH = path.join(process.cwd(), 'data', 'apps.json');
 // 메모리 기반 저장소 (Vercel 환경에서 사용)
 let memoryStorage: AppItem[] = [];
 
-// 갤러리 앱별 배열 분리
+// 갤러리 앱 타입별 배열 분리
 const TYPE_RANGES = {
   gallery: { min: 20000, max: 29999 }
 };
@@ -47,7 +47,7 @@ async function loadApps(): Promise<AppItem[]> {
       // 로컬 파일 읽기 실패 무시
     }
 
-    // 2) Vercel 환경에서는 Blob에서 직접 읽기 (메모리 방식)
+    // 2) Vercel 환경에서는 Blob에서 직접 읽기 (메모장 방식)
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       try {
         const { blobs } = await list({ prefix: 'apps.json', limit: 1 });
@@ -81,7 +81,7 @@ async function loadApps(): Promise<AppItem[]> {
 
 // 타입별 앱 분리
 function separateAppsByType(apps: AppItem[]) {
-  // 타입별로 분리
+  
   const separated: Record<string, AppItem[]> = {
     gallery: []
   };
@@ -92,19 +92,16 @@ function separateAppsByType(apps: AppItem[]) {
     }
   });
 
-  // 각 타입별 ID 범위 검증 및 필터 (문자열 ID 지원)
+
+  // 각 타입별로 ID 범위 검증 및 정리 (문자열 ID 지원)
   Object.entries(separated).forEach(([type, typeApps]) => {
     const range = TYPE_RANGES[type as keyof typeof TYPE_RANGES];
     
-    const beforeFilter = typeApps.length;
     separated[type] = typeApps.filter(app => {
       // ID가 숫자인 경우 범위 검증
       if (/^\d+$/.test(app.id)) {
         const id = parseInt(app.id);
         const isValid = id >= range.min && id <= range.max;
-        if (!isValid) {
-          // 범위 밖 ID는 제외
-        }
         return isValid;
       }
       // ID가 문자열인 경우 (Date.now_ 형태) 허용
@@ -114,9 +111,6 @@ function separateAppsByType(apps: AppItem[]) {
       // 기타 형태의 ID도 허용
       return true;
     });
-    
-    const afterFilter = separated[type].length;
-    // 필터링 결과 로그 (제거됨)
   });
 
   return separated;
@@ -135,7 +129,7 @@ export async function GET(request: NextRequest) {
     const apps = await loadApps();
     const separated = separateAppsByType(apps);
     
-    // 요청한 타입의 앱만 반환
+    // 요청된 타입의 앱만 반환
     const typeApps = separated[type] || [];
     
     // 최신순 정렬
@@ -191,25 +185,25 @@ export async function POST(request: NextRequest) {
     // 메모리 저장소 업데이트
     memoryStorage = validApps;
 
-    // 로컬 환경에서는 글로벌 저장소 우선 사용 (로컬 파일 제거)
-    // 로컬 파일 관리를 제거하여 글로벌만 사용하도록 변경
+    // 로컬 환경에서도 글로벌 저장소 우선 사용 (로컬 파일 저장 제거)
+    // 로컬 파일 저장을 제거하여 글로벌에만 전달되도록 함
 
-    // Vercel 환경에서는 Blob 읽기만 확인 (메모리 방식)
+    // Vercel 환경에서는 Blob 동기화 확인 (메모장 방식)
     if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
       try {
-        // Blob에 저장된 즉시 최신 데이터 읽기 확인
+        // Blob에 저장 후 즉시 다시 읽어서 동기화 확인
         const { blobs } = await list({ prefix: 'apps.json', limit: 1 });
         if (blobs && blobs.length > 0) {
           const latest = blobs[0];
           const response = await fetch(latest.url, { cache: 'no-store' });
           if (response.ok) {
             const savedData = await response.json();
-            // 저장된 데이터를 메모리에 반영
+            // 저장된 데이터와 메모리 동기화
             memoryStorage = savedData;
           }
         }
       } catch (blobError) {
-        // Blob 읽기 실패시 무시 (메모리는 이미 업데이트됨)
+        // Blob 동기화 실패시 무시 (메모리는 이미 업데이트됨)
       }
     }
 

@@ -33,20 +33,20 @@ const isBlobUrl = (url?: string) => {
   return !!url && (url.includes('vercel-storage.com') || url.includes('blob.vercel-storage.com'));
 };
 
-// ID ��Ʈ�� ���� ���͸��ϴ� ��ƿ �Լ� (���� ������� ����)
+// ID 세트로 앱을 필터링하는 유틸 함수 (현재 사용하지 않음)
 // const pickByIds = (apps: AppItem[], ids: string[]) => {
 //   const set = new Set(ids);
 //   return apps.filter(a => set.has(a.id));
 // };
 
-// Featured/Events �÷��׸� �ۿ� �����ϴ� ��ƿ �Լ�
+// Featured/Events 플래그를 앱에 주입하는 유틸 함수
 const applyFeaturedFlags = (apps: AppItem[], featuredIds: string[], eventIds: string[]) => {
   const f = new Set(featuredIds);
   const e = new Set(eventIds);
   return apps.map(a => ({ ...a, isFeatured: f.has(a.id), isEvent: e.has(a.id) }));
 };
 
-// �� �� ������ (���� �� ���ŵ�)
+// 빈 앱 데이터 (샘플 앱 제거됨)
 const sampleApps: AppItem[] = [];
 
 export default function Home() {
@@ -60,13 +60,13 @@ export default function Home() {
   const { isAuthenticated: isAdmin } = useAdmin();
   const [adminVisible, setAdminVisible] = useState(false);
 
-  // ���� ����� ���
-  // ���� ���·� �� ������ ���� (Zustand ����)
+  // 전역 스토어 사용
+  // 로컬 상태로 앱 데이터 관리 (Zustand 제거)
   const [allApps, setAllApps] = useState<AppItem[]>([]);
   const [featuredIds, setFeaturedIds] = useState<string[]>([]);
   const [eventIds, setEventIds] = useState<string[]>([]);
 
-  // ���� ��� �Լ���
+  // 로컬 토글 함수들
   const toggleFeatured = (appId: string) => {
     setFeaturedIds(prev => 
       prev.includes(appId) 
@@ -109,14 +109,14 @@ export default function Home() {
           .sort((a, b) => 
             new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
           );
-        return latestApps.slice(0, 1); // ���� �ֱ� published �� 1���� ��ȯ
+        return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
       }
       case "featured":
         return allApps.filter(app => featuredIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
       case "events":
         return allApps.filter(app => eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
       case "normal":
-        // �Ϲ� ī�常 ǥ�� (featured/events�� ���Ե��� ���� �۵�)
+        // 일반 카드만 표시 (featured/events에 포함되지 않은 앱들)
         return allApps.filter(app => !featuredIds.includes(app.id) && !eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
       case "all":
       default:
@@ -128,106 +128,122 @@ export default function Home() {
 
 
 
-  // Ǫ�� ��ũ Ŭ�� �� ���� �ǵ�� ���� �ڵ鷯
+  // 푸터 링크 클릭 시 번역 피드백 차단 핸들러
   const handleFooterLinkClick = (action?: () => void, event?: React.MouseEvent) => {
-    // �̺�Ʈ �⺻ ���� ����
+    // 이벤트 기본 동작 차단
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
     
-    // ���� �ǵ�� ����
+    // 번역 피드백 차단
     blockTranslationFeedback();
     
-    // ���� �׼� ���� (���߿� ���� ��ũ ��� �߰� ��)
+    // 기존 액션 실행 (나중에 실제 링크 기능 추가 시)
     if (action) action();
   };
 
-     // All Apps ��ư Ŭ�� �ڵ鷯
+     // All Apps 버튼 클릭 핸들러
    const handleAllAppsClick = () => {
      setCurrentFilter("all");
-     setCurrentContentType(null); // �޸��� ��� ����
-     // ������ ������� ��ũ��
+     setCurrentContentType(null); // 메모장 모드 종료
+     // 페이지 상단으로 스크롤
      window.scrollTo({ top: 0, behavior: 'smooth' });
    };
 
-   // New Releases ��ư Ŭ�� �ڵ鷯
+   // New Releases 버튼 클릭 핸들러
    const handleNewReleasesClick = () => {
      setCurrentFilter("latest");
-     setCurrentContentType(null); // �޸��� ��� ����
-     // ������ ������� ��ũ��
+     setCurrentContentType(null); // 메모장 모드 종료
+     // 페이지 상단으로 스크롤
      window.scrollTo({ top: 0, behavior: 'smooth' });
    };
 
-  // Featured Apps ��ư Ŭ�� �ڵ鷯
+  // Featured Apps 버튼 클릭 핸들러
   const handleFeaturedAppsClick = () => {
     setCurrentFilter("featured");
     setCurrentContentType(null);
     document.querySelector('main')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Events ��ư Ŭ�� �ڵ鷯
+  // Events 버튼 클릭 핸들러
   const handleEventsClick = () => {
     setCurrentFilter("events");
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // �Ϲ� ī�� ���� �ڵ鷯 (���� ����)
+  // 일반 카드 필터 핸들러 (관리 모드용)
   const handleNormalClick = () => {
     setCurrentFilter("normal");
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // ���� ���� �ڵ鷯 (������ ����)
+  // 수동 저장 핸들러 (관리자 전용)
   const handleManualSave = async () => {
     try {
       
+      console.log('🔒 수동 저장 시작:', { featured: featuredIds, events: eventIds });
       
-      // Featured/Events ���¸� ����ҿ� ����
+      // Featured/Events 상태를 저장소에 저장
       const [featuredResult, eventsResult] = await Promise.all([
         saveFeaturedIds(featuredIds),
         saveEventIds(eventIds)
       ]);
       
       if (featuredResult.success && eventsResult.success) {
-        alert('? Featured/Events ���°� ����Ǿ����ϴ�!');
+        alert('✅ Featured/Events 상태가 저장되었습니다!');
+        console.log('🔒 수동 저장 완료');
       } else {
-        alert('?? ���� �� �Ϻ� ������ �߻��߽��ϴ�.');
+        alert('⚠️ 저장 중 일부 오류가 발생했습니다.');
+        console.error('❌ 수동 저장 실패:', { featured: featuredResult, events: eventsResult });
       }
     } catch (error) {
-      alert('? ���� �� ������ �߻��߽��ϴ�.');
+      console.error('❌ 수동 저장 오류:', error);
+      alert('❌ 저장 중 오류가 발생했습니다.');
     }
   };
 
-  // ������ ���ε� �ڵ鷯 (Featured/Events ���� ���� �� �������� �ֽ� ������ ��������)
+  // 데이터 리로드 핸들러 (Featured/Events 상태 변경 후 서버에서 최신 데이터 가져오기)
   const handleRefreshData = async () => {
     try {
+      console.log('🔄 데이터 리로드 시작...');
       
-      // 1. �������� �ֽ� �� ������ �ε�
+      // 1. 서버에서 최신 앱 데이터 로드
       const typeApps = await loadAppsByTypeFromBlob('gallery');
+      console.log('📱 서버에서 앱 데이터 로드:', typeApps.length, '개');
       
       if (typeApps.length > 0) {
-        // 2. �̹��� ����
+        // 2. 이미지 검증
         const validatedApps = await validateAppsImages(typeApps);
-        // 3. Featured/Events �÷��� �ε�
+        console.log('✅ 이미지 검증 완료:', validatedApps.length, '개');
+        
+        // 3. Featured/Events 플래그 로드
         const [featuredIds, eventIds] = await Promise.all([
           loadFeaturedIds(),
           loadEventIds()
         ]);
+        console.log('🏷️ 플래그 로드 완료:', { featured: featuredIds.length, events: eventIds.length });
         
-        // 4. �۵鿡 �÷��� ����
+        // 4. 앱들에 플래그 적용
         const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
         const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
         
+        console.log('🎯 최종 앱 데이터 업데이트:', appsWithType.length, '개', {
+          featured: appsWithType.filter(a => a.isFeatured).length,
+          events: appsWithType.filter(a => a.isEvent).length
+        });
         
-        // 5. ���� ����� ������Ʈ
+        // 5. 전역 스토어 업데이트
         setAllApps(appsWithType);
         
+        console.log('✅ 데이터 리로드 완료');
       } else {
+        console.log('⚠️ 서버에 앱 데이터가 없습니다');
       }
     } catch (error) {
+      console.error('❌ 데이터 리로드 오류:', error);
     }
   };
 
@@ -236,25 +252,26 @@ export default function Home() {
 
 
 
-   // New Release ���� �������� ���� �Լ�
+   // New Release 앱을 가져오는 별도 함수
    const getLatestApp = () => {
      const latestApps = allApps
        .filter(app => app.status === "published")
        .sort((a, b) => 
          new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
        );
-     return latestApps[0]; // ���� �ֱ� published �� 1���� ��ȯ
+     return latestApps[0]; // 가장 최근 published 앱 1개만 반환
    };
 
   const handleAppUpload = async (data: AppFormData, files: { icon: File; screenshots: File[] }) => {
+    console.log('📤 앱 업로드 시작:', { name: data.name, appCategory: data.appCategory });
     try {
-      // ������/��ũ���� ���� ���ε� (Vercel Blob �켱)
+      // 아이콘/스크린샷 파일 업로드 (Vercel Blob 우선)
       const iconUrl = await uploadFile(files.icon, "icon");
       const screenshotUrls = await Promise.all(
         files.screenshots.map(file => uploadFile(file, "screenshot"))
       );
 
-      // �� �� ������ ����
+      // 새 앱 아이템 생성
       const newApp: AppItem = {
         id: generateUniqueId(),
         name: data.name,
@@ -274,27 +291,32 @@ export default function Home() {
         version: data.version,
         size: data.size,
         category: data.category,
-        type: 'gallery', // ������ �� Ÿ�� ���
+        type: 'gallery', // 갤러리 앱 타입 명시
       };
 
-      // ���յ� ���� �� ���� ������Ʈ (���� ������ ����)
-      // 1. ���� �� ������ �ε� (��������Ʈ ����)
+      // 통합된 저장 및 상태 업데이트 (기존 데이터 보존)
+      // 1. 기존 앱 데이터 로드 (오버라이트 방지)
       const existingApps = await loadAppsByTypeFromBlob('gallery');
-      // 2. �� ���� ���� �����Ϳ� �߰� (ī�װ�� ���� ����)
+      console.log('📥 기존 앱 데이터 로드:', existingApps.length);
+      
+      // 2. 새 앱을 기존 데이터에 추가 (카테고리 정보 포함)
       const sanitizedNewApp = { 
         ...newApp, 
         isFeatured: undefined, 
         isEvent: undefined,
-        // ī�װ�� ������ �� �����Ϳ� ���� (���� ������)
+        // 카테고리 정보를 앱 데이터에 포함 (통합 관리용)
         appCategory: data.appCategory 
       };
       const updatedApps = [sanitizedNewApp, ...existingApps];
+      console.log('➕ 새 앱 추가 후 총 앱 수:', updatedApps.length);
+      console.log('📋 앱 카테고리:', data.appCategory);
+      
       try {
         
-        // 3. �� ���� (���� ������ + �� ��, featured/events ���� �ݿ�)
-        // ���� �Ϲ� ī����� ���µ� �����ϸ鼭 �� ���� ���� �߰�
+        // 3. 앱 저장 (기존 데이터 + 새 앱, featured/events 상태 반영)
+        // 기존 일반 카드들의 상태도 유지하면서 새 앱의 상태 추가
         
-        // �� ���� ī�װ���� ���� ���� �߰�
+        // 새 앱의 카테고리에 따라 상태 추가
         const finalFeaturedIds = [...featuredIds];
         const finalEventIds = [...eventIds];
         
@@ -304,86 +326,117 @@ export default function Home() {
           finalEventIds.push(newApp.id);
         }
         
+        console.log('💾 저장할 상태:', { 
+          featured: finalFeaturedIds, 
+          events: finalEventIds,
+          newAppCategory: data.appCategory 
+        });
+        
         const saveResult = await saveAppsByTypeToBlob('gallery', updatedApps, finalFeaturedIds, finalEventIds);
         
-        // 2. Featured/Events ���� ������Ʈ (���� ����� ���)
+        // 2. Featured/Events 상태 업데이트 (전역 스토어 사용)
         if (data.appCategory === 'featured' || data.appCategory === 'events') {
-          // ���� ������ ��� ���
+          console.log('🔍 카테고리 확인:', { appCategory: data.appCategory, appId: newApp.id });
+          
+          // 전역 스토어에서 즉시 토글
           if (data.appCategory === 'featured') {
             toggleFeatured(newApp.id);
-            } else if (data.appCategory === 'events') {
+            console.log('⭐ Featured 전역 스토어에 추가');
+          } else if (data.appCategory === 'events') {
             toggleEvent(newApp.id);
-            }
+            console.log('🎉 Events 전역 스토어에 추가');
+          }
         }
         
-        // 3. ��� ���� �Ϸ� �� �� ���� ���� ������Ʈ (�񵿱� ���� ����)
+        // 3. 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
         if (saveResult.success && saveResult.data) {
           setAllApps(saveResult.data);
+          console.log(`✅ 새 앱 업로드 완료 (서버 데이터 사용):`, newApp.id);
         } else {
           setAllApps(updatedApps);
+          console.log(`✅ 새 앱 업로드 완료 (로컬 데이터 사용):`, newApp.id);
         }
         
-        // 4. ���� ������Ʈ �� ��� ����Ͽ� ���°� �ݿ��ǵ��� ��
+        // 4. 상태 업데이트 후 잠시 대기하여 상태가 반영되도록 함
         setTimeout(() => {
-          }, 100);
+          console.log('🔄 최종 상태 확인:', { 
+            totalApps: allApps.length + 1,
+            featured: finalFeaturedIds.length, 
+            events: finalEventIds.length,
+            normal: allApps.length + 1 - finalFeaturedIds.length - finalEventIds.length
+          });
+        }, 100);
         
       } catch (error) {
-        // ���� ���н� ���� ���¸� ������Ʈ
+        console.error('글로벌 저장 실패:', error);
+        // 저장 실패시 로컬 상태만 업데이트
         setAllApps(updatedApps);
       }
       
-      // �� ���ε� �� ���� �Ϸ�
-      alert("? App uploaded successfully!");
+      // 앱 업로드 및 저장 완료
+      alert("✅ App uploaded successfully!");
       
-      // ������ ���� ���ΰ�ħ (�������� ���̵� �ֽ� ������ ǥ��)
+      // 갤러리 강제 새로고침 (리프레시 없이도 최신 데이터 표시)
       await forceRefreshGallery();
       
     } catch {
-      alert("? App upload failed. Please try again.");
+      alert("❌ App upload failed. Please try again.");
     }
   };
 
      const handleDeleteApp = async (id: string) => {
      try {
-       // 1. ������ �� ���� ã�� (���� �迭���� ã��)
+       // 1. 삭제할 앱 정보 찾기 (원본 배열에서 찾기)
        const appToDelete = allApps.find(app => app.id === id);
        if (!appToDelete) {
          return;
        }
 
-       // 2. ���ο� �� ��� ��� (���� �迭 ���)
+       // 2. 새로운 앱 목록 계산 (원본 배열 기반)
        const newApps = allApps.filter(app => app.id !== id);
        
-             // 3. Featured/Events �ۿ����� ���� (���� ���� ���)
+             // 3. Featured/Events 앱에서도 제거 (로컬 상태 기반)
       const newFeaturedApps = featuredIds.filter(appId => appId !== id);
       const newEventApps = eventIds.filter(appId => appId !== id);
       
-      // 4. ���յ� ���� �� ���� ������Ʈ (���� ������ ����)
+      // 4. 통합된 저장 및 상태 업데이트 (기존 데이터 보존)
       try {
-        // ���� �� ������ �ε� (��������Ʈ ����)
+        // 기존 앱 데이터 로드 (오버라이트 방지)
         const existingApps = await loadAppsByTypeFromBlob('gallery');
-        // ������ ���� ������ �� �迭 ����
+        console.log('📥 기존 앱 데이터 로드:', existingApps.length);
+        
+        // 삭제할 앱을 제외한 새 배열 생성
         const sanitizedApps = existingApps.filter(app => app.id !== id);
+        console.log('🗑️ 앱 삭제 후 총 앱 수:', sanitizedApps.length);
+        
         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps, newFeaturedApps, newEventApps);
         
-        // 5. ��� ���� �Ϸ� �� �� ���� ���� ������Ʈ (�񵿱� ���� ����)
+        // 5. 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
         if (saveResult.success && saveResult.data) {
           setAllApps(saveResult.data);
         } else {
           setAllApps(newApps);
         }
          
-                 } catch (error) {
-        // ���� ���н� ���� ���¸� ������Ʈ
+                 console.log(`✅ 앱 삭제 완료:`, id);
+        console.log('🔄 최종 상태:', { 
+          apps: saveResult.success ? saveResult.data?.length : newApps.length,
+          featured: newFeaturedApps.length, 
+          events: newEventApps.length 
+        });
+        
+      } catch (error) {
+        console.error('글로벌 저장 실패:', error);
+        // 저장 실패시 로컬 상태만 업데이트
         setAllApps(newApps);
       }
 
-       // 5. ���丮������ ���� ���ϵ� ���� (Vercel Blob/���� �ڵ� �Ǵ�)
+       // 5. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
        if (appToDelete.iconUrl) {
          try {
            await deleteFile(appToDelete.iconUrl);
          } catch (error) {
-           // ������ ���� ���� ���� ����
+           // 아이콘 파일 삭제 실패 무시
          }
        }
        
@@ -391,43 +444,46 @@ export default function Home() {
          try {
            await Promise.all(appToDelete.screenshotUrls.map(url => deleteFile(url)));
          } catch (error) {
-           // ��ũ���� ���ϵ� ���� ���� ����
+           // 스크린샷 파일들 삭제 실패 무시
          }
        }
 
-       // 6. Featured/Events Blob ����ȭ
+       // 6. Featured/Events Blob 동기화
        try {
          await Promise.all([
            saveFeaturedIds(newFeaturedApps),
            saveEventIds(newEventApps)
          ]);
        } catch (error) {
-         // Featured/Events Blob ����ȭ ���� ����
+         // Featured/Events Blob 동기화 실패 무시
        }
 
-       // 7. ���� �Ϸ� Ȯ��
-       // Blob ����ȭ �� ��� ��ٸ� �� �ٽ� �ε� (����ȭ ���� �ذ�)
+       // 7. 삭제 완료 확인
+       // Blob 동기화 후 잠시 기다린 후 다시 로드 (동기화 지연 해결)
        setTimeout(async () => {
          try {
            const updatedBlobApps = await loadAppsFromBlob();
-           // Blob ����ȭ ���� Ȯ�� (����ȭ �Ϸ� �Ǵ� ����)
+           console.log('🔄 Blob 동기화 후 앱 수:', updatedBlobApps?.length || 0);
+              
+              // Blob 동기화 상태 확인 (동기화 완료 또는 지연)
             } catch (error) {
-              // Blob ��Ȯ�� ���� ����
+              // Blob 재확인 실패 무시
             }
-          }, 1000); // 1�� ���
+          }, 1000); // 1초 대기
        
      } catch (error) {
-             // ���н� UI ���� ����
+             // 실패시 UI 상태 복원
       const savedAppsStr = localStorage.getItem('gallery-apps');
       if (savedAppsStr) {
         try {
           const parsedApps = JSON.parse(savedAppsStr);
           setAllApps(parsedApps);
         } catch {
-          // localStorage �Ľ� ���� ����
+          // localStorage 파싱 실패 무시
         }
       }
 
+             console.error('❌ 앱 삭제 실패:', error);
              alert('An error occurred while deleting the app. Please try again.');
     }
   };
@@ -438,33 +494,36 @@ export default function Home() {
 
 
 
-  // �� ��� �ε� �� ����ȭ (���� ����� ���)
+  // 앱 목록 로드 및 동기화 (전역 스토어 사용)
   useEffect(() => {
-    // StrictMode ���� ���� ����
+    // StrictMode 이중 실행 방지
     if (loadedRef.current) return;
     loadedRef.current = true;
 
-    // ��ȭ�� ���� �ǵ�� ���� ����
+    // 강화된 번역 피드백 차단 시작
     startBlockingTranslationFeedback();
 
-    let isMounted = true; // ������Ʈ ����Ʈ ���� ����
+    let isMounted = true; // 컴포넌트 마운트 상태 추적
     
     const loadAllApps = async () => {
       const myId = ++reqIdRef.current; // Request ID for race condition prevention
       
       try {
-        // �޸���� �����ϰ� Ÿ�Ժ� �и��� Blob Storage���� �ε� �õ�
+        // 메모장과 동일하게 타입별 분리된 Blob Storage에서 로드 시도
         const typeApps = await loadAppsByTypeFromBlob('gallery');
         
         if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
         
         if (typeApps.length > 0) {
-          // �������� ��� ��ü ��, �Ϲ� ����ڴ� ��� �� ǥ�� (AppItem���� isPublished �Ӽ��� ����)
+          console.log('📱 타입별 앱 로드 성공:', typeApps.length, '개');
+          
+          // 관리자일 경우 전체 앱, 일반 사용자는 모든 앱 표시 (AppItem에는 isPublished 속성이 없음)
           const validatedApps = await validateAppsImages(typeApps);
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
+          console.log('✅ 이미지 검증 완료:', validatedApps.length, '개');
           
-          // Featured/Events �÷��� ����
+          // Featured/Events 플래그 주입
           const [loadedFeaturedIds, loadedEventIds] = await Promise.all([
             loadFeaturedIds(),
             loadEventIds()
@@ -472,32 +531,41 @@ export default function Home() {
           
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
-          // ���� ���¿� ID ����
+          console.log('🏷️ 플래그 로드 완료:', { featured: loadedFeaturedIds.length, events: loadedEventIds.length });
+          
+          // 로컬 상태에 ID 저장
           setFeaturedIds(loadedFeaturedIds);
           setEventIds(loadedEventIds);
           
-          // ���� �۵鿡 type �Ӽ��� Featured/Events �÷��� �߰�
+          // 기존 앱들에 type 속성과 Featured/Events 플래그 추가
           const appsWithFlags = applyFeaturedFlags(validatedApps, loadedFeaturedIds, loadedEventIds);
           const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
           
-          setAllApps(appsWithType); // ���� ���� ������Ʈ
+          console.log('🎯 최종 앱 데이터:', appsWithType.length, '개', {
+            featured: appsWithType.filter(a => a.isFeatured).length,
+            events: appsWithType.filter(a => a.isEvent).length
+          });
           
-          // �ڵ� ����ȭ ��Ȱ��ȭ (������ �ս� ����)
-          ');
+          setAllApps(appsWithType); // 로컬 상태 업데이트
+          
+          // 자동 동기화 비활성화 (데이터 손실 방지)
+          console.log('✅ 앱 데이터 로드 완료 (자동 동기화 비활성화)');
         } else {
-          // Ÿ�Ժ� �и� API�� �����Ͱ� ������ ���� API ���
+          // 타입별 분리 API에 데이터가 없으면 기존 API 사용
           const blobApps = await loadAppsFromBlob();
           
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
           if (blobApps && blobApps.length > 0) {
+            console.log('📱 Blob 앱 로드 성공:', blobApps.length, '개');
+            
             const validatedApps = await validateAppsImages(blobApps);
             
             if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
             
-            :', validatedApps.length, '��');
+            console.log('✅ 이미지 검증 완료 (fallback):', validatedApps.length, '개');
             
-            // Featured/Events �÷��� ����
+            // Featured/Events 플래그 주입
             const [featuredIds, eventIds] = await Promise.all([
               loadFeaturedIds(),
               loadEventIds()
@@ -505,30 +573,31 @@ export default function Home() {
             
             if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
             
-            :', { featured: featuredIds.length, events: eventIds.length });
+            console.log('🏷️ 플래그 로드 완료 (fallback):', { featured: featuredIds.length, events: eventIds.length });
             
-            // ���� �۵鿡 type �Ӽ��� Featured/Events �÷��� �߰�
+            // 기존 앱들에 type 속성과 Featured/Events 플래그 추가
             const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
             const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
             
-            :', appsWithType.length, '��', {
+            console.log('🎯 최종 앱 데이터 (fallback):', appsWithType.length, '개', {
               featured: appsWithType.filter(a => a.isFeatured).length,
               events: appsWithType.filter(a => a.isEvent).length
             });
             
-            setAllApps(appsWithType); // ���� ���� ������Ʈ
+            setAllApps(appsWithType); // 로컬 상태 업데이트
             
-            // �ڵ� ����ȭ ��Ȱ��ȭ (������ �ս� ����)
-            ');
+            // 자동 동기화 비활성화 (데이터 손실 방지)
+            console.log('✅ 앱 데이터 로드 완료 (fallback, 자동 동기화 비활성화)');
           } else {
             // Keep existing state - don't reset to empty array
           }
         }
         
       } catch (error) {
+        console.error('❌ 앱 로드 실패:', error);
         if (isMounted) {
-          // �� �ε� ����
-          // ���н� ���� ������ ���
+          // 앱 로드 실패
+          // 실패시 샘플 데이터 사용
           setAllApps(sampleApps);
         }
       }
@@ -536,46 +605,54 @@ export default function Home() {
 
     loadAllApps();
     
-    // Ŭ���� �Լ�
+    // 클린업 함수
     return () => {
       isMounted = false;
     };
-  }, [setAllApps]); // setAllApps ������ �߰�
+  }, [setAllApps]); // setAllApps 의존성 추가
 
-  // ���� ���� ��ȭ �α� (���� ��忡����)
+  // 로컬 상태 변화 로깅 (개발 모드에서만)
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
-      }
+      console.log('🔄 로컬 상태 변화:', {
+        totalApps: allApps.length,
+        featuredApps: featuredIds.length,
+        eventApps: eventIds.length,
+        normalApps: allApps.length - featuredIds.length - eventIds.length
+      });
+    }
   }, [allApps, featuredIds, eventIds]);
 
-  // Featured/Events ���� ���� (���� ��忡����)
+  // Featured/Events 매핑 검증 (개발 모드에서만)
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
       if (currentFilter === 'featured') {
         const anyEventCard = filteredApps.some(a => a.isEvent);
-        if (anyEventCard) }
+        if (anyEventCard) console.warn('⚠️ Featured 뷰에 Event 카드가 섞여 있습니다. 매핑 확인 필요.');
+      }
       if (currentFilter === 'events') {
         const anyFeaturedCard = filteredApps.some(a => a.isFeatured);
-        if (anyFeaturedCard) }
+        if (anyFeaturedCard) console.warn('⚠️ Events 뷰에 Featured 카드가 섞여 있습니다. 매핑 확인 필요.');
+      }
     }
   }, [currentFilter, filteredApps]);
 
 
-  // ���� ������ ���ΰ�ħ �Լ�
+  // 강제 데이터 새로고침 함수
   const forceRefreshGallery = async () => {
     const myId = ++reqIdRef.current; // Request ID for race condition prevention
     
     try {
-      // Blob���� �ֽ� ������ ���� �ε�
+      // Blob에서 최신 데이터 강제 로드
       const typeApps = await loadAppsByTypeFromBlob('gallery');
       if (typeApps.length > 0 && myId === reqIdRef.current) {
         const validatedApps = await validateAppsImages(typeApps);
         const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-        setAllApps(appsWithType); // ���� ���� ������Ʈ
-        // �� ��� ����ȭ �Ϸ�
+        setAllApps(appsWithType); // 로컬 상태 업데이트
+        // 앱 목록 동기화 완료
       }
     } catch (error) {
-      // ���ΰ�ħ ���� �� ���� ������ ����
+      // 새로고침 실패 시 기존 데이터 유지
     }
   };
 
@@ -586,7 +663,7 @@ export default function Home() {
 
       const updatedApp = { ...allApps[appIndex] };
 
-      // �⺻ ���� ������Ʈ
+      // 기본 정보 업데이트
       updatedApp.name = data.name;
       updatedApp.developer = data.developer;
       updatedApp.description = data.description;
@@ -600,12 +677,12 @@ export default function Home() {
       updatedApp.storeUrl = data.storeUrl || undefined;
       updatedApp.tags = data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
 
-      // �� �������� ������ ������Ʈ (�۷ι� ����� ���)
+      // 새 아이콘이 있으면 업데이트 (글로벌 저장소 사용)
       if (files?.icon) {
         updatedApp.iconUrl = await uploadFile(files.icon, "icon");
       }
 
-      // �� ��ũ������ ������ ������Ʈ (�۷ι� ����� ���)
+      // 새 스크린샷이 있으면 업데이트 (글로벌 저장소 사용)
       if (files?.screenshots && files.screenshots.length > 0) {
         const newScreenshotUrls = await Promise.all(
           files.screenshots.map(file => uploadFile(file, "screenshot"))
@@ -613,56 +690,66 @@ export default function Home() {
         updatedApp.screenshotUrls = newScreenshotUrls;
       }
 
-      // �� ��� ������Ʈ
+      // 앱 목록 업데이트
       const newApps = [...allApps];
       newApps[appIndex] = updatedApp;
 
-      // ���յ� ���� �� ���� ������Ʈ (���� ������ ����)
+      // 통합된 저장 및 상태 업데이트 (기존 데이터 보존)
       try {
-        // ���� �� ������ �ε� (��������Ʈ ����)
+        // 기존 앱 데이터 로드 (오버라이트 방지)
         const existingApps = await loadAppsByTypeFromBlob('gallery');
-        // ������ ������ ������Ʈ
+        console.log('📥 기존 앱 데이터 로드:', existingApps.length);
+        
+        // 수정된 앱으로 업데이트
         const sanitizedUpdatedApp = { ...updatedApp, isFeatured: undefined, isEvent: undefined };
         const sanitizedApps = existingApps.map(app => 
           app.id === updatedApp.id ? sanitizedUpdatedApp : app
         );
+        console.log('✏️ 앱 수정 후 총 앱 수:', sanitizedApps.length);
+        
         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps, featuredIds, eventIds);
         
-        // ��� ���� �Ϸ� �� �� ���� ���� ������Ʈ (�񵿱� ���� ����)
+        // 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
         if (saveResult.success && saveResult.data) {
           setAllApps(saveResult.data);
         } else {
           setAllApps(newApps);
-          alert("?? App updated but cloud synchronization failed.");
+          alert("⚠️ App updated but cloud synchronization failed.");
         }
         
-        } catch (error) {
-        // ���� ���н� ���� ���¸� ������Ʈ
+        console.log(`✅ 앱 수정 완료:`, updatedApp.id);
+        console.log('🔄 최종 상태:', { 
+          apps: saveResult.success ? saveResult.data?.length : newApps.length
+        });
+        
+      } catch (error) {
+        console.error('글로벌 저장 실패:', error);
+        // 저장 실패시 로컬 상태만 업데이트
         setAllApps(newApps);
-        alert("?? App updated but cloud synchronization failed.");
+        alert("⚠️ App updated but cloud synchronization failed.");
       }
 
              setEditingApp(null);
-       // �� ������Ʈ �� ���� �Ϸ�
-       alert("? App updated successfully!");
+       // 앱 업데이트 및 저장 완료
+       alert("✅ App updated successfully!");
      } catch {
        
-       alert("? App update failed. Please try again.");
+       alert("❌ App update failed. Please try again.");
     }
   };
 
   const handleCopyrightClick = () => {
-    // ���̾�α� ���� ���� �� �� ������ �ξ� DOM ����ȭ
+    // 다이얼로그 열기 전에 더 긴 지연을 두어 DOM 안정화
     setTimeout(() => {
       setIsAdminDialogOpen(true);
     }, 100);
   };
 
-  // App Story Ŭ�� �ڵ鷯
+  // App Story 클릭 핸들러
   const handleAppStoryClick = () => {
     setCurrentContentType("appstory");
-    setCurrentFilter("all"); // ������ ���� �ʱ�ȭ
-    // �޸��� ���� ��ġ�� ��ũ��
+    setCurrentFilter("all"); // 갤러리 필터 초기화
+    // 메모장 본문 위치로 스크롤
     setTimeout(() => {
       const contentManager = document.querySelector('[data-content-manager]');
       if (contentManager) {
@@ -671,7 +758,7 @@ export default function Home() {
     }, 100);
   };
 
-  // ���� admin mode Ʈ���� ��� (AdminUploadDialog �� HiddenAdminAccess���� ȣ��)
+  // 전역 admin mode 트리거 등록 (AdminUploadDialog 및 HiddenAdminAccess에서 호출)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -702,11 +789,11 @@ export default function Home() {
     };
   }, [isAdmin, adminVisible]);
 
-  // News Ŭ�� �ڵ鷯
+  // News 클릭 핸들러
   const handleNewsClick = () => {
     setCurrentContentType("news");
-    setCurrentFilter("all"); // ������ ���� �ʱ�ȭ
-    // �޸��� ���� ��ġ�� ��ũ��
+    setCurrentFilter("all"); // 갤러리 필터 초기화
+    // 메모장 본문 위치로 스크롤
     setTimeout(() => {
       const contentManager = document.querySelector('[data-content-manager]');
       if (contentManager) {
@@ -719,7 +806,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden" onMouseEnter={blockTranslationFeedback}>
-      {/* �� ������ �ִϸ��̼� */}
+      {/* 눈 내리는 애니메이션 */}
       <SnowAnimation />
       
       <Header 
@@ -750,7 +837,7 @@ export default function Home() {
              <span className="notranslate" translate="no">PRESENT</span>
            </h2>
            
-           {/* �߰� ���� ���� ��ġ �ɼ� - Ÿ��Ʋ �Ʒ� */}
+           {/* 추가 번역 위젯 위치 옵션 - 타이틀 아래 */}
            {/* <div id="google_translate_element_main" className="mb-4"></div> */}
            
            <p className="text-gray-300" translate="yes" onMouseEnter={blockTranslationFeedback}>
@@ -758,7 +845,7 @@ export default function Home() {
            </p>
          </div>
 
-                            {/* New Releases Ư�� ���� */}
+                            {/* New Releases 특별 섹션 */}
          {currentFilter === "latest" && (() => {
            const latestApp = getLatestApp();
            if (!latestApp) {
@@ -774,11 +861,11 @@ export default function Home() {
               
                              <div className="flex justify-center px-4 max-w-4xl mx-auto">
                  <div className="relative group w-full max-w-sm">
-                   {/* ȭ���� �׵θ� ȿ�� */}
+                   {/* 화려한 테두리 효과 */}
                    <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
                    <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse" style={{animationDelay: '0.5s'}}></div>
                    
-                   {/* ���� ī�� - ���� ������ ī��� ������ ������ ������ ������ */}
+                   {/* 메인 카드 - 기존 갤러리 카드와 완전히 동일한 반응형 사이즈 */}
                    <div className="relative group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 new-release-card w-full" style={{ backgroundColor: '#D1E2EA' }}>
                      <div className="relative">
                                                {/* Screenshot/App Preview */}
@@ -793,7 +880,7 @@ export default function Home() {
                              />
                           ) : (
                             <div className="absolute inset-0 w-full h-full flex items-center justify-center text-6xl">
-                              ??
+                              📱
                             </div>
                           )}
                         </div>
@@ -831,7 +918,7 @@ export default function Home() {
                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                          <div className="flex items-center space-x-2">
                            <div className="flex items-center gap-1">
-                             <span className="text-yellow-400">��</span>
+                             <span className="text-yellow-400">★</span>
                              <span>{latestApp.rating}</span>
                            </div>
                            <span>{latestApp.downloads}</span>
@@ -868,16 +955,16 @@ export default function Home() {
                              disabled={!latestApp.storeUrl}
                              onMouseEnter={startBlockingTranslationFeedback}
                            >
-                             <span>??</span>
+                             <span>⬇️</span>
                              <span className="notranslate" translate="no">Download</span>
                            </button>
                            
-                           {/* ����� ���� �̹��� */}
+                           {/* 스토어 배지 이미지 */}
                            <div className="h-7 flex items-center" onMouseEnter={blockTranslationFeedback}>
                              {latestApp.store === "google-play" ? (
                                <Image 
                                    src="/google-play-badge.png" 
-                                   alt="Google Play���� �ٿ�ε�"
+                                   alt="Google Play에서 다운로드"
                                    width={120}
                                    height={28}
                                    unoptimized={isBlobUrl('/google-play-badge.png')}
@@ -887,7 +974,7 @@ export default function Home() {
                              ) : (
                                <Image 
                                  src="/app-store-badge.png" 
-                                 alt="App Store���� �ٿ�ε�"
+                                 alt="App Store에서 다운로드"
                                  width={120}
                                  height={28}
                                  unoptimized={isBlobUrl('/app-store-badge.png')}
@@ -906,18 +993,18 @@ export default function Home() {
            );
          })()}
 
-                   {/* ������ Ÿ�Կ� ���� ���Ǻ� ������ */}
+                   {/* 콘텐츠 타입에 따른 조건부 렌더링 */}
                    {currentContentType ? (
-                     // App Story �Ǵ� News ���
+                     // App Story 또는 News 모드
                      <div className="space-y-6" data-content-manager>
                        {currentContentType === "appstory" ? (
-                         // App Story�� ���ο� ����Ʈ �� ���
+                         // App Story는 새로운 리스트 뷰 사용
                          <AppStoryList
                            type={currentContentType}
                            onBack={() => setCurrentContentType(null)}
                          />
                        ) : (
-                         // News�� ���ο� ����Ʈ �� ���
+                         // News도 새로운 리스트 뷰 사용
                          <NewsList
                            type={currentContentType}
                            onBack={() => setCurrentContentType(null)}
@@ -925,9 +1012,9 @@ export default function Home() {
                        )}
                      </div>
                    ) : (
-                     // �Ϲ� ������ ���
+                     // 일반 갤러리 모드
                      <>
-                       {/* Featured Apps ���� */}
+                       {/* Featured Apps 섹션 */}
                        {currentFilter === "featured" && (
                          <div className="space-y-6">
                            <div className="text-center" onMouseEnter={blockTranslationFeedback}>
@@ -945,7 +1032,7 @@ export default function Home() {
                          </div>
                        )}
                        
-                       {/* Events ���� */}
+                       {/* Events 섹션 */}
                        {currentFilter === "events" && (
                          <div className="space-y-6">
                            <div className="text-center" onMouseEnter={blockTranslationFeedback}>
@@ -968,7 +1055,7 @@ export default function Home() {
                                <div className="max-w-md mx-auto">
                                  <MailForm
                                    type="events"
-                                   buttonText="?? Events ?? Touch Here ??"
+                                   buttonText="🎉 Events 📧 Touch Here 🎉"
                                    buttonDescription="Choose one of the apps above as your free gift. The gift will be delivered to your email. By accepting, you agree to receive occasional news and offers from us via that email address."
                                    onMouseEnter={startBlockingTranslationFeedback}
                                  />
@@ -978,10 +1065,10 @@ export default function Home() {
                          </div>
                        )}
 
-                       {/* �Ϲ� ������ - New Release ��忡���� ���� */}
+                       {/* 일반 갤러리 - New Release 모드에서는 숨김 */}
                        {currentFilter !== "latest" && currentFilter !== "featured" && currentFilter !== "events" && (
                          <>
-                           {/* ���� �� ������ ��� */}
+                           {/* 기존 앱 갤러리 사용 */}
                            <AppGallery 
                              apps={filteredApps} 
                              viewMode="grid"
@@ -994,7 +1081,7 @@ export default function Home() {
                    )}
        </main>
 
-                    {/* Ǫ�� */}
+                    {/* 푸터 */}
         <footer className="border-t py-8 mt-16 bg-black" onMouseEnter={blockTranslationFeedback}>
                      <div className="container mx-auto text-center max-w-6xl" style={{ maxWidth: '1152px' }}>
                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1073,7 +1160,7 @@ export default function Home() {
                </div>
                      </div>
            
-                       {/* �߾� �̹��� */}
+                       {/* 중앙 이미지 */}
             <div className="flex items-center justify-center py-8">
               <Image 
                 src="/monk_cr.png" 
@@ -1084,13 +1171,13 @@ export default function Home() {
               />
             </div>
             
-            {/* �̹��� �ٷ� �� ���ΰ� �� Since 2025 */}
+            {/* 이미지 바로 밑 슬로건 및 Since 2025 */}
             <div className="text-center mt-0" onMouseEnter={blockTranslationFeedback}>
               <p className="text-lg font-medium text-amber-400 mb-1" translate="yes" onMouseEnter={blockTranslationFeedback}>
                 &quot;We&apos;re just. that kind of group!&quot;
               </p>
               <p className="text-sm text-gray-400 notranslate mb-1" translate="no" style={{translate: 'no'}} onMouseEnter={blockTranslationFeedback}>
-                ? Since 2025
+                — Since 2025
               </p>
               <div className="flex justify-center">
                 <button
@@ -1099,7 +1186,7 @@ export default function Home() {
                   className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-1"
                   translate="yes"
                 >
-                  ?? See That Group
+                  👉 See That Group
                 </button>
               </div>
             </div>
@@ -1108,15 +1195,15 @@ export default function Home() {
             <span 
               onClick={createAdminButtonHandler(handleCopyrightClick)}
               className="cursor-pointer hover:text-gray-300 transition-colors text-sm text-white"
-              title="������ ���"
+              title="관리자 모드"
             >
-              <span className="notranslate" translate="no">�� 2025 gongmyung.com. All rights reserved.</span>
+              <span className="notranslate" translate="no">© 2025 gongmyung.com. All rights reserved.</span>
             </span>
             
-                         {/* ������ ����� ���� ǥ�õǴ� ���ε� ��ư �� ī�װ�� ���� */}
+                         {/* 관리자 모드일 때만 표시되는 업로드 버튼 및 카테고리 필터 */}
                              {isAdmin && adminVisible && (
                <div className="mt-4 space-y-4">
-                 {/* ī�װ���� ���� ��ư */}
+                 {/* 카테고리별 필터 버튼 */}
                  <div className="flex justify-center gap-2 flex-wrap">
                    <button
                      onClick={createAdminButtonHandler(() => setCurrentFilter("all"))}
@@ -1128,7 +1215,7 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ?? ��ü ({allApps.length})
+                     📱 전체 ({allApps.length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleNormalClick)}
@@ -1140,7 +1227,7 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ?? �Ϲ� ({allApps.length - featuredIds.length - eventIds.length})
+                     📱 일반 ({allApps.length - featuredIds.length - eventIds.length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleFeaturedAppsClick)}
@@ -1152,7 +1239,7 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ? Featured ({featuredIds.length})
+                     ⭐ Featured ({featuredIds.length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleEventsClick)}
@@ -1164,11 +1251,11 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ?? Events ({eventIds.length})
+                     🎉 Events ({eventIds.length})
                    </button>
                  </div>
                  
-                 {/* ���� ���� �� ����ȭ ��ư */}
+                 {/* 수동 저장 및 동기화 버튼 */}
                  <div className="flex justify-center gap-4">
                    <button
                      onClick={createAdminButtonHandler(handleManualSave)}
@@ -1176,7 +1263,7 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ?? ������� ����
+                     🔒 변경사항 저장
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleRefreshData)}
@@ -1184,11 +1271,11 @@ export default function Home() {
                      onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
-                     ?? ������ ���ΰ�ħ
+                     🔄 데이터 새로고침
                    </button>
                  </div>
                  
-                 {/* ���ε� ��ư */}
+                 {/* 업로드 버튼 */}
                  <div className="flex justify-center">
                    <AdminUploadDialog 
                      onUpload={handleAppUpload}
@@ -1196,7 +1283,7 @@ export default function Home() {
                        size: "lg",
                        className: "bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105"
                      }}
-                     buttonText="?? �� �� ���ε�"
+                     buttonText="📱 새 앱 업로드"
                    />
                  </div>
                </div>
@@ -1208,18 +1295,18 @@ export default function Home() {
         
       </footer>
 
-      {/* ������ ������ ���� ���̾�α� */}
+      {/* 숨겨진 관리자 접근 다이얼로그 */}
       <HiddenAdminAccess 
         isOpen={isAdminDialogOpen}
         onClose={() => {
-          // ���̾�α� �ݱ� ���� �� �� ������ �ξ� DOM ����ȭ
+          // 다이얼로그 닫기 전에 더 긴 지연을 두어 DOM 안정화
           setTimeout(() => {
             setIsAdminDialogOpen(false);
           }, 150);
         }}
       />
 
-      {/* �� ���� ���̾�α� */}
+      {/* 앱 편집 다이얼로그 */}
       <EditAppDialog
         app={editingApp}
         isOpen={!!editingApp}
