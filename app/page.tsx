@@ -25,7 +25,7 @@ import { generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
 import { uploadFile, deleteFile } from "@/lib/storage-adapter";
 import { loadAppsFromBlob, loadAppsByTypeFromBlob, saveAppsByTypeToBlob, loadFeaturedIds, loadEventIds, saveFeaturedIds, saveEventIds } from "@/lib/data-loader";
-import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
+import { blockTranslationFeedback, createAdminButtonHandler, startBlockingTranslationFeedback } from "@/lib/translation-utils";
 import { AppGallery } from "@/components/app-gallery";
 import Image from "next/image";
 
@@ -499,6 +499,9 @@ export default function Home() {
     // StrictMode 이중 실행 방지
     if (loadedRef.current) return;
     loadedRef.current = true;
+
+    // 강화된 번역 피드백 차단 시작
+    startBlockingTranslationFeedback();
 
     let isMounted = true; // 컴포넌트 마운트 상태 추적
     
