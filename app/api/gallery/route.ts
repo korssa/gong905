@@ -25,9 +25,9 @@ async function loadDataFromFile(file: { url: string; pathname: string }): Promis
 // 실제 앱 데이터를 로드하는 헬퍼 함수 (이미지 URL 포함)
 async function loadAppsByType(type: string): Promise<AppItem[]> {
   try {
-    // 앱 데이터 로드 (이미지 URL 포함)
+    // 앱 데이터 로드 (이미지 URL 포함) - gallery 타입만 지원
     const { loadAppsByTypeFromBlob } = await import('@/lib/data-loader');
-    const apps = await loadAppsByTypeFromBlob(type);
+    const apps = await loadAppsByTypeFromBlob('gallery');
     
     // Featured/Events 플래그 적용
     const { loadFeaturedIds, loadEventIds } = await import('@/lib/data-loader');
@@ -39,11 +39,24 @@ async function loadAppsByType(type: string): Promise<AppItem[]> {
     const f = new Set(featuredIds);
     const e = new Set(eventIds);
     
-    return apps.map(app => ({ 
+    // 타입에 따라 필터링
+    const appsWithFlags = apps.map(app => ({ 
       ...app, 
       isFeatured: f.has(app.id), 
       isEvent: e.has(app.id) 
     }));
+    
+    // 타입별 필터링
+    switch (type) {
+      case 'featured':
+        return appsWithFlags.filter(app => app.isFeatured);
+      case 'events':
+        return appsWithFlags.filter(app => app.isEvent);
+      case 'all':
+      case 'gallery':
+      default:
+        return appsWithFlags;
+    }
   } catch (error) {
     console.error(`❌ 앱 데이터 로드 실패 (${type}):`, error);
     return [];
