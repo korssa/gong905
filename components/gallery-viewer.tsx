@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useGalleryStore, type GalleryType } from '@/store/useGalleryStore';
 import { GalleryGrid } from '@/components/gallery-grid';
 import { Button } from '@/components/ui/button';
-import { Gallery, Grid, List } from 'lucide-react';
+import { ImageIcon, Grid, List } from 'lucide-react';
 
 interface GalleryItem {
   id: string;
@@ -68,7 +68,7 @@ export function GalleryViewer() {
               onClick={() => setSelected(type)}
               className={`${selected === type ? color : ''} transition-all`}
             >
-              <Gallery className="w-4 h-4 mr-2" />
+              <ImageIcon className="w-4 h-4 mr-2" />
               {label}
             </Button>
           ))}
@@ -132,7 +132,7 @@ export function GalleryViewer() {
             />
           ) : (
             <div className="text-center py-16">
-              <Gallery className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+              <ImageIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">
                 이미지가 없습니다
               </h3>

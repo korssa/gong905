@@ -3,10 +3,10 @@ import { list } from '@vercel/blob';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { type: string } }
+  { params }: { params: Promise<{ type: string }> }
 ) {
   try {
-    const { type } = params;
+    const { type } = await params;
     
     // 유효한 갤러리 타입인지 확인
     if (!['a', 'b', 'c'].includes(type)) {
@@ -71,7 +71,7 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error(`❌ 갤러리 ${type} 데이터 로드 실패:`, error);
+    console.error(`❌ 갤러리 데이터 로드 실패:`, error);
     return NextResponse.json(
       { 
         success: false, 

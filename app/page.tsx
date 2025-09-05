@@ -28,7 +28,6 @@ import { loadAppsFromBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, save
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
 import { useAppStore } from "@/store/useAppStore";
 import { useFooterStore } from "@/store/useFooterStore";
-import { GalleryManager } from "@/components/gallery-manager";
 import { GalleryViewer } from "@/components/gallery-viewer";
 import { initializeBlobFolders } from "@/lib/gallery-loader";
 import { saveGalleryToBlob } from "@/lib/gallery-converter";
