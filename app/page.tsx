@@ -662,7 +662,7 @@ export default function Home() {
     return () => {
       isMounted = false;
     };
-  }, [setAllApps]); // setAllApps는 안정적인 함수이지만 명시적으로 추가
+  }, []); // 의존성 배열 비우기 (setAllApps는 안정적인 함수)
 
   // 로컬 상태 변화 로깅 (개발 모드에서만) - 무한 루프 방지를 위해 제거
   // useEffect(() => {
