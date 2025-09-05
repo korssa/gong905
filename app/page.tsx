@@ -275,8 +275,8 @@ export default function Home() {
         console.log('🏷️ 플래그 로드 완료:', { 
           featured: featuredIds.length, 
           events: eventIds.length,
-          featuredIds,
-          eventIds
+          featuredIds: JSON.stringify(featuredIds),
+          eventIds: JSON.stringify(eventIds)
         });
         
         // 4. 앱들에 플래그 적용

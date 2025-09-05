@@ -268,13 +268,29 @@ export async function toggleFeaturedAppStatus(
 export async function loadFeaturedIds(): Promise<string[]> {
   try {
     console.log('🔄 Featured IDs 로딩 시작...');
+    
+    // 개발 환경에서는 직접 파일 읽기 시도
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const featuredPath = path.join(process.cwd(), 'data', 'featured.json');
+        const data = await fs.readFile(featuredPath, 'utf-8');
+        const parsed = JSON.parse(data);
+        console.log('✅ Featured IDs 로딩 완료 (직접 파일):', parsed);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (fileError) {
+        console.log('📁 직접 파일 읽기 실패, API 시도:', fileError);
+      }
+    }
+    
     const res = await fetch('/api/data/featured', { cache: 'no-store' });
     if (!res.ok) {
       console.error('❌ Featured API 응답 실패:', res.status, res.statusText);
       return [];
     }
     const data = await res.json();
-    console.log('✅ Featured IDs 로딩 완료:', data);
+    console.log('✅ Featured IDs 로딩 완료 (API):', data);
     return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('❌ Featured IDs 로딩 오류:', error);
@@ -288,13 +304,29 @@ export async function loadFeaturedIds(): Promise<string[]> {
 export async function loadEventIds(): Promise<string[]> {
   try {
     console.log('🔄 Event IDs 로딩 시작...');
+    
+    // 개발 환경에서는 직접 파일 읽기 시도
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const eventsPath = path.join(process.cwd(), 'data', 'events.json');
+        const data = await fs.readFile(eventsPath, 'utf-8');
+        const parsed = JSON.parse(data);
+        console.log('✅ Event IDs 로딩 완료 (직접 파일):', parsed);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (fileError) {
+        console.log('📁 직접 파일 읽기 실패, API 시도:', fileError);
+      }
+    }
+    
     const res = await fetch('/api/data/events', { cache: 'no-store' });
     if (!res.ok) {
       console.error('❌ Events API 응답 실패:', res.status, res.statusText);
       return [];
     }
     const data = await res.json();
-    console.log('✅ Event IDs 로딩 완료:', data);
+    console.log('✅ Event IDs 로딩 완료 (API):', data);
     return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('❌ Event IDs 로딩 오류:', error);
