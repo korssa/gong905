@@ -1023,10 +1023,9 @@ export default function Home() {
                            {/* 기존 앱 갤러리 사용 */}
                            <AppGallery 
                              apps={filteredApps} 
-                             onAppClick={handleAppClick}
+                             viewMode="grid"
                              onEditApp={handleEditApp}
                              onDeleteApp={handleDeleteApp}
-                             isAdmin={isAdmin}
                            />
                            
                            {/* Events 모드일 때 설명문구와 메일폼 추가 */}
