@@ -268,14 +268,18 @@ export async function toggleFeaturedAppStatus(
 export async function loadFeaturedIds(): Promise<string[]> {
   try {
     console.log('🔄 Featured IDs 로딩 시작...');
+    console.log('📍 현재 URL:', window.location.href);
     
     const res = await fetch('/api/data/featured', { cache: 'no-store' });
+    console.log('📡 Featured API 응답 상태:', res.status, res.statusText);
+    
     if (!res.ok) {
       console.error('❌ Featured API 응답 실패:', res.status, res.statusText);
       return [];
     }
     const data = await res.json();
     console.log('✅ Featured IDs 로딩 완료 (API):', data);
+    console.log('🔍 데이터 타입:', typeof data, '배열 여부:', Array.isArray(data));
     return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('❌ Featured IDs 로딩 오류:', error);
@@ -289,14 +293,18 @@ export async function loadFeaturedIds(): Promise<string[]> {
 export async function loadEventIds(): Promise<string[]> {
   try {
     console.log('🔄 Event IDs 로딩 시작...');
+    console.log('📍 현재 URL:', window.location.href);
     
     const res = await fetch('/api/data/events', { cache: 'no-store' });
+    console.log('📡 Events API 응답 상태:', res.status, res.statusText);
+    
     if (!res.ok) {
       console.error('❌ Events API 응답 실패:', res.status, res.statusText);
       return [];
     }
     const data = await res.json();
     console.log('✅ Event IDs 로딩 완료 (API):', data);
+    console.log('🔍 데이터 타입:', typeof data, '배열 여부:', Array.isArray(data));
     return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('❌ Event IDs 로딩 오류:', error);
