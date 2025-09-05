@@ -1046,7 +1046,7 @@ export default function Home() {
                            />
                            
                            {/* Events MailForm */}
-                           <div className="mt-12 text-center max-w-4xl mx-auto">
+                           <div className="mt-12 text-center max-w-4xl mx-auto" onMouseEnter={blockTranslationFeedback}>
                              <div className="max-w-2xl mx-auto">
                                <div className="max-w-md mx-auto">
                                  <MailForm

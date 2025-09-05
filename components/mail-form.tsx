@@ -186,18 +186,18 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
           onMouseEnter={onMouseEnter}
           className={`w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group ${type === "events" ? "event-mail-button" : ""}`}
         >
-          <div className="text-base font-medium group-hover:text-amber-400 transition-colors">
+          <div className="text-base font-medium group-hover:text-amber-400 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>
             {buttonText}
           </div>
-                     <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors">
-             {buttonDescription}
-           </div>
+          <div className="text-xs text-gray-400 mt-1 group-hover:text-gray-300 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>
+            {buttonDescription}
+          </div>
         </button>
       </DialogTrigger>
       
-             <DialogContent className="sm:max-w-sm bg-gray-900 border-gray-700 text-white max-h-[80vh] overflow-y-auto">
+             <DialogContent className="sm:max-w-sm bg-gray-900 border-gray-700 text-white max-h-[80vh] overflow-y-auto" onMouseEnter={blockTranslationFeedback}>
          <DialogHeader>
-           <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-amber-400">
+           <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-amber-400" translate="yes" onMouseEnter={blockTranslationFeedback}>
              <Mail className="h-4 w-4" />
              {getTitle()}
            </DialogTitle>
@@ -206,7 +206,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                  <form onSubmit={handleSubmit} className="space-y-3 mt-3">
            <div className="grid grid-cols-2 gap-3">
              <div>
-                                <label htmlFor="name" className="block text-xs font-medium text-gray-300 mb-1">
+                                <label htmlFor="name" className="block text-xs font-medium text-gray-300 mb-1" translate="yes" onMouseEnter={blockTranslationFeedback}>
                    Name *
                  </label>
                <Input
@@ -220,7 +220,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                />
              </div>
              <div>
-                                <label htmlFor="email" className="block text-xs font-medium text-gray-300 mb-1">
+                                <label htmlFor="email" className="block text-xs font-medium text-gray-300 mb-1" translate="yes" onMouseEnter={blockTranslationFeedback}>
                    Email *
                  </label>
                <Input
@@ -237,7 +237,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
           
                                {type === "events" ? (
             <div>
-                             <label className="block text-xs font-medium text-gray-300 mb-2">
+                             <label className="block text-xs font-medium text-gray-300 mb-2" translate="yes" onMouseEnter={blockTranslationFeedback}>
                  Event App *
                </label>
               <div className="grid grid-cols-3 gap-2">
@@ -278,7 +278,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
             </div>
           ) : (
             <div>
-                             <label htmlFor="subject" className="block text-xs font-medium text-gray-300 mb-1">
+                             <label htmlFor="subject" className="block text-xs font-medium text-gray-300 mb-1" translate="yes" onMouseEnter={blockTranslationFeedback}>
                  Subject *
                </label>
               <Input
@@ -294,7 +294,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
           )}
            
                                    <div>
-                             <label htmlFor="message" className="block text-xs font-medium text-gray-300 mb-1">
+                             <label htmlFor="message" className="block text-xs font-medium text-gray-300 mb-1" translate="yes" onMouseEnter={blockTranslationFeedback}>
                  Message {type === "events" ? "(optional)" : "*"}
                </label>
               <Textarea
@@ -311,7 +311,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
              {/* Contact Us용 이미지 첨부 */}
              {type === "contact" && (
                <div>
-                 <label className="block text-xs font-medium text-gray-300 mb-2">
+                 <label className="block text-xs font-medium text-gray-300 mb-2" translate="yes" onMouseEnter={blockTranslationFeedback}>
                    Attach Image (optional)
                  </label>
                  <div className="space-y-2">
@@ -352,7 +352,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
              {/* 이벤트용 체크박스 */}
             {type === "events" && (
               <div className="mt-4">
-                                 <label className="flex items-start space-x-2 text-sm text-gray-400">
+                                 <label className="flex items-start space-x-2 text-sm text-gray-400" translate="yes" onMouseEnter={blockTranslationFeedback}>
                   <input
                     type="checkbox"
                     required
