@@ -43,22 +43,11 @@ const isBlobUrl = (url?: string) => {
 //   return apps.filter(a => set.has(a.id));
 // };
 
-// Featured/Events 플래그를 앱에 주입하는 유틸 함수 (표시용만)
+// Featured/Events 플래그를 앱에 주입하는 유틸 함수
 const applyFeaturedFlags = (apps: AppItem[], featuredIds: string[], eventIds: string[]) => {
   const f = new Set(featuredIds);
   const e = new Set(eventIds);
-  
-  const result = apps.map(a => ({ ...a, isFeatured: f.has(a.id), isEvent: e.has(a.id) }));
-  
-  console.log('🏷️ 플래그 적용 결과:', {
-    totalApps: result.length,
-    featuredCount: result.filter(a => a.isFeatured).length,
-    eventsCount: result.filter(a => a.isEvent).length,
-    featuredApps: result.filter(a => a.isFeatured).map(a => ({ id: a.id, name: a.name })),
-    eventApps: result.filter(a => a.isEvent).map(a => ({ id: a.id, name: a.name }))
-  });
-  
-  return result;
+  return apps.map(a => ({ ...a, isFeatured: f.has(a.id), isEvent: e.has(a.id) }));
 };
 
 // 빈 앱 데이터 (샘플 앱 제거됨)
@@ -128,7 +117,7 @@ export default function Home() {
       }
       case "all":
       default:
-        return filtered.sort((a, b) => a.name.localeCompare(b.name));
+        return allApps.sort((a, b) => a.name.localeCompare(b.name));
     }
   }, [allApps, currentFilter, searchQuery, getFeaturedApps, getEventApps, getNormalApps]);
 
@@ -240,12 +229,7 @@ export default function Home() {
           loadFeaturedIds(),
           loadEventIds()
         ]);
-        console.log('🏷️ 플래그 로드 완료:', { 
-          featured: featuredIds.length, 
-          events: eventIds.length,
-          featuredIds: featuredIds,
-          eventIds: eventIds
-        });
+        console.log('🏷️ 플래그 로드 완료:', { featured: featuredIds.length, events: eventIds.length });
         
         // 4. 앱들에 플래그 적용
         const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
@@ -1137,12 +1121,8 @@ export default function Home() {
                            <GalleryManager 
                              viewMode={viewMode}
                              filter={currentFilter === "all" ? "all" : currentFilter === "featured" ? "featured" : "events"}
-                             onRefresh={() => {
-                               // 갤러리 새로고침 시 기존 앱 데이터도 새로고침
-                               handleRefreshData();
-                             }}
+                             onRefresh={handleRefreshData}
                              isAdmin={isAuthenticated && adminVisible}
-                             apps={allApps}
                              filteredApps={filteredApps}
                              onDeleteApp={handleDeleteApp}
                            />
