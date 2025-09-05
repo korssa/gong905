@@ -1224,12 +1224,12 @@ export default function Home() {
                      🔒 변경사항 저장
                    </button>
                    <button
-                     onClick={createAdminButtonHandler(syncAppsToGallery)}
+                     onClick={createAdminButtonHandler(handleRefreshData)}
                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-sm font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105 notranslate"
                      onMouseEnter={blockTranslationFeedback}
                      translate="no"
                    >
-                     🖼️ 갤러리 동기화
+                     🔄 데이터 새로고침
                    </button>
                  </div>
                  
