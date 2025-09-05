@@ -1,5 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { list, del } from '@vercel/blob';
+import { list } from '@vercel/blob';
+import type { GalleryItem } from '@/components/gallery-card';
+
+// JSON 파일에서 데이터를 로드하는 헬퍼 함수
+async function loadDataFromFile(file: { url: string; pathname: string }): Promise<GalleryItem[]> {
+  try {
+    const response = await fetch(file.url);
+    if (!response.ok) return [];
+    
+    const data = await response.json();
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data.items && Array.isArray(data.items)) {
+      return data.items;
+    }
+    return [];
+  } catch (error) {
+    console.error(`❌ 파일 로드 실패: ${file.pathname}`, error);
+    return [];
+  }
+}
+
+// 특정 타입의 갤러리 데이터를 로드하는 헬퍼 함수
+async function loadGalleryByType(type: string): Promise<GalleryItem[]> {
+  const { blobs } = await list({
+    prefix: `${type}/`,
+    limit: 1000
+  });
+
+  const jsonFiles = blobs.filter(blob => 
+    blob.pathname.endsWith('.json') && 
+    blob.pathname !== `${type}/data.json`
+  );
+
+  const allItems: GalleryItem[] = [];
+  for (const file of jsonFiles) {
+    const items = await loadDataFromFile(file);
+    allItems.push(...items);
+  }
+  
+  return allItems;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,65 +48,14 @@ export async function GET(request: NextRequest) {
 
     // URL 파라미터에서 타입 확인
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'all';
+    const type = searchParams.get('type') ?? 'all';
 
-    let items = [];
+    let items: GalleryItem[] = [];
 
     if (type === 'all') {
-      // 모든 갤러리 데이터 로드
-      const { blobs } = await list({
-        prefix: 'gallery/',
-        limit: 1000
-      });
-
-      // JSON 파일들만 필터링하고 데이터 로드
-      const jsonFiles = blobs.filter(blob => 
-        blob.pathname.endsWith('.json') && 
-        blob.pathname !== 'gallery/data.json' // 메타데이터 파일 제외
-      );
-
-      for (const file of jsonFiles) {
-        try {
-          const response = await fetch(file.url);
-          if (response.ok) {
-            const data = await response.json();
-            if (Array.isArray(data)) {
-              items.push(...data);
-            } else if (data.items && Array.isArray(data.items)) {
-              items.push(...data.items);
-            }
-          }
-        } catch (error) {
-          console.error(`❌ 파일 로드 실패: ${file.pathname}`, error);
-        }
-      }
+      items = await loadGalleryByType('gallery');
     } else {
-      // 특정 타입의 데이터 로드
-      const { blobs } = await list({
-        prefix: `${type}/`,
-        limit: 1000
-      });
-
-      const jsonFiles = blobs.filter(blob => 
-        blob.pathname.endsWith('.json') && 
-        blob.pathname !== `${type}/data.json`
-      );
-
-      for (const file of jsonFiles) {
-        try {
-          const response = await fetch(file.url);
-          if (response.ok) {
-            const data = await response.json();
-            if (Array.isArray(data)) {
-              items.push(...data);
-            } else if (data.items && Array.isArray(data.items)) {
-              items.push(...data.items);
-            }
-          }
-        } catch (error) {
-          console.error(`❌ 파일 로드 실패: ${file.pathname}`, error);
-        }
-      }
+      items = await loadGalleryByType(type);
     }
 
     console.log(`✅ 갤러리 데이터 로드 완료: ${items.length}개 항목`);
@@ -110,8 +100,8 @@ export async function POST(request: NextRequest) {
     const existingItems = existingData.success ? existingData.data : [];
 
     // 중복 제거 (ID 기준)
-    const existingIds = new Set(existingItems.map((item: any) => item.id));
-    const newItems = items.filter((item: any) => !existingIds.has(item.id));
+    const existingIds = new Set(existingItems.map((item: GalleryItem) => item.id));
+    const newItems = items.filter((item: GalleryItem) => !existingIds.has(item.id));
     const mergedItems = [...newItems, ...existingItems];
 
     // Vercel Blob에 저장
@@ -158,7 +148,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const type = searchParams.get('type') || 'gallery';
+    const type = searchParams.get('type') ?? 'gallery';
 
     if (!id) {
       return NextResponse.json(
@@ -181,7 +171,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // 항목 제거
-    const updatedItems = existingData.data.filter((item: any) => item.id !== id);
+    const updatedItems = existingData.data.filter((item: GalleryItem) => item.id !== id);
 
     // 업데이트된 데이터 저장
     const { put } = await import('@vercel/blob');
