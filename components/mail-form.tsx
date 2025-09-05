@@ -183,7 +183,10 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
             e.stopPropagation();
             setIsOpen(true);
           }}
-          onMouseEnter={onMouseEnter}
+          onMouseEnter={() => {
+            if (onMouseEnter) onMouseEnter();
+            blockTranslationFeedback();
+          }}
           className={`w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group ${type === "events" ? "event-mail-button" : ""}`}
         >
           <div className="text-base font-medium group-hover:text-amber-400 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>
@@ -203,7 +206,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
            </DialogTitle>
          </DialogHeader>
         
-                 <form onSubmit={handleSubmit} className="space-y-3 mt-3">
+                 <form onSubmit={handleSubmit} className="space-y-3 mt-3" onMouseEnter={blockTranslationFeedback}>
            <div className="grid grid-cols-2 gap-3">
              <div>
                                 <label htmlFor="name" className="block text-xs font-medium text-gray-300 mb-1" translate="yes" onMouseEnter={blockTranslationFeedback}>
@@ -217,6 +220,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                  onChange={(e) => handleInputChange("name", e.target.value)}
                                     className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-amber-400"
                    placeholder="Your name"
+                   onMouseEnter={blockTranslationFeedback}
                />
              </div>
              <div>
@@ -231,6 +235,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                  onChange={(e) => handleInputChange("email", e.target.value)}
                                     className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-amber-400"
                    placeholder="your@email.com"
+                   onMouseEnter={blockTranslationFeedback}
                />
              </div>
            </div>
@@ -240,7 +245,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                              <label className="block text-xs font-medium text-gray-300 mb-2" translate="yes" onMouseEnter={blockTranslationFeedback}>
                  Event App *
                </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2" onMouseEnter={blockTranslationFeedback}>
                 <button
                   type="button"
                   onClick={createAdminButtonHandler(() => handleInputChange("subject", "Event App 1"))}
@@ -249,6 +254,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                        ? "bg-amber-500 border-amber-500 text-white" 
                        : "bg-gray-800 border-gray-600 text-gray-300 hover:border-amber-400"
                    }`}
+                  onMouseEnter={blockTranslationFeedback}
                 >
                   1
                 </button>
@@ -260,6 +266,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                        ? "bg-amber-500 border-amber-500 text-white" 
                        : "bg-gray-800 border-gray-600 text-gray-300 hover:border-amber-400"
                    }`}
+                  onMouseEnter={blockTranslationFeedback}
                 >
                   2
                 </button>
@@ -271,6 +278,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                        ? "bg-amber-500 border-amber-500 text-white" 
                        : "bg-gray-800 border-gray-600 text-gray-300 hover:border-amber-400"
                    }`}
+                  onMouseEnter={blockTranslationFeedback}
                 >
                   3
                 </button>
@@ -305,6 +313,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                 onChange={(e) => handleInputChange("message", e.target.value)}
                                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-amber-400 resize-none"
                  placeholder={getMessagePlaceholder()}
+                 onMouseEnter={blockTranslationFeedback}
               />
                          </div>
 
@@ -360,6 +369,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                     name="agreeToMarketing"
                     checked={formData.agreeToMarketing}
                     onChange={(e) => handleInputChange("agreeToMarketing", e.target.checked)}
+                    onMouseEnter={blockTranslationFeedback}
                   />
                   <span>
                     I agree to receive occasional news and offers from gongmyung.com via email.  
@@ -375,6 +385,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                  type="submit"
                  disabled={isSubmitting}
                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-medium"
+                 onMouseEnter={blockTranslationFeedback}
                >
                                 {isSubmitting ? (
                    <div className="flex items-center gap-2">
@@ -394,6 +405,7 @@ export function MailForm({ type, buttonText, buttonDescription, onMouseEnter }: 
                  variant="outline"
                  onClick={createAdminButtonHandler(() => setIsOpen(false))}
                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                 onMouseEnter={blockTranslationFeedback}
                >
                <X className="h-4 w-4" />
              </Button>
