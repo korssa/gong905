@@ -267,11 +267,17 @@ export async function toggleFeaturedAppStatus(
  */
 export async function loadFeaturedIds(): Promise<string[]> {
   try {
+    console.log('🔄 Featured IDs 로딩 시작...');
     const res = await fetch('/api/data/featured', { cache: 'no-store' });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error('❌ Featured API 응답 실패:', res.status, res.statusText);
+      return [];
+    }
     const data = await res.json();
+    console.log('✅ Featured IDs 로딩 완료:', data);
     return Array.isArray(data) ? data : [];
   } catch (error) {
+    console.error('❌ Featured IDs 로딩 오류:', error);
     return [];
   }
 }
@@ -281,11 +287,17 @@ export async function loadFeaturedIds(): Promise<string[]> {
  */
 export async function loadEventIds(): Promise<string[]> {
   try {
+    console.log('🔄 Event IDs 로딩 시작...');
     const res = await fetch('/api/data/events', { cache: 'no-store' });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error('❌ Events API 응답 실패:', res.status, res.statusText);
+      return [];
+    }
     const data = await res.json();
+    console.log('✅ Event IDs 로딩 완료:', data);
     return Array.isArray(data) ? data : [];
   } catch (error) {
+    console.error('❌ Event IDs 로딩 오류:', error);
     return [];
   }
 }

@@ -146,9 +146,23 @@ export default function Home() {
         return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
       }
       case "featured":
-        return allApps.filter(app => featuredIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
+        const featuredApps = allApps.filter(app => featuredIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
+        console.log('🔍 Featured 필터링:', { 
+          totalApps: allApps.length, 
+          featuredIds, 
+          featuredApps: featuredApps.length,
+          featuredAppIds: featuredApps.map(a => a.id)
+        });
+        return featuredApps;
       case "events":
-        return allApps.filter(app => eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
+        const eventApps = allApps.filter(app => eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
+        console.log('🔍 Events 필터링:', { 
+          totalApps: allApps.length, 
+          eventIds, 
+          eventApps: eventApps.length,
+          eventAppIds: eventApps.map(a => a.id)
+        });
+        return eventApps;
       case "normal":
         // 일반 카드만 표시 (featured/events에 포함되지 않은 앱들)
         return allApps.filter(app => !featuredIds.includes(app.id) && !eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
@@ -258,7 +272,12 @@ export default function Home() {
           loadFeaturedIds(),
           loadEventIds()
         ]);
-        console.log('🏷️ 플래그 로드 완료:', { featured: featuredIds.length, events: eventIds.length });
+        console.log('🏷️ 플래그 로드 완료:', { 
+          featured: featuredIds.length, 
+          events: eventIds.length,
+          featuredIds,
+          eventIds
+        });
         
         // 4. 앱들에 플래그 적용
         const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
