@@ -215,6 +215,8 @@ export function AdminUploadDialog({
         formDataToSend.append('author', formData.developer);
         formDataToSend.append('tags', formData.tags || '');
         formDataToSend.append('isPublished', 'true');
+        formDataToSend.append('store', formData.store || 'google-play');
+        formDataToSend.append('storeUrl', formData.storeUrl || '');
         
         const response = await fetch(`/api/gallery?type=${targetGallery}`, {
           method: 'POST',

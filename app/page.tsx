@@ -1024,7 +1024,7 @@ export default function Home() {
                          <GalleryManager
                            type="featured"
                            title="Featured Apps"
-                           description="추천 앱들을 확인해보세요"
+                           description="Discover our curated selection of recommended apps"
                            isAdmin={isAdmin}
                          />
                        )}
@@ -1033,7 +1033,7 @@ export default function Home() {
                          <GalleryManager
                            type="events"
                            title="Events"
-                           description="이벤트 정보를 확인해보세요"
+                           description="Stay updated with the latest app events and special offers"
                            isAdmin={isAdmin}
                          />
                        )}

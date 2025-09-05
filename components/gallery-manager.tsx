@@ -26,6 +26,8 @@ export interface GalleryItem {
   tags?: string[];
   isPublished: boolean;
   type: 'gallery' | 'featured' | 'events';
+  store?: 'google-play' | 'app-store'; // 스토어 정보 추가
+  storeUrl?: string; // 스토어 URL 추가
 }
 
 interface GalleryManagerProps {
@@ -213,7 +215,7 @@ export function GalleryManager({
       <div className="flex flex-col items-center justify-center space-y-4">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white">{title}</h2>
-          <p className="text-gray-400">{description}</p>
+          <p className="text-gray-400" onMouseEnter={blockTranslationFeedback}>{description}</p>
         </div>
         
         {/* 관리자 업로드 버튼 */}
@@ -330,36 +332,47 @@ export function GalleryManager({
                     size="sm"
                     className="h-6 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 whitespace-nowrap"
                     onClick={() => {
-                      // 구글플레이 링크로 이동 (임시로 앱 제목을 검색어로 사용)
-                      const searchQuery = encodeURIComponent(item.title);
-                      window.open(`https://play.google.com/store/search?q=${searchQuery}&c=apps`, '_blank');
+                      if (item.storeUrl) {
+                        window.open(item.storeUrl, '_blank');
+                      } else {
+                        const searchQuery = encodeURIComponent(item.title);
+                        if (item.store === 'google-play') {
+                          window.open(`https://play.google.com/store/search?q=${searchQuery}&c=apps`, '_blank');
+                        } else if (item.store === 'app-store') {
+                          window.open(`https://apps.apple.com/search?term=${searchQuery}`, '_blank');
+                        } else {
+                          // 기본값으로 구글플레이 사용
+                          window.open(`https://play.google.com/store/search?q=${searchQuery}&c=apps`, '_blank');
+                        }
+                      }
                     }}
                   >
                     <User className="h-3 w-3" />
                     See App
                   </Button>
                   
-                  {/* Store Badges */}
-                  <div className="flex gap-2">
-                    <img 
-                      src="/google-play-badge.png" 
-                      alt="Get it on Google Play"
-                      className="h-6 cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => {
-                        const searchQuery = encodeURIComponent(item.title);
-                        window.open(`https://play.google.com/store/search?q=${searchQuery}&c=apps`, '_blank');
-                      }}
-                    />
-                    <img 
-                      src="/app-store-badge.png" 
-                      alt="Download on the App Store"
-                      className="h-6 cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => {
-                        const searchQuery = encodeURIComponent(item.title);
-                        window.open(`https://apps.apple.com/search?term=${searchQuery}`, '_blank');
-                      }}
-                    />
-                  </div>
+                  {/* Store Badge - 선택된 스토어에 따라 동적 표시 */}
+                  {item.store && (
+                    <div className="flex gap-2">
+                      <img 
+                        src={item.store === 'google-play' ? "/google-play-badge.png" : "/app-store-badge.png"}
+                        alt={item.store === 'google-play' ? "Get it on Google Play" : "Download on the App Store"}
+                        className="h-6 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => {
+                          if (item.storeUrl) {
+                            window.open(item.storeUrl, '_blank');
+                          } else {
+                            const searchQuery = encodeURIComponent(item.title);
+                            if (item.store === 'google-play') {
+                              window.open(`https://play.google.com/store/search?q=${searchQuery}&c=apps`, '_blank');
+                            } else {
+                              window.open(`https://apps.apple.com/search?term=${searchQuery}`, '_blank');
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>

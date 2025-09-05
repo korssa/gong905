@@ -12,6 +12,8 @@ export interface GalleryItem {
   tags?: string[];
   isPublished: boolean;
   type: 'gallery' | 'featured' | 'events';
+  store?: 'google-play' | 'app-store'; // 스토어 정보 추가
+  storeUrl?: string; // 스토어 URL 추가
 }
 
 // GET: 갤러리 아이템 목록 조회
@@ -79,6 +81,8 @@ export async function POST(request: NextRequest) {
     const author = formData.get('author') as string;
     const tags = formData.get('tags') as string;
     const isPublished = formData.get('isPublished') === 'true';
+    const store = formData.get('store') as 'google-play' | 'app-store' | null;
+    const storeUrl = formData.get('storeUrl') as string | null;
     const file = formData.get('file') as File | null;
 
     if (!title || !content || !author) {
@@ -110,6 +114,8 @@ export async function POST(request: NextRequest) {
       tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
       isPublished,
       type,
+      store: store || 'google-play', // 기본값으로 구글플레이 설정
+      storeUrl: storeUrl || undefined,
     };
 
     // JSON 파일로 저장
