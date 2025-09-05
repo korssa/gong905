@@ -1042,7 +1042,22 @@ export default function Home() {
                              onDeleteApp={handleDeleteApp}
                              onToggleFeatured={toggleFeatured}
                              onToggleEvent={toggleEvent}
+                             showNumbering={true}
                            />
+                           
+                           {/* Events MailForm */}
+                           <div className="mt-12 text-center max-w-4xl mx-auto">
+                             <div className="max-w-2xl mx-auto">
+                               <div className="max-w-md mx-auto">
+                                 <MailForm
+                                   type="events"
+                                   buttonText="🎉 Events 📧 Touch Here 🎉"
+                                   buttonDescription="Choose one of the apps above as your free gift. The gift will be delivered to your email. By accepting, you agree to receive occasional news and offers from us via that email address."
+                                   onMouseEnter={blockTranslationFeedback}
+                                 />
+                               </div>
+                             </div>
+                           </div>
                          </div>
                        )}
 
