@@ -170,7 +170,7 @@ export default function Home() {
       default:
         return allApps.sort((a, b) => a.name.localeCompare(b.name));
     }
-  }, [allApps, currentFilter, searchQuery, featuredIds, eventIds]);
+  }, [allApps, currentFilter, searchQuery, featuredIds.length, eventIds.length]); // 배열 길이만 의존성으로 사용
 
 
 
