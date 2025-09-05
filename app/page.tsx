@@ -953,7 +953,7 @@ export default function Home() {
                                }
                              }}
                              disabled={!latestApp.storeUrl}
-                             onMouseEnter={blockTranslationFeedback}
+                             onMouseEnter={startBlockingTranslationFeedback}
                            >
                              <span>⬇️</span>
                              <span className="notranslate" translate="no">Download</span>
@@ -969,7 +969,7 @@ export default function Home() {
                                    height={28}
                                    unoptimized={isBlobUrl('/google-play-badge.png')}
                                    className="h-7 object-contain"
-                                   onMouseEnter={blockTranslationFeedback}
+                                   onMouseEnter={startBlockingTranslationFeedback}
                                  />
                              ) : (
                                <Image 
@@ -979,7 +979,7 @@ export default function Home() {
                                  height={28}
                                  unoptimized={isBlobUrl('/app-store-badge.png')}
                                  className="h-7 object-contain"
-                                 onMouseEnter={blockTranslationFeedback}
+                                 onMouseEnter={startBlockingTranslationFeedback}
                                />
                              )}
                            </div>
@@ -1057,7 +1057,7 @@ export default function Home() {
                                    type="events"
                                    buttonText="🎉 Events 📧 Touch Here 🎉"
                                    buttonDescription="Choose one of the apps above as your free gift. The gift will be delivered to your email. By accepting, you agree to receive occasional news and offers from us via that email address."
-                                   onMouseEnter={blockTranslationFeedback}
+                                   onMouseEnter={startBlockingTranslationFeedback}
                                  />
                                </div>
                              </div>
@@ -1091,7 +1091,7 @@ export default function Home() {
                    <div className="space-y-3">
                                                                                           <button 
                           onClick={(e) => handleFooterLinkClick(handleAllAppsClick, e)} 
-                          onMouseEnter={blockTranslationFeedback}
+                          onMouseEnter={startBlockingTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group notranslate"
                           translate="no"
                         >
@@ -1100,7 +1100,7 @@ export default function Home() {
                        </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleNewReleasesClick, e)} 
-                          onMouseEnter={blockTranslationFeedback}
+                          onMouseEnter={startBlockingTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>New Releases</div>
@@ -1108,7 +1108,7 @@ export default function Home() {
                        </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleFeaturedAppsClick, e)} 
-                          onMouseEnter={blockTranslationFeedback}
+                          onMouseEnter={startBlockingTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>Featured Apps</div>
@@ -1116,7 +1116,7 @@ export default function Home() {
                        </button>
                                                                                               <button 
                            onClick={(e) => handleFooterLinkClick(handleEventsClick, e)} 
-                           onMouseEnter={blockTranslationFeedback}
+                           onMouseEnter={startBlockingTranslationFeedback}
                            className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                          >
                           <div className="text-base font-medium group-hover:text-amber-400 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>Events</div>
@@ -1130,7 +1130,7 @@ export default function Home() {
                    <div className="space-y-3">
                                                                                                                    <button 
                            onClick={(e) => handleFooterLinkClick(handleAppStoryClick, e)} 
-                           onMouseEnter={blockTranslationFeedback}
+                           onMouseEnter={startBlockingTranslationFeedback}
                            className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                          >
                           <div className="text-base font-medium group-hover:text-amber-400 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>App Story</div>
@@ -1138,7 +1138,7 @@ export default function Home() {
                         </button>
                                                <button 
                           onClick={(e) => handleFooterLinkClick(handleNewsClick, e)} 
-                          onMouseEnter={blockTranslationFeedback}
+                          onMouseEnter={startBlockingTranslationFeedback}
                           className="w-full border border-white rounded-lg p-4 text-left hover:border-amber-400 hover:bg-gray-800/50 transition-all duration-300 group"
                         >
                          <div className="text-base font-medium group-hover:text-amber-400 transition-colors" translate="yes" onMouseEnter={blockTranslationFeedback}>News</div>
@@ -1148,13 +1148,13 @@ export default function Home() {
                          type="feedback"
                          buttonText="Feedback"
                          buttonDescription="Your thoughts matter"
-                         onMouseEnter={blockTranslationFeedback}
+                         onMouseEnter={startBlockingTranslationFeedback}
                        />
                                                                                            <MailForm
                           type="contact"
                           buttonText="Contact Us"
                           buttonDescription="Help & answers"
-                          onMouseEnter={blockTranslationFeedback}
+                          onMouseEnter={startBlockingTranslationFeedback}
                         />
                    </div>
                </div>
@@ -1212,7 +1212,7 @@ export default function Home() {
                          ? "bg-blue-600 text-white" 
                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                      }`}
-                     onMouseEnter={blockTranslationFeedback}
+                     onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
                      📱 전체 ({allApps.length})
@@ -1224,7 +1224,7 @@ export default function Home() {
                          ? "bg-green-600 text-white" 
                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                      }`}
-                     onMouseEnter={blockTranslationFeedback}
+                     onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
                      📱 일반 ({allApps.length - featuredIds.length - eventIds.length})
@@ -1236,7 +1236,7 @@ export default function Home() {
                          ? "bg-yellow-600 text-white" 
                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                      }`}
-                     onMouseEnter={blockTranslationFeedback}
+                     onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
                      ⭐ Featured ({featuredIds.length})
@@ -1248,7 +1248,7 @@ export default function Home() {
                          ? "bg-purple-600 text-white" 
                          : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                      }`}
-                     onMouseEnter={blockTranslationFeedback}
+                     onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
                      🎉 Events ({eventIds.length})
@@ -1260,7 +1260,7 @@ export default function Home() {
                    <button
                      onClick={createAdminButtonHandler(handleManualSave)}
                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 text-sm font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105 notranslate"
-                     onMouseEnter={blockTranslationFeedback}
+                     onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
                      🔒 변경사항 저장
@@ -1268,7 +1268,7 @@ export default function Home() {
                    <button
                      onClick={createAdminButtonHandler(handleRefreshData)}
                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-sm font-medium rounded-lg shadow-lg transition-all duration-200 hover:scale-105 notranslate"
-                     onMouseEnter={blockTranslationFeedback}
+                     onMouseEnter={startBlockingTranslationFeedback}
                      translate="no"
                    >
                      🔄 데이터 새로고침

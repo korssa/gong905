@@ -5,10 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Menu, Search, Grid, List } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { FilterType } from "@/types";
 import { useAdmin } from "@/hooks/use-admin";
 import { GoogleTranslateWidget } from "@/components/google-translate-widget";
-import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
+import { createAdminButtonHandler, startBlockingTranslationFeedback } from "@/lib/translation-utils";
 
 interface HeaderProps {
   viewMode: "grid" | "list";
@@ -82,7 +81,7 @@ export function Header({
         
         {/* 관리자 모드 표시 */}
         {isAuthenticated && (
-          <div className="text-white text-sm font-medium bg-white/20 px-3 py-1 rounded-md">
+          <div className="text-white text-sm font-medium bg-white/20 px-3 py-1 rounded-md" onMouseEnter={startBlockingTranslationFeedback}>
             👨‍💻 Admin Mode
           </div>
         )}

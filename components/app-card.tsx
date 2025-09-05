@@ -8,7 +8,7 @@ import { useState } from "react";
 import { AppItem } from "@/types";
 import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
-import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
+import { blockTranslationFeedback, createAdminButtonHandler, startBlockingTranslationFeedback } from "@/lib/translation-utils";
 import { AdminCardActionsDialog } from "./admin-card-actions-dialog";
 import Image from "next/image";
 
@@ -85,7 +85,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
         <Card
           className="flex flex-row overflow-hidden hover:shadow-lg transition-shadow"
           style={{ backgroundColor: '#D1E2EA' }}
-          onMouseEnter={blockTranslationFeedback}
+          onMouseEnter={startBlockingTranslationFeedback}
         >
           {/* App Icon */}
           <div className="w-24 h-24 flex-shrink-0 p-3">
@@ -145,14 +145,14 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
 
               {/* 관리자 모드에서만 관리자 액션 버튼 표시 */}
               {isAuthenticated && (
-                <div className="flex flex-col items-end space-y-2 ml-4" onMouseEnter={blockTranslationFeedback}>
+                <div className="flex flex-col items-end space-y-2 ml-4" onMouseEnter={startBlockingTranslationFeedback}>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleAdminActions}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     title="관리자 모드 열기"
-                    onMouseEnter={blockTranslationFeedback}
+                    onMouseEnter={startBlockingTranslationFeedback}
                   >
                     ⚙️ 관리자 모드
                   </Button>
@@ -222,7 +222,7 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
       <Card
         className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
         style={{ backgroundColor: '#D1E2EA' }}
-        onMouseEnter={blockTranslationFeedback}
+        onMouseEnter={startBlockingTranslationFeedback}
       >
         <div className="relative">
           {/* Screenshot/App Preview */}
@@ -251,14 +251,14 @@ export function AppCard({ app, viewMode, onDelete, onEdit, onToggleFeatured, onT
 
           {/* Admin Actions Button - 호버 시 표시 */}
           {isAuthenticated && (
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20" onMouseEnter={blockTranslationFeedback}>
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20" onMouseEnter={startBlockingTranslationFeedback}>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={handleAdminActions}
                 className="h-8 w-8 p-0 shadow-lg bg-blue-600 hover:bg-blue-700 text-white"
                 title="관리자 모드 열기"
-                onMouseEnter={blockTranslationFeedback}
+                onMouseEnter={startBlockingTranslationFeedback}
               >
                 ⚙️
               </Button>
