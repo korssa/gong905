@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { GalleryGrid } from "./gallery-grid";
 import { useGalleryStore } from "@/store/useGalleryStore";
 import { loadGalleryData, syncGalleryData } from "@/lib/gallery-loader";
+import { convertAppsToGallery } from "@/lib/gallery-converter";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Download } from "lucide-react";
+import type { AppItem } from "@/types";
 
 // 타입 정의
 type GalleryFilter = 'all' | 'featured' | 'events';
@@ -54,9 +56,11 @@ interface GalleryManagerProps {
   readonly viewMode: "grid" | "list";
   readonly filter: GalleryFilter;
   readonly onRefresh?: () => void;
+  readonly isAdmin?: boolean;
+  readonly apps?: AppItem[];
 }
 
-export function GalleryManager({ viewMode, filter, onRefresh }: GalleryManagerProps) {
+export function GalleryManager({ viewMode, filter, onRefresh, isAdmin = false, apps = [] }: GalleryManagerProps) {
   const {
     isLoading,
     lastLoaded,
@@ -171,8 +175,32 @@ export function GalleryManager({ viewMode, filter, onRefresh }: GalleryManagerPr
     }
   };
 
-  // 현재 필터에 따른 데이터 가져오기
-  const currentItems = getFilteredItems(filter);
+  // 현재 필터에 따른 데이터 가져오기 (앱 데이터 우선 사용)
+  const currentItems = (() => {
+    if (apps.length > 0) {
+      // 앱 데이터가 있으면 앱 데이터를 갤러리 아이템으로 변환
+      const galleryItems = convertAppsToGallery(apps);
+      
+      switch (filter) {
+        case 'featured':
+          return galleryItems.filter(item => {
+            const app = apps.find(a => a.id === item.id);
+            return app?.isFeatured;
+          });
+        case 'events':
+          return galleryItems.filter(item => {
+            const app = apps.find(a => a.id === item.id);
+            return app?.isEvent;
+          });
+        case 'all':
+        default:
+          return galleryItems;
+      }
+    } else {
+      // 앱 데이터가 없으면 갤러리 스토어에서 가져오기
+      return getFilteredItems(filter);
+    }
+  })();
 
   if (!isInitialized && isLoading) {
     return (
@@ -185,46 +213,48 @@ export function GalleryManager({ viewMode, filter, onRefresh }: GalleryManagerPr
 
   return (
     <div className="space-y-6">
-      {/* 컨트롤 패널 */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-semibold text-amber-400">
-            {getGalleryTitle(filter)}
-          </h2>
-          <span className="text-sm text-gray-400">
-            {currentItems.length}개 항목
-          </span>
-          {lastLoaded && (
-            <span className="text-xs text-gray-500">
-              마지막 업데이트: {new Date(lastLoaded).toLocaleTimeString()}
+      {/* 컨트롤 패널 - 관리자만 표시 */}
+      {isAdmin && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <h2 className="text-xl font-semibold text-amber-400">
+              {getGalleryTitle(filter)}
+            </h2>
+            <span className="text-sm text-gray-400">
+              {currentItems.length}개 항목
             </span>
-          )}
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className="flex items-center space-x-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>새로고침</span>
-          </Button>
+            {lastLoaded && (
+              <span className="text-xs text-gray-500">
+                마지막 업데이트: {new Date(lastLoaded).toLocaleTimeString()}
+              </span>
+            )}
+          </div>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSync}
-            disabled={isLoading}
-            className="flex items-center space-x-2"
-          >
-            <Download className="h-4 w-4" />
-            <span>동기화</span>
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="flex items-center space-x-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>새로고침</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSync}
+              disabled={isLoading}
+              className="flex items-center space-x-2"
+            >
+              <Download className="h-4 w-4" />
+              <span>동기화</span>
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 갤러리 그리드 */}
       <GalleryGrid items={currentItems} viewMode={viewMode} />

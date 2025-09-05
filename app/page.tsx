@@ -390,16 +390,21 @@ export default function Home() {
         // 3. 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
         if (saveResult.success && saveResult.data) {
           setApps(saveResult.data);
+          console.log(`✅ 새 앱 업로드 완료 (서버 데이터 사용):`, newApp.id);
         } else {
           setApps(updatedApps);
+          console.log(`✅ 새 앱 업로드 완료 (로컬 데이터 사용):`, newApp.id);
         }
         
-        console.log(`✅ 새 앱 업로드 완료:`, newApp.id);
-        console.log('🔄 최종 상태:', { 
-          apps: saveResult.success ? saveResult.data?.length : updatedApps.length,
-          featured: getFeaturedApps().length, 
-          events: getEventApps().length 
-        });
+        // 4. 상태 업데이트 후 잠시 대기하여 상태가 반영되도록 함
+        setTimeout(() => {
+          console.log('🔄 최종 상태 확인:', { 
+            totalApps: allApps.length + 1,
+            featured: getFeaturedApps().length, 
+            events: getEventApps().length,
+            normal: getNormalApps().length
+          });
+        }, 100);
         
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
@@ -1120,6 +1125,8 @@ export default function Home() {
                                // 갤러리 새로고침 시 기존 앱 데이터도 새로고침
                                handleRefreshData();
                              }}
+                             isAdmin={isAuthenticated && adminVisible}
+                             apps={allApps}
                            />
                            
                            {/* Events 모드일 때 설명문구와 메일폼 추가 */}

@@ -28,6 +28,16 @@ async function loadGalleryByType(type: string): Promise<GalleryItem[]> {
     limit: 1000
   });
 
+  // data.json 파일을 우선적으로 찾기
+  const dataJsonFile = blobs.find(blob => blob.pathname === `${type}/data.json`);
+  
+  if (dataJsonFile) {
+    console.log(`📁 ${type}/data.json 파일 발견, 데이터 로드 중...`);
+    const items = await loadDataFromFile(dataJsonFile);
+    return items;
+  }
+
+  // data.json이 없으면 다른 JSON 파일들에서 로드
   const jsonFiles = blobs.filter(blob => 
     blob.pathname.endsWith('.json') && 
     blob.pathname !== `${type}/data.json`
