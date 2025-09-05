@@ -5,14 +5,10 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User, Eye, ArrowLeft, Upload } from "lucide-react";
-import { uploadFile } from "@/lib/storage-adapter";
-import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
+import { Calendar, User, ArrowLeft, Upload } from "lucide-react";
+import { blockTranslationFeedback, startBlockingTranslationFeedback } from "@/lib/translation-utils";
 import { AdminUploadDialog } from "./admin-upload-dialog";
 
 // 갤러리 아이템 타입 (메모장과 동일한 구조)
@@ -71,6 +67,9 @@ export function GalleryManager({
     if (savedLikes) {
       setLikes(JSON.parse(savedLikes));
     }
+
+    // 강화된 번역 피드백 차단 시작
+    startBlockingTranslationFeedback();
 
     // 번역 피드백 차단
     const blockTranslationFeedback = () => {

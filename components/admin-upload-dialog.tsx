@@ -19,7 +19,7 @@ import { AppFormData, AppStore, AppStatus } from "@/types";
 
 import { useAdmin } from "@/hooks/use-admin";
 import { createURLManager, registerManager, unregisterManager } from "@/lib/url-manager";
-import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
+import { blockTranslationFeedback, createAdminButtonHandler, startBlockingTranslationFeedback } from "@/lib/translation-utils";
 // select-protection 제거 - 버튼으로 대체
 
 // 관리자용 영어 텍스트 (번역 불필요)
@@ -103,6 +103,13 @@ export function AdminUploadDialog({
       urlManager.dispose();
     };
   }, [urlManager]);
+
+  // 다이얼로그가 열릴 때 강화된 번역 피드백 차단 시작
+  useEffect(() => {
+    if (isOpen) {
+      startBlockingTranslationFeedback();
+    }
+  }, [isOpen]);
   
   const [formData, setFormData] = useState<AppFormData>({
     name: "",

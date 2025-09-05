@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, Star, Edit, Trash2, Save } from "lucide-react";
 import { AppItem } from "@/types";
 import React, { useState, useEffect } from "react";
-import { blockTranslationFeedback } from "@/lib/translation-utils";
+import { blockTranslationFeedback, startBlockingTranslationFeedback } from "@/lib/translation-utils";
 
 
 interface AdminCardActionsDialogProps {
@@ -45,6 +45,13 @@ export function AdminCardActionsDialog({
     setLocalFeatured(isFeatured);
     setLocalEvent(isEvent);
   }, [isFeatured, isEvent]);
+
+  // 다이얼로그가 열릴 때 강화된 번역 피드백 차단 시작
+  useEffect(() => {
+    if (isOpen) {
+      startBlockingTranslationFeedback();
+    }
+  }, [isOpen]);
 
   // 로컬 상태 동기화 - 현재 상태와 반대로 토글
   const handleToggleFeatured = () => {

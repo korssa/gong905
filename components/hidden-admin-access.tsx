@@ -14,7 +14,7 @@ import {
 import { Lock } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { useAdmin } from "@/hooks/use-admin";
-import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
+import { createAdminButtonHandler, startBlockingTranslationFeedback } from "@/lib/translation-utils";
 
 interface HiddenAdminAccessProps {
   isOpen: boolean;
@@ -48,6 +48,8 @@ export function HiddenAdminAccess({ isOpen, onClose }: HiddenAdminAccessProps) {
       // 다이얼로그 열기 전 지연
       timeoutRef.current = setTimeout(() => {
         setIsDialogOpen(true);
+        // 강화된 번역 피드백 차단 시작
+        startBlockingTranslationFeedback();
       }, 100);
     } else {
       // 다이얼로그 닫기 전 지연
