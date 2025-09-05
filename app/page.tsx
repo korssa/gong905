@@ -24,10 +24,8 @@ import { useAdmin } from "@/hooks/use-admin";
 import { generateUniqueId } from "@/lib/file-utils";
 import { validateAppsImages } from "@/lib/image-utils";
 import { uploadFile, deleteFile } from "@/lib/storage-adapter";
-import { loadAppsFromBlob, toggleFeaturedAppStatus, loadAppsByTypeFromBlob, saveAppsByTypeToBlob, loadFeaturedIds, loadEventIds, saveFeaturedIds, saveEventIds } from "@/lib/data-loader";
+import { loadAppsFromBlob, loadAppsByTypeFromBlob, saveAppsByTypeToBlob, loadFeaturedIds, loadEventIds, saveFeaturedIds, saveEventIds } from "@/lib/data-loader";
 import { blockTranslationFeedback, createAdminButtonHandler } from "@/lib/translation-utils";
-import { useAppStore } from "@/store/useAppStore";
-import { useFooterStore } from "@/store/useFooterStore";
 import { AppGallery } from "@/components/app-gallery";
 import { GalleryManager } from "@/components/gallery-manager";
 import Image from "next/image";
@@ -64,18 +62,27 @@ export default function Home() {
   const [adminVisible, setAdminVisible] = useState(false);
 
   // 전역 스토어 사용
-  const { 
-    apps: allApps, 
-    setApps, 
-    toggleFeatured, 
-    toggleEvent, 
-    getFeaturedApps, 
-    getEventApps, 
-    getNormalApps 
-  } = useAppStore();
+  // 로컬 상태로 앱 데이터 관리 (Zustand 제거)
+  const [allApps, setAllApps] = useState<AppItem[]>([]);
+  const [featuredIds, setFeaturedIds] = useState<string[]>([]);
+  const [eventIds, setEventIds] = useState<string[]>([]);
 
-  // 풋터 스토어 사용
-  const { recordButtonClick } = useFooterStore();
+  // 로컬 토글 함수들
+  const toggleFeatured = (appId: string) => {
+    setFeaturedIds(prev => 
+      prev.includes(appId) 
+        ? prev.filter(id => id !== appId)
+        : [...prev, appId]
+    );
+  };
+
+  const toggleEvent = (appId: string) => {
+    setEventIds(prev => 
+      prev.includes(appId) 
+        ? prev.filter(id => id !== appId)
+        : [...prev, appId]
+    );
+  };
 
   // Request ID for preventing race conditions
   const reqIdRef = useRef(0);
@@ -105,20 +112,20 @@ export default function Home() {
           );
         return latestApps.slice(0, 1); // 가장 최근 published 앱 1개만 반환
       case "featured": {
-        return getFeaturedApps().sort((a, b) => a.name.localeCompare(b.name));
+        return allApps.filter(app => featuredIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
       }
       case "events": {
-        return getEventApps().sort((a, b) => a.name.localeCompare(b.name));
+        return allApps.filter(app => eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
       }
       case "normal": {
         // 일반 카드만 표시 (featured/events에 포함되지 않은 앱들)
-        return getNormalApps().sort((a, b) => a.name.localeCompare(b.name));
+        return allApps.filter(app => !featuredIds.includes(app.id) && !eventIds.includes(app.id)).sort((a, b) => a.name.localeCompare(b.name));
       }
       case "all":
       default:
         return allApps.sort((a, b) => a.name.localeCompare(b.name));
     }
-  }, [allApps, currentFilter, searchQuery, getFeaturedApps, getEventApps, getNormalApps]);
+  }, [allApps, currentFilter, searchQuery, featuredIds, eventIds]);
 
 
 
@@ -141,7 +148,6 @@ export default function Home() {
 
      // All Apps 버튼 클릭 핸들러
    const handleAllAppsClick = () => {
-     recordButtonClick("All Apps", "See everything");
      setCurrentFilter("all");
      setCurrentContentType(null); // 메모장 모드 종료
      // 페이지 상단으로 스크롤
@@ -150,26 +156,21 @@ export default function Home() {
 
    // New Releases 버튼 클릭 핸들러
    const handleNewReleasesClick = () => {
-     recordButtonClick("New Releases", "Just launched");
      setCurrentFilter("latest");
      setCurrentContentType(null); // 메모장 모드 종료
      // 페이지 상단으로 스크롤
      window.scrollTo({ top: 0, behavior: 'smooth' });
    };
 
-  // Featured Apps 버튼 클릭 핸들러 (자동 생성 제거)
+  // Featured Apps 버튼 클릭 핸들러
   const handleFeaturedAppsClick = () => {
-    recordButtonClick("Featured Apps", "Recommended picks");
-    // ❌ 자동 생성 로직 제거: featured가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("featured");
     setCurrentContentType(null);
     document.querySelector('main')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Events 버튼 클릭 핸들러 (자동 생성 제거)
+  // Events 버튼 클릭 핸들러
   const handleEventsClick = () => {
-    recordButtonClick("Events", "Discounts via email");
-    // ❌ 자동 생성 로직 제거: events가 비어있어도 자동으로 저장하지 않음
     setCurrentFilter("events");
     setCurrentContentType(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -185,8 +186,6 @@ export default function Home() {
   // 수동 저장 핸들러 (관리자 전용)
   const handleManualSave = async () => {
     try {
-      const featuredIds = getFeaturedApps().map(app => app.id);
-      const eventIds = getEventApps().map(app => app.id);
       
       console.log('🔒 수동 저장 시작:', { featured: featuredIds, events: eventIds });
       
@@ -240,7 +239,7 @@ export default function Home() {
         });
         
         // 5. 전역 스토어 업데이트
-        setApps(appsWithType);
+        setAllApps(appsWithType);
         
         console.log('✅ 데이터 리로드 완료');
       } else {
@@ -323,8 +322,8 @@ export default function Home() {
         
         // 3. 앱 저장 (기존 데이터 + 새 앱, featured/events 상태 반영)
         // 기존 일반 카드들의 상태도 유지하면서 새 앱의 상태 추가
-        const currentFeaturedIds = getFeaturedApps().map(app => app.id);
-        const currentEventIds = getEventApps().map(app => app.id);
+        const currentFeaturedIds = featuredIds;
+        const currentEventIds = eventIds;
         
         // 새 앱의 카테고리에 따라 상태 추가
         const finalFeaturedIds = [...currentFeaturedIds];
@@ -360,10 +359,10 @@ export default function Home() {
         
         // 3. 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
         if (saveResult.success && saveResult.data) {
-          setApps(saveResult.data);
+          setAllApps(saveResult.data);
           console.log(`✅ 새 앱 업로드 완료 (서버 데이터 사용):`, newApp.id);
         } else {
-          setApps(updatedApps);
+          setAllApps(updatedApps);
           console.log(`✅ 새 앱 업로드 완료 (로컬 데이터 사용):`, newApp.id);
         }
         
@@ -371,16 +370,16 @@ export default function Home() {
         setTimeout(() => {
           console.log('🔄 최종 상태 확인:', { 
             totalApps: allApps.length + 1,
-            featured: getFeaturedApps().length, 
-            events: getEventApps().length,
-            normal: getNormalApps().length
+            featured: finalFeaturedIds.length, 
+            events: finalEventIds.length,
+            normal: allApps.length + 1 - finalFeaturedIds.length - finalEventIds.length
           });
         }, 100);
         
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
         // 저장 실패시 로컬 상태만 업데이트
-        setApps(updatedApps);
+        setAllApps(updatedApps);
       }
       
       // 앱 업로드 및 저장 완료
@@ -405,9 +404,9 @@ export default function Home() {
        // 2. 새로운 앱 목록 계산 (원본 배열 기반)
        const newApps = allApps.filter(app => app.id !== id);
        
-             // 3. Featured/Events 앱에서도 제거 (전역 스토어 기반)
-      const newFeaturedApps = getFeaturedApps().filter(app => app.id !== id).map(app => app.id);
-      const newEventApps = getEventApps().filter(app => app.id !== id).map(app => app.id);
+             // 3. Featured/Events 앱에서도 제거 (로컬 상태 기반)
+      const newFeaturedApps = featuredIds.filter(appId => appId !== id);
+      const newEventApps = eventIds.filter(appId => appId !== id);
       
       // 4. 통합된 저장 및 상태 업데이트 (기존 데이터 보존)
       try {
@@ -423,9 +422,9 @@ export default function Home() {
         
         // 5. 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
         if (saveResult.success && saveResult.data) {
-          setApps(saveResult.data);
+          setAllApps(saveResult.data);
         } else {
-          setApps(newApps);
+          setAllApps(newApps);
         }
          
                  console.log(`✅ 앱 삭제 완료:`, id);
@@ -438,7 +437,7 @@ export default function Home() {
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
         // 저장 실패시 로컬 상태만 업데이트
-        setApps(newApps);
+        setAllApps(newApps);
       }
 
        // 5. 스토리지에서 실제 파일들 삭제 (Vercel Blob/로컬 자동 판단)
@@ -487,7 +486,7 @@ export default function Home() {
       if (savedAppsStr) {
         try {
           const parsedApps = JSON.parse(savedAppsStr);
-          setApps(parsedApps);
+          setAllApps(parsedApps);
         } catch {
           // localStorage 파싱 실패 무시
         }
@@ -531,17 +530,21 @@ export default function Home() {
           console.log('✅ 이미지 검증 완료:', validatedApps.length, '개');
           
           // Featured/Events 플래그 주입
-          const [featuredIds, eventIds] = await Promise.all([
+          const [loadedFeaturedIds, loadedEventIds] = await Promise.all([
             loadFeaturedIds(),
             loadEventIds()
           ]);
           
           if (!isMounted || myId !== reqIdRef.current) return; // Race condition check
           
-          console.log('🏷️ 플래그 로드 완료:', { featured: featuredIds.length, events: eventIds.length });
+          console.log('🏷️ 플래그 로드 완료:', { featured: loadedFeaturedIds.length, events: loadedEventIds.length });
+          
+          // 로컬 상태에 ID 저장
+          setFeaturedIds(loadedFeaturedIds);
+          setEventIds(loadedEventIds);
           
           // 기존 앱들에 type 속성과 Featured/Events 플래그 추가
-          const appsWithFlags = applyFeaturedFlags(validatedApps, featuredIds, eventIds);
+          const appsWithFlags = applyFeaturedFlags(validatedApps, loadedFeaturedIds, loadedEventIds);
           const appsWithType = appsWithFlags.map(app => ({ ...app, type: 'gallery' as const }));
           
           console.log('🎯 최종 앱 데이터:', appsWithType.length, '개', {
@@ -549,7 +552,7 @@ export default function Home() {
             events: appsWithType.filter(a => a.isEvent).length
           });
           
-          setApps(appsWithType); // 전역 스토어 업데이트
+          setAllApps(appsWithType); // 로컬 상태 업데이트
           
           // 자동 동기화 비활성화 (데이터 손실 방지)
           console.log('✅ 앱 데이터 로드 완료 (자동 동기화 비활성화)');
@@ -587,7 +590,7 @@ export default function Home() {
               events: appsWithType.filter(a => a.isEvent).length
             });
             
-            setApps(appsWithType); // 전역 스토어 업데이트
+            setAllApps(appsWithType); // 로컬 상태 업데이트
             
             // 자동 동기화 비활성화 (데이터 손실 방지)
             console.log('✅ 앱 데이터 로드 완료 (fallback, 자동 동기화 비활성화)');
@@ -601,7 +604,7 @@ export default function Home() {
         if (isMounted) {
           // 앱 로드 실패
           // 실패시 샘플 데이터 사용
-          setApps(sampleApps);
+          setAllApps(sampleApps);
         }
       }
     };
@@ -612,19 +615,19 @@ export default function Home() {
     return () => {
       isMounted = false;
     };
-  }, [setApps]); // setApps 의존성 추가
+  }, [setAllApps]); // setAllApps 의존성 추가
 
-  // 전역 스토어 상태 변화 로깅 (개발 모드에서만)
+  // 로컬 상태 변화 로깅 (개발 모드에서만)
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
-      console.log('🔄 전역 스토어 상태 변화:', {
+      console.log('🔄 로컬 상태 변화:', {
         totalApps: allApps.length,
-        featuredApps: getFeaturedApps().length,
-        eventApps: getEventApps().length,
-        normalApps: getNormalApps().length
+        featuredApps: featuredIds.length,
+        eventApps: eventIds.length,
+        normalApps: allApps.length - featuredIds.length - eventIds.length
       });
     }
-  }, [allApps, getFeaturedApps, getEventApps, getNormalApps]);
+  }, [allApps, featuredIds, eventIds]);
 
   // Featured/Events 매핑 검증 (개발 모드에서만)
   useEffect(() => {
@@ -651,7 +654,7 @@ export default function Home() {
       if (typeApps.length > 0 && myId === reqIdRef.current) {
         const validatedApps = await validateAppsImages(typeApps);
         const appsWithType = validatedApps.map(app => ({ ...app, type: 'gallery' as const }));
-        setApps(appsWithType); // 전역 스토어 업데이트
+        setAllApps(appsWithType); // 로컬 상태 업데이트
         // 앱 목록 동기화 완료
       }
     } catch (error) {
@@ -710,15 +713,15 @@ export default function Home() {
         );
         console.log('✏️ 앱 수정 후 총 앱 수:', sanitizedApps.length);
         
-        const featuredIds = getFeaturedApps().map(app => app.id);
-        const eventIds = getEventApps().map(app => app.id);
+        const currentFeaturedIds = featuredIds;
+        const currentEventIds = eventIds;
         const saveResult = await saveAppsByTypeToBlob('gallery', sanitizedApps, featuredIds, eventIds);
         
         // 모든 저장 완료 후 한 번에 상태 업데이트 (비동기 경합 방지)
         if (saveResult.success && saveResult.data) {
-          setApps(saveResult.data);
+          setAllApps(saveResult.data);
         } else {
-          setApps(newApps);
+          setAllApps(newApps);
           alert("⚠️ App updated but cloud synchronization failed.");
         }
         
@@ -730,7 +733,7 @@ export default function Home() {
       } catch (error) {
         console.error('글로벌 저장 실패:', error);
         // 저장 실패시 로컬 상태만 업데이트
-        setApps(newApps);
+        setAllApps(newApps);
         alert("⚠️ App updated but cloud synchronization failed.");
       }
 
@@ -752,7 +755,6 @@ export default function Home() {
 
   // App Story 클릭 핸들러
   const handleAppStoryClick = () => {
-    recordButtonClick("App Story", "How it was made");
     setCurrentContentType("appstory");
     setCurrentFilter("all"); // 갤러리 필터 초기화
     // 메모장 본문 위치로 스크롤
@@ -797,7 +799,6 @@ export default function Home() {
 
   // News 클릭 핸들러
   const handleNewsClick = () => {
-    recordButtonClick("News", "Latest updates");
     setCurrentContentType("news");
     setCurrentFilter("all"); // 갤러리 필터 초기화
     // 메모장 본문 위치로 스크롤
@@ -1189,7 +1190,7 @@ export default function Home() {
                      onMouseEnter={blockTranslationFeedback}
                      translate="no"
                    >
-                     📱 일반 ({getNormalApps().length})
+                     📱 일반 ({allApps.length - featuredIds.length - eventIds.length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleFeaturedAppsClick)}
@@ -1201,7 +1202,7 @@ export default function Home() {
                      onMouseEnter={blockTranslationFeedback}
                      translate="no"
                    >
-                     ⭐ Featured ({getFeaturedApps().length})
+                     ⭐ Featured ({featuredIds.length})
                    </button>
                    <button
                      onClick={createAdminButtonHandler(handleEventsClick)}
@@ -1213,7 +1214,7 @@ export default function Home() {
                      onMouseEnter={blockTranslationFeedback}
                      translate="no"
                    >
-                     🎉 Events ({getEventApps().length})
+                     🎉 Events ({eventIds.length})
                    </button>
                  </div>
                  
